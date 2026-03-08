@@ -7,6 +7,7 @@ ENV VITE_API_BASE_URL=${VITE_API_BASE_URL}
 COPY package.json ./
 COPY apps/server/package.json apps/server/package.json
 COPY apps/admin/package.json apps/admin/package.json
+COPY apps/server/prisma apps/server/prisma
 RUN npm install
 
 COPY . .

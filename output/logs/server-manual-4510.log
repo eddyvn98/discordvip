@@ -1,0 +1,66 @@
+
+> dev:server
+> npm run dev -w @discordvip/server
+
+
+> @discordvip/server@1.0.0 dev
+> tsx watch src/index.ts
+
+{"level":"info","message":"Discord bot startup skipped","meta":{"reason":"DISCORD_BOT_ENABLED=false"},"time":"2026-03-08T10:40:45.114Z"}
+{"level":"info","message":"Server started","meta":{"port":4510},"time":"2026-03-08T10:40:45.130Z"}
+D:\discordvip\node_modules\@prisma\client\src\runtime\RequestHandler.ts:237
+      throw new PrismaClientUnknownRequestError(message, {
+            ^
+
+PrismaClientUnknownRequestError: 
+Invalid `prisma.order.updateMany()` invocation in
+D:\discordvip\apps\server\src\services\order-service.ts:43:25
+
+  40 }
+  41 
+  42 async markExpiredOrders() {
+→ 43   return prisma.order.updateMany(
+Error in connector: Error querying the database: FATAL: the database system is shutting down
+    at ei.handleRequestError (D:\discordvip\node_modules\@prisma\client\src\runtime\RequestHandler.ts:237:13)
+    at ei.handleAndLogRequestError (D:\discordvip\node_modules\@prisma\client\src\runtime\RequestHandler.ts:174:12)
+    at ei.request (D:\discordvip\node_modules\@prisma\client\src\runtime\RequestHandler.ts:143:12)
+    at async a (D:\discordvip\node_modules\@prisma\client\src\runtime\getPrismaClient.ts:833:24)
+    at async run (D:\discordvip\apps\server\src\scheduler.ts:12:5) {
+  clientVersion: '6.19.2'
+}
+
+Node.js v24.13.1
+6:28:09 PM [tsx] change in ./src\lib\logger.ts Rerunning...
+c{"level":"info","message":"Discord bot startup skipped","meta":{"reason":"DISCORD_BOT_ENABLED=false"},"time":"2026-03-08T11:28:12.784Z"}
+{"level":"info","message":"Server started","meta":{"port":4510},"time":"2026-03-08T11:28:12.852Z"}
+6:29:07 PM [tsx] change in ./src\index.ts Restarting...
+c{"level":"info","message":"Discord bot startup skipped","meta":{"reason":"DISCORD_BOT_ENABLED=false"},"time":"2026-03-08T11:29:10.668Z"}
+{"level":"info","message":"Server started","meta":{"port":4510},"time":"2026-03-08T11:29:10.696Z"}
+6:31:21 PM [tsx] change in ./src\index.ts Restarting...
+c{"level":"info","message":"Discord bot startup skipped","meta":{"reason":"DISCORD_BOT_ENABLED=false"},"time":"2026-03-08T11:31:41.586Z"}
+{"level":"info","message":"Server started","meta":{"port":4510},"time":"2026-03-08T11:31:41.620Z"}
+6:39:05 PM [tsx] change in ./src\services\discord-service.ts Restarting...
+c{"level":"info","message":"Discord bot startup skipped","meta":{"reason":"DISCORD_BOT_ENABLED=false"},"time":"2026-03-08T11:39:07.584Z"}
+{"level":"info","message":"Server started","meta":{"port":4510},"time":"2026-03-08T11:39:07.602Z"}
+6:39:24 PM [tsx] change in ./src\index.ts Restarting...
+c{"level":"info","message":"Discord bot startup skipped","meta":{"reason":"DISCORD_BOT_ENABLED=false"},"time":"2026-03-08T11:39:26.325Z"}
+{"level":"info","message":"Server started","meta":{"port":4510},"time":"2026-03-08T11:39:26.354Z"}
+6:43:41 PM [tsx] change in ./src\config.ts Restarting...
+c{"level":"info","message":"Discord bot startup skipped","meta":{"reason":"DISCORD_BOT_ENABLED=false"},"time":"2026-03-08T11:43:43.423Z"}
+{"level":"info","message":"Server started","meta":{"port":4510},"time":"2026-03-08T11:43:43.437Z"}
+6:44:03 PM [tsx] change in ./src\services\discord-service.ts Restarting...
+c{"level":"info","message":"Discord bot startup skipped","meta":{"reason":"DISCORD_BOT_ENABLED=false"},"time":"2026-03-08T11:44:05.749Z"}
+{"level":"info","message":"Server started","meta":{"port":4510},"time":"2026-03-08T11:44:05.765Z"}
+6:44:13 PM [tsx] change in ./src\index.ts Restarting...
+c{"level":"info","message":"Discord bot startup skipped","meta":{"reason":"DISCORD_BOT_ENABLED=false"},"time":"2026-03-08T11:44:15.709Z"}
+{"level":"info","message":"Server started","meta":{"port":4510},"time":"2026-03-08T11:44:15.726Z"}
+6:44:49 PM [tsx] change in ./src\index.ts Restarting...
+c{"level":"info","message":"Discord bot startup skipped","meta":{"reason":"DISCORD_BOT_ENABLED=false"},"time":"2026-03-08T11:44:52.038Z"}
+{"level":"info","message":"Server started","meta":{"port":4510},"time":"2026-03-08T11:44:52.054Z"}
+6:47:52 PM [tsx] change in ./src\services\payment-service.ts Restarting...
+c{"level":"info","message":"Discord bot startup skipped","meta":{"reason":"DISCORD_BOT_ENABLED=false"},"time":"2026-03-08T11:47:54.616Z"}
+{"level":"info","message":"Server started","meta":{"port":4510},"time":"2026-03-08T11:47:54.630Z"}
+6:48:03 PM [tsx] change in ./src\index.ts Restarting...
+c{"level":"info","message":"Discord bot startup skipped","meta":{"reason":"DISCORD_BOT_ENABLED=false"},"time":"2026-03-08T11:48:05.743Z"}
+{"level":"info","message":"Server started","meta":{"port":4510},"time":"2026-03-08T11:48:05.758Z"}
+{"level":"error","message":"Failed to remove VIP role","meta":{"membershipId":"cmmhodjqi0001mu6f6urrpw66","error":{"name":"Error","message":"Discord bot is disabled in this environment.","stack":"Error: Discord bot is disabled in this environment.\n    at DiscordService.getGuildMember (D:\\discordvip\\apps\\server\\src\\services\\discord-service.ts:78:13)\n    at DiscordService.removeVipRole (D:\\discordvip\\apps\\server\\src\\services\\discord-service.ts:139:31)\n    at run (D:\\discordvip\\apps\\server\\src\\scheduler.ts:17:30)"}},"time":"2026-03-08T12:01:05.865Z"}

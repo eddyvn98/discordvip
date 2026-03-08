@@ -1,0 +1,283 @@
+
+> dev:server
+> npm run dev -w @discordvip/server
+
+
+> @discordvip/server@1.0.0 dev
+> tsx watch src/index.ts
+
+{"level":"info","message":"Discord bot startup skipped","meta":{"reason":"DISCORD_BOT_ENABLED=false"},"time":"2026-03-08T10:40:20.459Z"}
+node:events:486
+      throw er; // Unhandled 'error' event
+      ^
+
+Error: listen EADDRINUSE: address already in use :::3001
+    at Server.setupListenHandle [as _listen2] (node:net:1940:16)
+    at listenInCluster (node:net:1997:12)
+    at Server.listen (node:net:2102:7)
+    at app.listen (D:\discordvip\node_modules\express\lib\application.js:635:24)
+    at bootstrap (D:\discordvip\apps\server\src\index.ts:141:7)
+Emitted 'error' event on Server instance at:
+    at emitErrorNT (node:net:1976:8)
+    at process.processTicksAndRejections (node:internal/process/task_queues:89:21) {
+  code: 'EADDRINUSE',
+  errno: -4091,
+  syscall: 'listen',
+  address: '::',
+  port: 3001
+}
+
+Node.js v24.13.1
+6:28:09 PM [tsx] change in ./src\lib\logger.ts Rerunning...
+c{"level":"info","message":"Discord bot startup skipped","meta":{"reason":"DISCORD_BOT_ENABLED=false"},"time":"2026-03-08T11:28:12.784Z"}
+node:events:486
+      throw er; // Unhandled 'error' event
+      ^
+
+Error: listen EADDRINUSE: address already in use :::3001
+    at Server.setupListenHandle [as _listen2] (node:net:1940:16)
+    at listenInCluster (node:net:1997:12)
+    at Server.listen (node:net:2102:7)
+    at app.listen (D:\discordvip\node_modules\express\lib\application.js:635:24)
+    at bootstrap (D:\discordvip\apps\server\src\index.ts:141:7)
+Emitted 'error' event on Server instance at:
+    at emitErrorNT (node:net:1976:8)
+    at process.processTicksAndRejections (node:internal/process/task_queues:89:21) {
+  code: 'EADDRINUSE',
+  errno: -4091,
+  syscall: 'listen',
+  address: '::',
+  port: 3001
+}
+
+Node.js v24.13.1
+6:29:07 PM [tsx] change in ./src\index.ts Rerunning...
+c{"level":"info","message":"Discord bot startup skipped","meta":{"reason":"DISCORD_BOT_ENABLED=false"},"time":"2026-03-08T11:29:10.710Z"}
+node:events:486
+      throw er; // Unhandled 'error' event
+      ^
+
+Error: listen EADDRINUSE: address already in use :::3001
+    at Server.setupListenHandle [as _listen2] (node:net:1940:16)
+    at listenInCluster (node:net:1997:12)
+    at Server.listen (node:net:2102:7)
+    at app.listen (D:\discordvip\node_modules\express\lib\application.js:635:24)
+    at bootstrap (D:\discordvip\apps\server\src\index.ts:141:7)
+Emitted 'error' event on Server instance at:
+    at emitErrorNT (node:net:1976:8)
+    at process.processTicksAndRejections (node:internal/process/task_queues:89:21) {
+  code: 'EADDRINUSE',
+  errno: -4091,
+  syscall: 'listen',
+  address: '::',
+  port: 3001
+}
+
+Node.js v24.13.1
+6:31:21 PM [tsx] change in ./src\index.ts Rerunning...
+c{"level":"info","message":"Discord bot startup skipped","meta":{"reason":"DISCORD_BOT_ENABLED=false"},"time":"2026-03-08T11:31:41.594Z"}
+node:events:486
+      throw er; // Unhandled 'error' event
+      ^
+
+Error: listen EADDRINUSE: address already in use :::3001
+    at Server.setupListenHandle [as _listen2] (node:net:1940:16)
+    at listenInCluster (node:net:1997:12)
+    at Server.listen (node:net:2102:7)
+    at app.listen (D:\discordvip\node_modules\express\lib\application.js:635:24)
+    at bootstrap (D:\discordvip\apps\server\src\index.ts:141:7)
+Emitted 'error' event on Server instance at:
+    at emitErrorNT (node:net:1976:8)
+    at process.processTicksAndRejections (node:internal/process/task_queues:89:21) {
+  code: 'EADDRINUSE',
+  errno: -4091,
+  syscall: 'listen',
+  address: '::',
+  port: 3001
+}
+
+Node.js v24.13.1
+6:39:05 PM [tsx] change in ./src\services\discord-service.ts Rerunning...
+c{"level":"info","message":"Discord bot startup skipped","meta":{"reason":"DISCORD_BOT_ENABLED=false"},"time":"2026-03-08T11:39:07.576Z"}
+node:events:486
+      throw er; // Unhandled 'error' event
+      ^
+
+Error: listen EADDRINUSE: address already in use :::3001
+    at Server.setupListenHandle [as _listen2] (node:net:1940:16)
+    at listenInCluster (node:net:1997:12)
+    at Server.listen (node:net:2102:7)
+    at app.listen (D:\discordvip\node_modules\express\lib\application.js:635:24)
+    at bootstrap (D:\discordvip\apps\server\src\index.ts:141:7)
+Emitted 'error' event on Server instance at:
+    at emitErrorNT (node:net:1976:8)
+    at process.processTicksAndRejections (node:internal/process/task_queues:89:21) {
+  code: 'EADDRINUSE',
+  errno: -4091,
+  syscall: 'listen',
+  address: '::',
+  port: 3001
+}
+
+Node.js v24.13.1
+6:39:24 PM [tsx] change in ./src\index.ts Rerunning...
+c{"level":"info","message":"Discord bot startup skipped","meta":{"reason":"DISCORD_BOT_ENABLED=false"},"time":"2026-03-08T11:39:26.328Z"}
+node:events:486
+      throw er; // Unhandled 'error' event
+      ^
+
+Error: listen EADDRINUSE: address already in use :::3001
+    at Server.setupListenHandle [as _listen2] (node:net:1940:16)
+    at listenInCluster (node:net:1997:12)
+    at Server.listen (node:net:2102:7)
+    at app.listen (D:\discordvip\node_modules\express\lib\application.js:635:24)
+    at bootstrap (D:\discordvip\apps\server\src\index.ts:141:7)
+Emitted 'error' event on Server instance at:
+    at emitErrorNT (node:net:1976:8)
+    at process.processTicksAndRejections (node:internal/process/task_queues:89:21) {
+  code: 'EADDRINUSE',
+  errno: -4091,
+  syscall: 'listen',
+  address: '::',
+  port: 3001
+}
+
+Node.js v24.13.1
+6:43:41 PM [tsx] change in ./src\config.ts Rerunning...
+c{"level":"info","message":"Discord bot startup skipped","meta":{"reason":"DISCORD_BOT_ENABLED=false"},"time":"2026-03-08T11:43:43.436Z"}
+node:events:486
+      throw er; // Unhandled 'error' event
+      ^
+
+Error: listen EADDRINUSE: address already in use :::3001
+    at Server.setupListenHandle [as _listen2] (node:net:1940:16)
+    at listenInCluster (node:net:1997:12)
+    at Server.listen (node:net:2102:7)
+    at app.listen (D:\discordvip\node_modules\express\lib\application.js:635:24)
+    at bootstrap (D:\discordvip\apps\server\src\index.ts:141:7)
+Emitted 'error' event on Server instance at:
+    at emitErrorNT (node:net:1976:8)
+    at process.processTicksAndRejections (node:internal/process/task_queues:89:21) {
+  code: 'EADDRINUSE',
+  errno: -4091,
+  syscall: 'listen',
+  address: '::',
+  port: 3001
+}
+
+Node.js v24.13.1
+6:44:03 PM [tsx] change in ./src\services\discord-service.ts Rerunning...
+c{"level":"info","message":"Discord bot startup skipped","meta":{"reason":"DISCORD_BOT_ENABLED=false"},"time":"2026-03-08T11:44:05.794Z"}
+node:events:486
+      throw er; // Unhandled 'error' event
+      ^
+
+Error: listen EADDRINUSE: address already in use :::3001
+    at Server.setupListenHandle [as _listen2] (node:net:1940:16)
+    at listenInCluster (node:net:1997:12)
+    at Server.listen (node:net:2102:7)
+    at app.listen (D:\discordvip\node_modules\express\lib\application.js:635:24)
+    at bootstrap (D:\discordvip\apps\server\src\index.ts:141:7)
+Emitted 'error' event on Server instance at:
+    at emitErrorNT (node:net:1976:8)
+    at process.processTicksAndRejections (node:internal/process/task_queues:89:21) {
+  code: 'EADDRINUSE',
+  errno: -4091,
+  syscall: 'listen',
+  address: '::',
+  port: 3001
+}
+
+Node.js v24.13.1
+6:44:13 PM [tsx] change in ./src\index.ts Rerunning...
+c{"level":"info","message":"Discord bot startup skipped","meta":{"reason":"DISCORD_BOT_ENABLED=false"},"time":"2026-03-08T11:44:15.714Z"}
+node:events:486
+      throw er; // Unhandled 'error' event
+      ^
+
+Error: listen EADDRINUSE: address already in use :::3001
+    at Server.setupListenHandle [as _listen2] (node:net:1940:16)
+    at listenInCluster (node:net:1997:12)
+    at Server.listen (node:net:2102:7)
+    at app.listen (D:\discordvip\node_modules\express\lib\application.js:635:24)
+    at bootstrap (D:\discordvip\apps\server\src\index.ts:181:7)
+Emitted 'error' event on Server instance at:
+    at emitErrorNT (node:net:1976:8)
+    at process.processTicksAndRejections (node:internal/process/task_queues:89:21) {
+  code: 'EADDRINUSE',
+  errno: -4091,
+  syscall: 'listen',
+  address: '::',
+  port: 3001
+}
+
+Node.js v24.13.1
+6:44:49 PM [tsx] change in ./src\index.ts Rerunning...
+c{"level":"info","message":"Discord bot startup skipped","meta":{"reason":"DISCORD_BOT_ENABLED=false"},"time":"2026-03-08T11:44:52.045Z"}
+node:events:486
+      throw er; // Unhandled 'error' event
+      ^
+
+Error: listen EADDRINUSE: address already in use :::3001
+    at Server.setupListenHandle [as _listen2] (node:net:1940:16)
+    at listenInCluster (node:net:1997:12)
+    at Server.listen (node:net:2102:7)
+    at app.listen (D:\discordvip\node_modules\express\lib\application.js:635:24)
+    at bootstrap (D:\discordvip\apps\server\src\index.ts:181:7)
+Emitted 'error' event on Server instance at:
+    at emitErrorNT (node:net:1976:8)
+    at process.processTicksAndRejections (node:internal/process/task_queues:89:21) {
+  code: 'EADDRINUSE',
+  errno: -4091,
+  syscall: 'listen',
+  address: '::',
+  port: 3001
+}
+
+Node.js v24.13.1
+6:47:52 PM [tsx] change in ./src\services\payment-service.ts Rerunning...
+c{"level":"info","message":"Discord bot startup skipped","meta":{"reason":"DISCORD_BOT_ENABLED=false"},"time":"2026-03-08T11:47:54.587Z"}
+node:events:486
+      throw er; // Unhandled 'error' event
+      ^
+
+Error: listen EADDRINUSE: address already in use :::3001
+    at Server.setupListenHandle [as _listen2] (node:net:1940:16)
+    at listenInCluster (node:net:1997:12)
+    at Server.listen (node:net:2102:7)
+    at app.listen (D:\discordvip\node_modules\express\lib\application.js:635:24)
+    at bootstrap (D:\discordvip\apps\server\src\index.ts:181:7)
+Emitted 'error' event on Server instance at:
+    at emitErrorNT (node:net:1976:8)
+    at process.processTicksAndRejections (node:internal/process/task_queues:89:21) {
+  code: 'EADDRINUSE',
+  errno: -4091,
+  syscall: 'listen',
+  address: '::',
+  port: 3001
+}
+
+Node.js v24.13.1
+6:48:03 PM [tsx] change in ./src\index.ts Rerunning...
+c{"level":"info","message":"Discord bot startup skipped","meta":{"reason":"DISCORD_BOT_ENABLED=false"},"time":"2026-03-08T11:48:05.750Z"}
+node:events:486
+      throw er; // Unhandled 'error' event
+      ^
+
+Error: listen EADDRINUSE: address already in use :::3001
+    at Server.setupListenHandle [as _listen2] (node:net:1940:16)
+    at listenInCluster (node:net:1997:12)
+    at Server.listen (node:net:2102:7)
+    at app.listen (D:\discordvip\node_modules\express\lib\application.js:635:24)
+    at bootstrap (D:\discordvip\apps\server\src\index.ts:228:7)
+Emitted 'error' event on Server instance at:
+    at emitErrorNT (node:net:1976:8)
+    at process.processTicksAndRejections (node:internal/process/task_queues:89:21) {
+  code: 'EADDRINUSE',
+  errno: -4091,
+  syscall: 'listen',
+  address: '::',
+  port: 3001
+}
+
+Node.js v24.13.1

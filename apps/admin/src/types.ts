@@ -52,6 +52,22 @@ export type PendingItem = {
   createdAt: string;
 };
 
+export type PendingOrderItem = {
+  id: string;
+  orderCode: string;
+  discordUserId: string;
+  amount: number;
+  status: "PENDING" | "PAID" | "EXPIRED" | "CANCELLED";
+  expiresAt: string;
+  createdAt: string;
+  plan: {
+    code: string;
+    name: string;
+    amount: number;
+    durationDays: number;
+  };
+};
+
 export type OrderSearchItem = {
   id: string;
   orderCode: string;

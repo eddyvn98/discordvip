@@ -1,5 +1,5 @@
-import { NavLink, Route, Routes } from "react-router-dom";
 import { useEffect, useState } from "react";
+import { NavLink, Route, Routes } from "react-router-dom";
 
 import { api } from "./api";
 import type {
@@ -7,6 +7,7 @@ import type {
   MembershipItem,
   OrderSearchItem,
   PendingItem,
+  PendingOrderItem,
   SummaryResponse,
   TransactionItem,
 } from "./types";
@@ -238,16 +239,26 @@ function MembershipsPage() {
 
 function PendingPage() {
   const [items, setItems] = useState<PendingItem[]>([]);
+  const [orders, setOrders] = useState<PendingOrderItem[]>([]);
   const [suggestions, setSuggestions] = useState<Record<string, OrderSearchItem[]>>({});
   const [orderCodes, setOrderCodes] = useState<Record<string, string>>({});
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
-  const load = () =>
-    api
-      .get<PendingItem[]>("/api/admin/pending")
-      .then(setItems)
-      .catch((value: Error) => setError(value.message));
+  const load = async () => {
+    setError("");
+
+    try {
+      const [pendingPayments, pendingOrders] = await Promise.all([
+        api.get<PendingItem[]>("/api/admin/pending"),
+        api.get<PendingOrderItem[]>("/api/admin/orders/pending"),
+      ]);
+      setItems(pendingPayments);
+      setOrders(pendingOrders);
+    } catch (value) {
+      setError((value as Error).message);
+    }
+  };
 
   useEffect(() => {
     void load();
@@ -280,16 +291,48 @@ function PendingPage() {
     }
   };
 
+  const confirmOrder = async (orderId: string) => {
+    setError("");
+    setMessage("");
+
+    try {
+      await api.post(`/api/admin/orders/${orderId}/confirm`);
+      setMessage("Đã xác nhận order thủ công và cấp VIP.");
+      await load();
+    } catch (value) {
+      setError((value as Error).message);
+    }
+  };
+
   return (
     <section className="card">
       <div className="section-header">
         <div>
           <h1>Pending review</h1>
-          <p>Giao dịch chưa match tự động. Nhập order code để cấp VIP thủ công.</p>
+          <p>Quản lý payment pending và xác nhận order thủ công khi chưa dùng SePay.</p>
         </div>
       </div>
       {message ? <p className="success">{message}</p> : null}
       {error ? <p className="error">{error}</p> : null}
+
+      <div className="pending-list">
+        {orders.map((item) => (
+          <div className="pending-card" key={item.id}>
+            <div className="pending-meta">
+              <strong>{currency(item.amount)}</strong>
+              <span>{item.orderCode}</span>
+              <span>{datetime(item.createdAt)}</span>
+              <span>{item.discordUserId}</span>
+            </div>
+            <p>{item.plan.name}</p>
+            <p>Hết hạn: {datetime(item.expiresAt)}</p>
+            <button className="button" onClick={() => void confirmOrder(item.id)}>
+              Xác nhận thủ công
+            </button>
+          </div>
+        ))}
+      </div>
+
       <div className="pending-list">
         {items.map((item) => (
           <div className="pending-card" key={item.id}>

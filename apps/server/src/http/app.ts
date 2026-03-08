@@ -14,6 +14,27 @@ import { registerWebhookRoutes } from "./webhooks.js";
 
 const PostgresStore = pgSession(session);
 
+function isAllowedOrigin(origin: string | undefined) {
+  if (!origin) {
+    return true;
+  }
+
+  if ([env.ADMIN_APP_URL, env.PUBLIC_BASE_URL].includes(origin)) {
+    return true;
+  }
+
+  if (!env.DEV_BYPASS_ADMIN_AUTH) {
+    return false;
+  }
+
+  try {
+    const url = new URL(origin);
+    return ["localhost", "127.0.0.1"].includes(url.hostname);
+  } catch {
+    return false;
+  }
+}
+
 export function createApp({
   adminService,
   authService,
@@ -31,7 +52,9 @@ export function createApp({
 
   app.use(
     cors({
-      origin: [env.ADMIN_APP_URL, env.PUBLIC_BASE_URL],
+      origin: (origin, callback) => {
+        callback(null, isAllowedOrigin(origin));
+      },
       credentials: true,
     }),
   );

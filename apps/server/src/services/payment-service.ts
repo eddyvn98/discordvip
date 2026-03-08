@@ -157,8 +157,66 @@ export class PaymentService {
     return applied;
   }
 
+  async confirmManualOrder(orderId: string) {
+    const order = await prisma.order.findUnique({
+      where: { id: orderId },
+      include: { plan: true },
+    });
+
+    if (!order) {
+      throw new Error("Order không tồn tại.");
+    }
+
+    if (order.status !== "PENDING") {
+      throw new Error("Order này không còn ở trạng thái pending.");
+    }
+
+    if (order.expiresAt.getTime() < Date.now()) {
+      throw new Error("Order đã hết hạn.");
+    }
+
+    const applied = await this.membershipService.applyPaidOrder({
+      orderId: order.id,
+      discordUserId: order.discordUserId,
+      amount: order.amount,
+      durationDays: order.plan.durationDays,
+      providerTransactionId: `manual_${order.orderCode}`,
+      transferContent: `MANUAL ${order.orderCode}`,
+      bankRef: null,
+      payerName: "manual_admin",
+      raw: {
+        source: "manual_admin_confirmation",
+        orderCode: order.orderCode,
+      },
+    });
+
+    await this.discordService.addVipRole(order.discordUserId);
+    return applied;
+  }
+
+  async rejectManualOrder(orderId: string) {
+    const order = await prisma.order.findUnique({
+      where: { id: orderId },
+    });
+
+    if (!order) {
+      throw new Error("Order khÃ´ng tá»“n táº¡i.");
+    }
+
+    if (order.status !== "PENDING") {
+      throw new Error("Order nÃ y khÃ´ng cÃ²n á»Ÿ tráº¡ng thÃ¡i pending.");
+    }
+
+    return prisma.order.update({
+      where: { id: order.id },
+      data: {
+        status: "CANCELLED",
+      },
+    });
+  }
+
   async getDashboardSummary() {
-    const [matchedRevenue, pendingCount, activeMemberships, recentPayments] =
+    const [matchedRevenue, pendingPayments, pendingOrders, activeMemberships, recentPayments] =
       await Promise.all([
         prisma.payment.aggregate({
           _sum: { amount: true },
@@ -166,6 +224,14 @@ export class PaymentService {
         }),
         prisma.payment.count({
           where: { status: PaymentStatus.PENDING_REVIEW },
+        }),
+        prisma.order.count({
+          where: {
+            status: "PENDING",
+            expiresAt: {
+              gt: new Date(),
+            },
+          },
         }),
         prisma.membership.count({
           where: {
@@ -188,7 +254,7 @@ export class PaymentService {
 
     return {
       revenue: matchedRevenue._sum.amount ?? 0,
-      pendingCount,
+      pendingCount: env.PAYMENT_MODE === "manual" ? pendingOrders : pendingPayments,
       activeMemberships,
       recentPayments,
       guildId: env.DISCORD_GUILD_ID,

@@ -37,6 +37,10 @@ export function registerAdminRoutes(
     res.json(await adminService.listPendingPayments());
   });
 
+  app.get("/api/admin/orders/pending", requireAdmin, async (_req, res) => {
+    res.json(await adminService.listPendingOrders());
+  });
+
   app.get("/api/admin/orders/search", requireAdmin, async (req, res) => {
     const query = typeof req.query.q === "string" ? req.query.q.trim() : "";
     if (!query) {
@@ -58,6 +62,17 @@ export function registerAdminRoutes(
     } catch (error) {
       res.status(400).json({
         error: error instanceof Error ? error.message : "Resolve failed",
+      });
+    }
+  });
+
+  app.post("/api/admin/orders/:orderId/confirm", requireAdmin, async (req, res) => {
+    try {
+      const result = await paymentService.confirmManualOrder(String(req.params.orderId ?? ""));
+      res.json(result);
+    } catch (error) {
+      res.status(400).json({
+        error: error instanceof Error ? error.message : "Manual confirm failed",
       });
     }
   });

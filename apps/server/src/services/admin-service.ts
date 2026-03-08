@@ -40,6 +40,24 @@ export class AdminService {
     });
   }
 
+  async listPendingOrders() {
+    return prisma.order.findMany({
+      where: {
+        status: "PENDING",
+        expiresAt: {
+          gt: new Date(),
+        },
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+      take: 100,
+      include: {
+        plan: true,
+      },
+    });
+  }
+
   async searchOrders(query: string) {
     return prisma.order.findMany({
       where: {

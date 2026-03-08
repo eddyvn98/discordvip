@@ -31,6 +31,16 @@ export class AuthService {
   constructor(private readonly discordService: DiscordService) {}
 
   createLoginUrl(session: AdminSession, returnTo?: string) {
+    if (env.DEV_BYPASS_ADMIN_AUTH) {
+      session.adminUser = {
+        id: "local-admin",
+        username: "Local Admin",
+        avatarUrl: null,
+      };
+      session.returnTo = returnTo || env.ADMIN_APP_URL;
+      return session.returnTo;
+    }
+
     const state = crypto.randomUUID();
     session.oauthState = state;
     session.returnTo = returnTo || env.ADMIN_APP_URL;
@@ -47,6 +57,19 @@ export class AuthService {
   }
 
   async handleCallback(session: AdminSession, code: string, state: string) {
+    if (env.DEV_BYPASS_ADMIN_AUTH) {
+      session.adminUser = {
+        id: "local-admin",
+        username: "Local Admin",
+        avatarUrl: null,
+      };
+
+      return {
+        redirectTo: session.returnTo || env.ADMIN_APP_URL,
+        adminUser: session.adminUser,
+      };
+    }
+
     if (!session.oauthState || state !== session.oauthState) {
       throw new Error("OAuth state không hợp lệ.");
     }

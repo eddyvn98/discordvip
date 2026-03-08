@@ -5,14 +5,26 @@ loadEnv();
 
 const envSchema = z.object({
   DATABASE_URL: z.string().min(1),
-  DISCORD_BOT_TOKEN: z.string().min(1),
-  DISCORD_CLIENT_ID: z.string().min(1),
-  DISCORD_CLIENT_SECRET: z.string().min(1),
-  DISCORD_GUILD_ID: z.string().min(1),
-  DISCORD_VIP_ROLE_ID: z.string().min(1),
+  DISCORD_BOT_ENABLED: z
+    .enum(["true", "false"])
+    .optional()
+    .default("true")
+    .transform((value) => value === "true"),
+  DEV_BYPASS_ADMIN_AUTH: z
+    .enum(["true", "false"])
+    .optional()
+    .default("false")
+    .transform((value) => value === "true"),
+  PAYMENT_MODE: z.enum(["manual", "sepay"]).optional().default("sepay"),
+  DISCORD_BOT_TOKEN: z.string().optional().default(""),
+  DISCORD_CLIENT_ID: z.string().optional().default(""),
+  DISCORD_CLIENT_SECRET: z.string().optional().default(""),
+  DISCORD_GUILD_ID: z.string().optional().default(""),
+  DISCORD_VIP_ROLE_ID: z.string().optional().default(""),
   DISCORD_ADMIN_ROLE_ID: z.string().optional().default(""),
+  DISCORD_ADMIN_CHANNEL_ID: z.string().optional().default(""),
   ADMIN_DISCORD_IDS: z.string().optional().default(""),
-  DISCORD_REDIRECT_URI: z.string().url(),
+  DISCORD_REDIRECT_URI: z.string().url().optional().default("http://localhost:3000/api/auth/discord/callback"),
   SERVER_PORT: z.coerce.number().default(3000),
   ADMIN_APP_URL: z.string().url(),
   SESSION_SECRET: z.string().min(1),

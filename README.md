@@ -18,6 +18,12 @@ Monorepo gồm:
 ## Chạy local
 
 1. Copy `.env.example` thành `.env` và điền token/secrets.
+   Nếu chỉ muốn test local API/admin trước, có thể đặt:
+
+   ```bash
+   DISCORD_BOT_ENABLED=false
+   DEV_BYPASS_ADMIN_AUTH=true
+   ```
 2. Cài dependency:
 
    ```bash
@@ -36,11 +42,54 @@ Monorepo gồm:
    npm run dev:admin
    ```
 
+   Có thể đổi cổng/admin API bằng `apps/admin/.env`:
+
+   ```bash
+   VITE_API_BASE_URL=http://localhost:4510
+   VITE_PORT=4511
+   ```
+
 ## Docker
 
 ```bash
 docker compose up --build
 ```
+
+### Chế độ xác nhận thủ công
+
+- Đặt `PAYMENT_MODE=manual` để bỏ qua SePay trước mắt.
+- User vẫn tạo order bằng `/buyvip`.
+- Admin vào màn `Pending` để xác nhận order thủ công và cấp VIP.
+
+### Cloudflare Tunnel với Docker
+
+1. Dùng file demo:
+
+   ```bash
+   Copy-Item .env.demo .env.demo.local
+   ```
+
+2. Sửa `.env.demo.local`:
+   - `PUBLIC_BASE_URL=https://demo.your-domain.com`
+   - `ADMIN_APP_URL=https://demo.your-domain.com`
+   - `DISCORD_REDIRECT_URI=https://demo.your-domain.com/api/auth/discord/callback`
+   - `SESSION_SECRET=...`
+   - `CLOUDFLARE_TUNNEL_TOKEN=...`
+
+3. Tạo tunnel trong Cloudflare Zero Trust Dashboard.
+4. Thêm public hostname duy nhất:
+   - `demo.your-domain.com` trỏ tới `http://web-gateway:8080`
+5. Build và chạy demo:
+
+   ```bash
+   docker compose --env-file .env.demo.local up --build -d
+   ```
+
+6. Chạy thêm tunnel:
+
+   ```bash
+   docker compose --env-file .env.demo.local --profile tunnel up -d cloudflared
+   ```
 
 Container `app-server` tự chạy:
 

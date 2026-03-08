@@ -1,0 +1,60 @@
+
+> dev:server
+> npm run dev -w @discordvip/server
+
+
+> @discordvip/server@1.0.0 dev
+> tsx watch src/index.ts
+
+{"level":"info","message":"Discord bot startup skipped","meta":{"reason":"DISCORD_BOT_ENABLED=false"},"time":"2026-03-08T09:20:10.201Z"}
+node:events:486
+      throw er; // Unhandled 'error' event
+      ^
+
+Error: listen EADDRINUSE: address already in use :::3000
+    at Server.setupListenHandle [as _listen2] (node:net:1940:16)
+    at listenInCluster (node:net:1997:12)
+    at Server.listen (node:net:2102:7)
+    at app.listen (D:\discordvip\node_modules\express\lib\application.js:635:24)
+    at bootstrap (D:\discordvip\apps\server\src\index.ts:136:7)
+Emitted 'error' event on Server instance at:
+    at emitErrorNT (node:net:1976:8)
+    at process.processTicksAndRejections (node:internal/process/task_queues:89:21) {
+  code: 'EADDRINUSE',
+  errno: -4091,
+  syscall: 'listen',
+  address: '::',
+  port: 3000
+}
+
+Node.js v24.13.1
+4:29:20 PM [tsx] change in ./src\http\app.ts Rerunning...
+c{"level":"info","message":"Discord bot startup skipped","meta":{"reason":"DISCORD_BOT_ENABLED=false"},"time":"2026-03-08T09:29:22.770Z"}
+node:events:486
+      throw er; // Unhandled 'error' event
+      ^
+
+Error: listen EADDRINUSE: address already in use :::3001
+    at Server.setupListenHandle [as _listen2] (node:net:1940:16)
+    at listenInCluster (node:net:1997:12)
+    at Server.listen (node:net:2102:7)
+    at app.listen (D:\discordvip\node_modules\express\lib\application.js:635:24)
+    at bootstrap (D:\discordvip\apps\server\src\index.ts:136:7)
+Emitted 'error' event on Server instance at:
+    at emitErrorNT (node:net:1976:8)
+    at process.processTicksAndRejections (node:internal/process/task_queues:89:21) {
+  code: 'EADDRINUSE',
+  errno: -4091,
+  syscall: 'listen',
+  address: '::',
+  port: 3001
+}
+
+Node.js v24.13.1
+npm error Lifecycle script `dev` failed with error:
+npm error code 4294967295
+npm error path D:\discordvip\apps\server
+npm error workspace @discordvip/server@1.0.0
+npm error location D:\discordvip\apps\server
+npm error command failed
+npm error command C:\WINDOWS\system32\cmd.exe /d /s /c tsx watch src/index.ts

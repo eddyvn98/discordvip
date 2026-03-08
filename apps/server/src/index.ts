@@ -1,4 +1,12 @@
-import { Events, type ChatInputCommandInteraction } from "discord.js";
+import {
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+  Events,
+  MessageFlags,
+  type ButtonInteraction,
+  type ChatInputCommandInteraction,
+} from "discord.js";
 
 import { env } from "./config.js";
 import { buildVietQrImageUrl, formatCurrency } from "./lib/billing.js";
@@ -32,8 +40,13 @@ async function handleBuyVip(interaction: ChatInputCommandInteraction) {
     orderCode: order.orderCode,
   });
 
+  const paymentInstruction =
+    env.PAYMENT_MODE === "manual"
+      ? "Admin sẽ xác nhận thanh toán thủ công và cấp role VIP sau khi kiểm tra."
+      : "Bot sẽ tự cấp role VIP sau khi SePay báo đã nhận tiền.";
+
   await interaction.reply({
-    ephemeral: true,
+    flags: MessageFlags.Ephemeral,
     embeds: [
       {
         title: `Mua ${order.plan.name}`,
@@ -41,12 +54,16 @@ async function handleBuyVip(interaction: ChatInputCommandInteraction) {
           `Số tiền: **${formatCurrency(order.amount)}**`,
           `Nội dung CK: \`VIP ${order.orderCode}\``,
           `Hạn thanh toán: <t:${Math.floor(order.expiresAt.getTime() / 1000)}:R>`,
-          "Bot sẽ tự cấp role VIP sau khi SePay báo đã nhận tiền.",
+          paymentInstruction,
         ].join("\n"),
         image: qrImageUrl ? { url: qrImageUrl } : undefined,
       },
     ],
   });
+
+  if (env.PAYMENT_MODE === "manual") {
+    await discordService.sendManualOrderReview(order);
+  }
 }
 
 async function handleTrial(interaction: ChatInputCommandInteraction) {
@@ -55,12 +72,12 @@ async function handleTrial(interaction: ChatInputCommandInteraction) {
     await discordService.addVipRole(interaction.user.id);
 
     await interaction.reply({
-      ephemeral: true,
+      flags: MessageFlags.Ephemeral,
       content: `Đã kích hoạt trial VIP tới <t:${Math.floor(membership.expireAt.getTime() / 1000)}:F>.`,
     });
   } catch (error) {
     await interaction.reply({
-      ephemeral: true,
+      flags: MessageFlags.Ephemeral,
       content: error instanceof Error ? error.message : "Không thể kích hoạt trial.",
     });
   }
@@ -71,7 +88,7 @@ async function handleVipStatus(interaction: ChatInputCommandInteraction) {
 
   if (!membership || membership.expireAt.getTime() <= Date.now()) {
     await interaction.reply({
-      ephemeral: true,
+      flags: MessageFlags.Ephemeral,
       content: "Bạn chưa có VIP đang hoạt động.",
     });
     return;
@@ -79,7 +96,7 @@ async function handleVipStatus(interaction: ChatInputCommandInteraction) {
 
   const sourceLabel = membership.source === "TRIAL" ? "Trial" : "Paid";
   await interaction.reply({
-    ephemeral: true,
+    flags: MessageFlags.Ephemeral,
     content: [
       `Nguồn VIP: **${sourceLabel}**`,
       `Hết hạn: <t:${Math.floor(membership.expireAt.getTime() / 1000)}:F>`,
@@ -87,15 +104,90 @@ async function handleVipStatus(interaction: ChatInputCommandInteraction) {
   });
 }
 
+function buildManualReviewComponents(orderId: string, disabled = false) {
+  const approveButton = new ButtonBuilder()
+    .setCustomId(`manual_confirm:${orderId}`)
+    .setLabel("Xác nhận")
+    .setStyle(ButtonStyle.Success)
+    .setDisabled(disabled);
+  const rejectButton = new ButtonBuilder()
+    .setCustomId(`manual_reject:${orderId}`)
+    .setLabel("Từ chối")
+    .setStyle(ButtonStyle.Secondary)
+    .setDisabled(disabled);
+
+  return [new ActionRowBuilder<ButtonBuilder>().addComponents(approveButton, rejectButton)];
+}
+
+async function lockManualReviewMessage(
+  interaction: ButtonInteraction,
+  statusText: string,
+  adminDiscordUserId: string,
+) {
+  const currentContent = interaction.message.content || "";
+  const auditLine = `Trang thai: ${statusText} boi <@${adminDiscordUserId}>`;
+
+  await interaction.update({
+    content: currentContent.includes("Trang thai:")
+      ? currentContent.replace(/Trang thai:.*/u, auditLine)
+      : `${currentContent}\n${auditLine}`.trim(),
+    components: buildManualReviewComponents(interaction.customId.split(":")[1] ?? "", true),
+  });
+}
+
+async function handleManualReviewAction(customId: string, adminDiscordUserId: string) {
+  const [action, orderId] = customId.split(":");
+  if (!orderId) {
+    throw new Error("Manual review action is invalid.");
+  }
+
+  const canAccess = await discordService.memberHasAdminAccess(adminDiscordUserId);
+  if (!canAccess) {
+    throw new Error("Ban khong co quyen duyet don nay.");
+  }
+
+  if (action === "manual_confirm") {
+    await paymentService.confirmManualOrder(orderId);
+    return {
+      statusText: "DA_XAC_NHAN",
+      responseText: "Da xac nhan thanh toan va cap VIP.",
+    };
+  }
+
+  if (action === "manual_reject") {
+    await paymentService.rejectManualOrder(orderId);
+    return {
+      statusText: "DA_TU_CHOI",
+      responseText: "Da tu choi don hang.",
+    };
+  }
+
+  throw new Error("Unknown manual review action.");
+}
+
 async function bootstrap() {
   await discordService.start();
 
   discordService.client.on(Events.InteractionCreate, async (interaction) => {
-    if (!interaction.isChatInputCommand()) {
-      return;
-    }
-
     try {
+      if (interaction.isButton()) {
+        if (!interaction.customId.startsWith("manual_")) {
+          return;
+        }
+
+        const result = await handleManualReviewAction(interaction.customId, interaction.user.id);
+        await lockManualReviewMessage(interaction, result.statusText, interaction.user.id);
+        await interaction.followUp({
+          flags: MessageFlags.Ephemeral,
+          content: result.responseText,
+        });
+        return;
+      }
+
+      if (!interaction.isChatInputCommand()) {
+        return;
+      }
+
       if (interaction.commandName === "buyvip") {
         await handleBuyVip(interaction);
         return;
@@ -111,14 +203,14 @@ async function bootstrap() {
       }
     } catch (error) {
       logger.error("Interaction handling failed", { error });
-      if (interaction.deferred || interaction.replied) {
+      if (interaction.isRepliable() && (interaction.deferred || interaction.replied)) {
         await interaction.followUp({
-          ephemeral: true,
+          flags: MessageFlags.Ephemeral,
           content: "Đã có lỗi xảy ra, vui lòng thử lại.",
         });
-      } else {
+      } else if (interaction.isRepliable()) {
         await interaction.reply({
-          ephemeral: true,
+          flags: MessageFlags.Ephemeral,
           content: "Đã có lỗi xảy ra, vui lòng thử lại.",
         });
       }
