@@ -1,0 +1,118 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  EXPIRED
+  CANCELLED
+}
+
+enum PaymentStatus {
+  MATCHED
+  PENDING_REVIEW
+  DUPLICATE
+}
+
+enum MembershipSource {
+  PAID
+  TRIAL
+}
+
+enum MembershipStatus {
+  ACTIVE
+  EXPIRED
+}
+
+enum WebhookProcessStatus {
+  RECEIVED
+  PROCESSED
+  DUPLICATE
+  FAILED
+}
+
+model Plan {
+  id           String   @id @default(cuid())
+  code         String   @unique
+  name         String
+  amount       Int
+  durationDays Int
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  orders       Order[]
+}
+
+model Order {
+  id            String      @id @default(cuid())
+  orderCode     String      @unique
+  discordUserId String
+  guildId       String
+  amount        Int
+  status        OrderStatus @default(PENDING)
+  expiresAt     DateTime
+  paidAt        DateTime?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  planId        String
+  plan          Plan        @relation(fields: [planId], references: [id])
+  payments      Payment[]
+}
+
+model Payment {
+  id                    String        @id @default(cuid())
+  provider              String        @default("sepay")
+  providerTransactionId String        @unique
+  amount                Int
+  bankRef               String?
+  transferContent       String?
+  payerName             String?
+  status                PaymentStatus @default(PENDING_REVIEW)
+  matchedAt             DateTime?
+  createdAt             DateTime      @default(now())
+  updatedAt             DateTime      @updatedAt
+  raw                   Json
+  orderId               String?
+  order                 Order?        @relation(fields: [orderId], references: [id])
+}
+
+model Membership {
+  id            String           @id @default(cuid())
+  discordUserId String
+  guildId       String
+  roleId        String
+  source        MembershipSource
+  status        MembershipStatus @default(ACTIVE)
+  startAt       DateTime
+  expireAt      DateTime
+  removeRetries Int              @default(0)
+  lastError     String?
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+
+  @@unique([discordUserId, guildId, roleId])
+}
+
+model TrialClaim {
+  id            String   @id @default(cuid())
+  discordUserId String   @unique
+  claimedAt     DateTime @default(now())
+}
+
+model WebhookEvent {
+  id              String               @id @default(cuid())
+  provider        String               @default("sepay")
+  providerEventId String?
+  signature       String?
+  payload         Json
+  processStatus   WebhookProcessStatus @default(RECEIVED)
+  errorMessage    String?
+  createdAt       DateTime             @default(now())
+  updatedAt       DateTime             @updatedAt
+}

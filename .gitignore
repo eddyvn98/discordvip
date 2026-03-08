@@ -1,0 +1,11 @@
+node_modules/
+dist/
+.turbo/
+.env
+.env.*
+!.env.example
+coverage/
+.vite/
+apps/server/generated/
+apps/server/prisma/dev.db
+apps/server/prisma/dev.db-journal

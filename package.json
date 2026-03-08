@@ -1,0 +1,13 @@
+{
+  "name": "discordvip",
+  "private": true,
+  "workspaces": [
+    "apps/*"
+  ],
+  "scripts": {
+    "build": "npm run build -w @discordvip/server && npm run build -w @discordvip/admin",
+    "dev:server": "npm run dev -w @discordvip/server",
+    "dev:admin": "npm run dev -w @discordvip/admin",
+    "test": "npm run test -w @discordvip/server"
+  }
+}
