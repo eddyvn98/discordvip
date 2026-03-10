@@ -62,7 +62,7 @@ export class PaymentService {
     }
 
     const orderCode = extractOrderCode(normalized.transferContent);
-    const order = orderCode ? await this.orderService.findByCode(orderCode) : null;
+    const order = orderCode ? await this.orderService.findByTransferredCode(orderCode) : null;
 
     if (
       !order ||

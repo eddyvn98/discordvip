@@ -8,6 +8,40 @@ type RawBodyRequest = Request & {
   rawBody?: string;
 };
 
+function parseWebhookPayload(body: unknown) {
+  if (body && typeof body === "object") {
+    return body;
+  }
+
+  if (typeof body !== "string" || !body.trim()) {
+    return body;
+  }
+
+  const text = body.trim();
+
+  try {
+    return JSON.parse(text);
+  } catch {
+    // Continue to form parsing fallback.
+  }
+
+  const params = new URLSearchParams(text);
+  if (Array.from(params.keys()).length === 0) {
+    return body;
+  }
+
+  const data = params.get("data");
+  if (data) {
+    try {
+      return JSON.parse(data);
+    } catch {
+      // Keep parsed params object below.
+    }
+  }
+
+  return Object.fromEntries(params.entries());
+}
+
 export function registerWebhookRoutes(app: Express, paymentService: PaymentService) {
   app.post("/api/webhooks/sepay", async (req: RawBodyRequest, res: Response) => {
     const signature =
@@ -22,7 +56,8 @@ export function registerWebhookRoutes(app: Express, paymentService: PaymentServi
     }
 
     try {
-      const result = await paymentService.processWebhook(req.body, signature);
+      const payload = parseWebhookPayload(req.body);
+      const result = await paymentService.processWebhook(payload, signature);
       res.json(result);
     } catch (error) {
       res.status(400).json({

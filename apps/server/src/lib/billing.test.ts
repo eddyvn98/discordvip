@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { calculateExtendedExpiry, extractOrderCode } from "./billing.js";
+import { calculateExtendedExpiry, extractOrderCode, normalizeOrderCodeToken } from "./billing.js";
 import { normalizeSepayPayload } from "./sepay.js";
 
 describe("billing helpers", () => {
@@ -14,7 +14,14 @@ describe("billing helpers", () => {
 
   it("extracts order code from transfer content", () => {
     expect(extractOrderCode("nap vip VIP ABCD1234")).toBe("ABCD1234");
+    expect(extractOrderCode("BXAP8VZHRP")).toBe("BXAP8VZHRP");
+    expect(extractOrderCode("DONATE R23VOIUMO")).toBe("R23VOIUMO");
     expect(extractOrderCode("hello")).toBeNull();
+  });
+
+  it("normalizes order code tokens by removing separators", () => {
+    expect(normalizeOrderCodeToken("R2-3VOIUMO")).toBe("R23VOIUMO");
+    expect(normalizeOrderCodeToken("r2_3voiumo")).toBe("R23VOIUMO");
   });
 
   it("normalizes nested SePay payload", () => {

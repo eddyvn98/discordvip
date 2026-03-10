@@ -1,0 +1,300 @@
+- generic [active] [ref=e1]:
+  - text: 
+  - generic [ref=e2]:
+    - navigation [ref=e3]:
+      - region "scrollable content" [ref=e8]:
+        - generic [ref=e9]:
+          - link "SePay" [ref=e10] [cursor=pointer]:
+            - /url: https://my.sepay.vn
+            - img [ref=e11]
+            - text: SePay
+            - paragraph
+          - list [ref=e12]:
+            - listitem [ref=e13]:
+              - generic [ref=e15] [cursor=pointer]:
+                - img [ref=e16]: 
+                - generic [ref=e19]:
+                  - text: Tìm kiếm
+                  - generic [ref=e20]: Ctrl K
+            - listitem [ref=e21]:
+              - link "Tổng quan" [ref=e22] [cursor=pointer]:
+                - /url: https://my.sepay.vn
+                - img [ref=e23]: 
+                - text: Tổng quan
+            - listitem [ref=e26]:
+              - link "Giao dịch" [ref=e27] [cursor=pointer]:
+                - /url: https://my.sepay.vn/transactions
+                - img [ref=e28]: 
+                - text: Giao dịch
+            - listitem [ref=e30]:
+              - link "Ngân hàng" [ref=e31] [cursor=pointer]:
+                - /url: https://my.sepay.vn/bankaccount
+                - img [ref=e32]: 
+                - text: Ngân hàng
+            - listitem [ref=e34]:
+              - link "Tạo QR" [ref=e35] [cursor=pointer]:
+                - /url: https://my.sepay.vn/createqr
+                - img [ref=e36]
+                - text: Tạo QR
+            - generic [ref=e38]:
+              - generic [ref=e39] [cursor=pointer]:
+                - text: 
+                - generic [ref=e40]:
+                  - paragraph [ref=e41]:
+                    - text: SePay eShop
+                    - generic [ref=e42]: Mới
+                  - paragraph [ref=e43]: Bán hàng & xuất hóa đơn điện tử
+              - text:     
+            - generic [ref=e44]:
+              - generic [ref=e45] [cursor=pointer]:
+                - text: 
+                - generic [ref=e46]:
+                  - paragraph [ref=e47]:
+                    - text: SePay eInvoice
+                    - generic [ref=e48]: Mới
+                  - paragraph [ref=e49]: Xuất hóa đơn điện tử & API
+              - text:    
+            - listitem [ref=e50]: Cổng thanh toán
+            - listitem [ref=e51]:
+              - link " Đăng ký" [ref=e52] [cursor=pointer]:
+                - /url: https://my.sepay.vn/pg/payment-methods
+                - generic [ref=e53]: 
+                - generic [ref=e54]: Đăng ký
+            - listitem [ref=e55]: Tích hợp & Thông báo
+            - listitem [ref=e56]:
+              - link "Tích hợp WebHooks" [ref=e57] [cursor=pointer]:
+                - /url: https://my.sepay.vn/webhooks
+                - img [ref=e58]: 
+                - text: Tích hợp WebHooks
+            - listitem [ref=e60]:
+              - link " Bank Hub" [ref=e61] [cursor=pointer]:
+                - /url: https://my.sepay.vn/bankhubintegration
+                - generic [ref=e62]: 
+                - generic [ref=e63]: Bank Hub
+            - listitem [ref=e64]:
+              - link "Tích hợp Telegram" [ref=e65] [cursor=pointer]:
+                - /url: https://my.sepay.vn/notificationtelegram
+                - img [ref=e66]: 
+                - text: Tích hợp Telegram
+            - listitem [ref=e68]:
+              - link "Tích hợp Lark Messenger" [ref=e69] [cursor=pointer]:
+                - /url: https://my.sepay.vn/notificationlarkmessenger
+                - img [ref=e70]: 
+                - text: Tích hợp Lark Messenger
+            - listitem [ref=e72]:
+              - link "Tích hợp Google Sheets" [ref=e73] [cursor=pointer]:
+                - /url: https://my.sepay.vn/googlesheets
+                - img [ref=e74]
+                - text: Tích hợp Google Sheets
+            - listitem [ref=e76]:
+              - link "Mobile app" [ref=e77] [cursor=pointer]:
+                - /url: https://my.sepay.vn/mobileapp
+                - img [ref=e78]: 
+                - text: Mobile app
+            - listitem [ref=e80]:
+              - link "Loa thanh toán" [ref=e81] [cursor=pointer]:
+                - /url: https://my.sepay.vn/outputdevice
+                - img [ref=e82]: 
+                - text: Loa thanh toán
+            - listitem [ref=e85]:
+              - link "Tích hợp GoHighLevel" [ref=e86] [cursor=pointer]:
+                - /url: https://my.sepay.vn/gohighlevel
+                - img [ref=e87]
+                - text: Tích hợp GoHighLevel
+            - listitem [ref=e92]:
+              - link "Tất cả tích hợp" [ref=e93] [cursor=pointer]:
+                - /url: https://my.sepay.vn/home/other_intergation
+                - img [ref=e94]: 
+                - text: Tất cả tích hợp
+            - listitem [ref=e96]: Kinh doanh & Ưu đãi
+            - listitem [ref=e97]:
+              - link "Khuyến mãi" [ref=e98] [cursor=pointer]:
+                - /url: https://sepay.vn/khuyen-mai
+                - img [ref=e99]
+                - text: Khuyến mãi
+            - listitem [ref=e109]:
+              - link "Giới thiệu bạn bè" [ref=e110] [cursor=pointer]:
+                - /url: https://my.sepay.vn/referral
+                - img [ref=e111]: 
+                - text: Giới thiệu bạn bè
+            - listitem [ref=e114]:
+              - link "Affiliate" [ref=e115] [cursor=pointer]:
+                - /url: https://sepay.vn/affiliate.html
+                - img [ref=e116]
+                - text: Affiliate
+            - listitem [ref=e119]:
+              - link "Mở mới TK nhận giao dịch" [ref=e120] [cursor=pointer]:
+                - /url: https://my.sepay.vn/bankbonus
+                - img [ref=e121]
+                - text: Mở mới TK nhận giao dịch
+            - listitem [ref=e126]: Quản trị & Báo cáo
+            - listitem [ref=e127]:
+              - link "Yêu cầu hỗ trợ" [ref=e128] [cursor=pointer]:
+                - /url: https://my.sepay.vn/ticket
+                - img [ref=e129]: 
+                - text: Yêu cầu hỗ trợ
+            - listitem [ref=e131]:
+              - generic [ref=e132] [cursor=pointer]:
+                - img [ref=e133]: 
+                - text: Thống kê
+            - listitem [ref=e135]:
+              - generic [ref=e136] [cursor=pointer]:
+                - img [ref=e137]: 
+                - text: Cấu hình Công ty
+            - listitem [ref=e139]:
+              - generic [ref=e140] [cursor=pointer]:
+                - img [ref=e141]: 
+                - text: Nhật ký
+              - list [ref=e145]:
+                - listitem [ref=e146]:
+                  - link "Nhật ký người dùng" [ref=e147] [cursor=pointer]:
+                    - /url: https://my.sepay.vn/logs
+                - listitem [ref=e148]:
+                  - link "Nhật ký WebHooks" [ref=e149] [cursor=pointer]:
+                    - /url: https://my.sepay.vn/webhookslog
+            - listitem [ref=e150]:
+              - generic [ref=e151] [cursor=pointer]:
+                - generic [ref=e152]: 
+                - text: Thu gọn
+          - generic [ref=e154]:
+            - link " HMP" [ref=e155] [cursor=pointer]:
+              - /url: https://my.sepay.vn/company/profile
+              - generic [ref=e156]: 
+              - text: HMP
+            - 'link "Gói: Free" [ref=e157] [cursor=pointer]':
+              - /url: https://my.sepay.vn/company/plans
+          - generic [ref=e159]:
+            - generic [ref=e161]:
+              - generic [ref=e162]: 
+              - text: Hotline hỗ trợ
+            - link "02873.059.589" [ref=e163] [cursor=pointer]:
+              - /url: tel:02873059589
+    - generic [ref=e164]:
+      - navigation [ref=e165]:
+        - heading "Webhooks Logs" [level=3] [ref=e168]
+        - list [ref=e169]:
+          - listitem [ref=e170]:
+            - button "Quick menu" [ref=e171] [cursor=pointer]
+            - text:                       
+        - list [ref=e173]:
+          - text: 
+          - listitem [ref=e174]:
+            - link " Nâng cấp" [ref=e175] [cursor=pointer]:
+              - /url: https://my.sepay.vn/company/change_plan
+              - generic [ref=e176]: 
+              - text: Nâng cấp
+          - text: 
+          - listitem [ref=e177]:
+            - link "" [expanded] [ref=e178] [cursor=pointer]:
+              - /url: "#"
+              - generic [ref=e180]: 
+            - text:     
+          - listitem [ref=e181]:
+            - link "" [ref=e182] [cursor=pointer]:
+              - /url: "#"
+              - generic [ref=e183]: 
+            - text:   
+          - listitem [ref=e184]:
+            - link "Hà Minh Phúc" [ref=e185] [cursor=pointer]:
+              - /url: https://my.sepay.vn/user/my_profile
+            - text:         
+      - main [ref=e186]:
+        - generic [ref=e189]:
+          - heading "WebHooks Log" [level=3] [ref=e192]
+          - generic [ref=e194]:
+            - generic [ref=e195]:
+              - generic [ref=e196]: Lọc theo ID Webhook
+              - combobox "Lọc theo ID Webhook" [ref=e198]:
+                - option "Lọc tất cả webhook" [selected]
+                - option "ID 25994 TPBank - 04293568001"
+            - generic [ref=e199]:
+              - generic [ref=e200]: Lọc theo loại Webhook
+              - combobox "Lọc theo loại Webhook" [ref=e202]:
+                - option "Lọc tất cả loại webhook" [selected]
+                - option "Webhooks"
+                - option "Sapo"
+                - option "Haravan"
+                - option "Gohighlevel"
+                - option "Shopify"
+            - generic [ref=e203]:
+              - generic [ref=e204]: Lọc theo trạng thái Webhook
+              - combobox "Lọc theo trạng thái Webhook" [ref=e206]:
+                - option "Lọc tất cả trạng thái webhook" [selected]
+                - option "Thành công"
+                - option "Thất bại"
+                - option "Mất kết nối"
+            - generic [ref=e207]:
+              - generic [ref=e208]: Thời gian
+              - generic [ref=e210]:
+                - generic [ref=e212]: 
+                - textbox "Thời gian" [ref=e213]:
+                  - /placeholder: Chọn thời gian
+                - button "" [ref=e214] [cursor=pointer]:
+                  - generic [ref=e215]: 
+            - link " Xuất Excel" [ref=e218] [cursor=pointer]:
+              - /url: javascript:void(0);
+              - generic [ref=e219]: 
+              - text: Xuất Excel
+          - generic [ref=e222]:
+            - generic [ref=e223]:
+              - generic [ref=e226]:
+                - text: Xem
+                - combobox "Xem mục" [ref=e227]:
+                  - option "10" [selected]
+                  - option "25"
+                  - option "50"
+                  - option "100"
+                - text: mục
+              - generic [ref=e230]:
+                - text: "Tìm:"
+                - searchbox "Tìm:" [ref=e231]
+            - table [ref=e234]:
+              - rowgroup [ref=e235]:
+                - 'row "ID: activate to sort column ascending Hooks ID: activate to sort column ascending Method: activate to sort column ascending Net Connect: activate to sort column ascending Status Code: activate to sort column ascending Request Response" [ref=e278]':
+                  - 'columnheader "ID: activate to sort column ascending" [ref=e279] [cursor=pointer]': ▲ ID ▼
+                  - 'columnheader "Hooks ID: activate to sort column ascending" [ref=e280] [cursor=pointer]': ▲ Hooks ID ▼
+                  - text: ▲ ▼
+                  - 'columnheader "Method: activate to sort column ascending" [ref=e281] [cursor=pointer]': ▲ Method ▼
+                  - 'columnheader "Net Connect: activate to sort column ascending" [ref=e282] [cursor=pointer]': ▲ Net Connect ▼
+                  - 'columnheader "Status Code: activate to sort column ascending" [ref=e283] [cursor=pointer]': ▲ Status Code ▼
+                  - columnheader "Request" [ref=e242]
+                  - columnheader "Response" [ref=e243]
+                  - text: ▲ ▼ ▲ ▼
+              - rowgroup [ref=e284]:
+                - row "Không tìm thấy dòng nào phù hợp" [ref=e285]:
+                  - cell "Không tìm thấy dòng nào phù hợp" [ref=e286]
+            - generic [ref=e249]:
+              - status [ref=e251]: Đang xem 0 đến 0 trong tổng số 0 mục
+              - list [ref=e288]:
+                - listitem [ref=e289]:
+                  - link "Trước":
+                    - /url: "#"
+                - listitem [ref=e290]:
+                  - link "Tiếp":
+                    - /url: "#"
+      - contentinfo [ref=e253]:
+        - generic [ref=e255]:
+          - list [ref=e257]:
+            - listitem [ref=e258]:
+              - link "Hướng dẫn" [ref=e259] [cursor=pointer]:
+                - /url: https://docs.sepay.vn
+            - listitem [ref=e260]:
+              - link "Tạo QR" [ref=e261] [cursor=pointer]:
+                - /url: https://qr.sepay.vn
+            - listitem [ref=e262]:
+              - link "Changelog" [ref=e263] [cursor=pointer]:
+                - /url: https://my.sepay.vn/home/changelog
+            - listitem [ref=e264]:
+              - link "Hỗ trợ" [ref=e265] [cursor=pointer]:
+                - /url: https://sepay.vn/lien-he.html
+            - listitem [ref=e266]:
+              - link "API status" [ref=e267] [cursor=pointer]:
+                - /url: https://sepay.vn/status
+          - paragraph [ref=e269]:
+            - text: © 2026 -
+            - link "Công Ty CP SePay" [ref=e270] [cursor=pointer]:
+              - /url: https://sepay.vn
+  - generic [ref=e272] [cursor=pointer]:
+    - text: 
+    - img [ref=e275]
+  - text:                                   

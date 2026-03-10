@@ -236,3 +236,164 @@ Emitted 'error' event on Server instance at:
 }
 
 Node.js v24.13.1
+1:06:17 PM [tsx] change in ./src\lib\billing.ts Rerunning...
+cnode:events:486
+      throw er; // Unhandled 'error' event
+      ^
+
+Error: listen EADDRINUSE: address already in use :::3001
+    at Server.setupListenHandle [as _listen2] (node:net:1940:16)
+    at listenInCluster (node:net:1997:12)
+    at Server.listen (node:net:2102:7)
+    at app.listen (D:\discordvip\node_modules\express\lib\application.js:635:24)
+    at bootstrap (D:\discordvip\apps\server\src\index.ts:258:7)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+Emitted 'error' event on Server instance at:
+    at emitErrorNT (node:net:1976:8)
+    at process.processTicksAndRejections (node:internal/process/task_queues:89:21) {
+  code: 'EADDRINUSE',
+  errno: -4091,
+  syscall: 'listen',
+  address: '::',
+  port: 3001
+}
+
+Node.js v24.13.1
+1:09:27 PM [tsx] change in ./src\http\app.ts Rerunning...
+cnode:events:486
+      throw er; // Unhandled 'error' event
+      ^
+
+Error: listen EADDRINUSE: address already in use :::3001
+    at Server.setupListenHandle [as _listen2] (node:net:1940:16)
+    at listenInCluster (node:net:1997:12)
+    at Server.listen (node:net:2102:7)
+    at app.listen (D:\discordvip\node_modules\express\lib\application.js:635:24)
+    at bootstrap (D:\discordvip\apps\server\src\index.ts:258:7)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+Emitted 'error' event on Server instance at:
+    at emitErrorNT (node:net:1976:8)
+    at process.processTicksAndRejections (node:internal/process/task_queues:89:21) {
+  code: 'EADDRINUSE',
+  errno: -4091,
+  syscall: 'listen',
+  address: '::',
+  port: 3001
+}
+
+Node.js v24.13.1
+1:09:36 PM [tsx] change in ./src\http\webhooks.ts Rerunning...
+cnode:events:486
+      throw er; // Unhandled 'error' event
+      ^
+
+Error: listen EADDRINUSE: address already in use :::3001
+    at Server.setupListenHandle [as _listen2] (node:net:1940:16)
+    at listenInCluster (node:net:1997:12)
+    at Server.listen (node:net:2102:7)
+    at app.listen (D:\discordvip\node_modules\express\lib\application.js:635:24)
+    at bootstrap (D:\discordvip\apps\server\src\index.ts:258:7)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+Emitted 'error' event on Server instance at:
+    at emitErrorNT (node:net:1976:8)
+    at process.processTicksAndRejections (node:internal/process/task_queues:89:21) {
+  code: 'EADDRINUSE',
+  errno: -4091,
+  syscall: 'listen',
+  address: '::',
+  port: 3001
+}
+
+Node.js v24.13.1
+1:36:05 PM [tsx] change in ./src\lib\billing.ts Rerunning...
+cnode:events:486
+      throw er; // Unhandled 'error' event
+      ^
+
+Error: listen EADDRINUSE: address already in use :::3001
+    at Server.setupListenHandle [as _listen2] (node:net:1940:16)
+    at listenInCluster (node:net:1997:12)
+    at Server.listen (node:net:2102:7)
+    at app.listen (D:\discordvip\node_modules\express\lib\application.js:635:24)
+    at bootstrap (D:\discordvip\apps\server\src\index.ts:258:7)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+Emitted 'error' event on Server instance at:
+    at emitErrorNT (node:net:1976:8)
+    at process.processTicksAndRejections (node:internal/process/task_queues:89:21) {
+  code: 'EADDRINUSE',
+  errno: -4091,
+  syscall: 'listen',
+  address: '::',
+  port: 3001
+}
+
+Node.js v24.13.1
+1:36:15 PM [tsx] change in ./src\services\order-service.ts Rerunning...
+cnode:events:486
+      throw er; // Unhandled 'error' event
+      ^
+
+Error: listen EADDRINUSE: address already in use :::3001
+    at Server.setupListenHandle [as _listen2] (node:net:1940:16)
+    at listenInCluster (node:net:1997:12)
+    at Server.listen (node:net:2102:7)
+    at app.listen (D:\discordvip\node_modules\express\lib\application.js:635:24)
+    at bootstrap (D:\discordvip\apps\server\src\index.ts:258:7)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+Emitted 'error' event on Server instance at:
+    at emitErrorNT (node:net:1976:8)
+    at process.processTicksAndRejections (node:internal/process/task_queues:89:21) {
+  code: 'EADDRINUSE',
+  errno: -4091,
+  syscall: 'listen',
+  address: '::',
+  port: 3001
+}
+
+Node.js v24.13.1
+1:36:21 PM [tsx] change in ./src\services\payment-service.ts Rerunning...
+cnode:events:486
+      throw er; // Unhandled 'error' event
+      ^
+
+Error: listen EADDRINUSE: address already in use :::3001
+    at Server.setupListenHandle [as _listen2] (node:net:1940:16)
+    at listenInCluster (node:net:1997:12)
+    at Server.listen (node:net:2102:7)
+    at app.listen (D:\discordvip\node_modules\express\lib\application.js:635:24)
+    at bootstrap (D:\discordvip\apps\server\src\index.ts:258:7)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+Emitted 'error' event on Server instance at:
+    at emitErrorNT (node:net:1976:8)
+    at process.processTicksAndRejections (node:internal/process/task_queues:89:21) {
+  code: 'EADDRINUSE',
+  errno: -4091,
+  syscall: 'listen',
+  address: '::',
+  port: 3001
+}
+
+Node.js v24.13.1
+1:45:38 PM [tsx] change in ./src\services\order-service.ts Rerunning...
+cnode:events:486
+      throw er; // Unhandled 'error' event
+      ^
+
+Error: listen EADDRINUSE: address already in use :::3001
+    at Server.setupListenHandle [as _listen2] (node:net:1940:16)
+    at listenInCluster (node:net:1997:12)
+    at Server.listen (node:net:2102:7)
+    at app.listen (D:\discordvip\node_modules\express\lib\application.js:635:24)
+    at bootstrap (D:\discordvip\apps\server\src\index.ts:258:7)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+Emitted 'error' event on Server instance at:
+    at emitErrorNT (node:net:1976:8)
+    at process.processTicksAndRejections (node:internal/process/task_queues:89:21) {
+  code: 'EADDRINUSE',
+  errno: -4091,
+  syscall: 'listen',
+  address: '::',
+  port: 3001
+}
+
+Node.js v24.13.1

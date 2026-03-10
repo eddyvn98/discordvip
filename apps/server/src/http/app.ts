@@ -60,6 +60,16 @@ export function createApp({
   );
 
   app.use(
+    "/api/webhooks/sepay",
+    express.text({
+      type: "*/*",
+      verify: (req, _res, buffer) => {
+        (req as express.Request & { rawBody?: string }).rawBody = buffer.toString();
+      },
+    }),
+  );
+
+  app.use(
     express.json({
       verify: (req, _res, buffer) => {
         (req as express.Request & { rawBody?: string }).rawBody = buffer.toString();

@@ -1,0 +1,1126 @@
+- generic [active] [ref=e1]:
+  - banner [ref=e2]:
+    - navigation [ref=e4]:
+      - link "SePay" [ref=e5] [cursor=pointer]:
+        - /url: https://sepay.vn/
+        - img "Logo SePay" [ref=e6]
+      - text:  
+      - list [ref=e9]:
+        - listitem [ref=e10]:
+          - button "Sản phẩm" [ref=e11] [cursor=pointer]
+        - listitem [ref=e12]:
+          - button "Giải pháp" [ref=e13] [cursor=pointer]
+        - listitem [ref=e14]:
+          - button "Tin tức" [ref=e15] [cursor=pointer]
+        - listitem [ref=e16]:
+          - link "Khuyến mại" [ref=e17] [cursor=pointer]:
+            - /url: https://sepay.vn/khuyen-mai
+        - listitem [ref=e18]:
+          - button "Tài nguyên" [ref=e19] [cursor=pointer]
+          - text:          
+        - listitem [ref=e20]:
+          - button "Công ty" [ref=e21] [cursor=pointer]
+        - listitem [ref=e22]:
+          - link "Bảng giá" [ref=e23] [cursor=pointer]:
+            - /url: https://sepay.vn/bang-gia.html
+        - listitem [ref=e24]:
+          - link "Đăng nhập" [ref=e25] [cursor=pointer]:
+            - /url: https://my.sepay.vn/login
+  - main [ref=e26]:
+    - generic [ref=e27]:
+      - generic [ref=e30]:
+        - generic [ref=e31]:
+          - heading "Giúp bạn Chia sẻ biến độ" [level=1] [ref=e1077]:
+            - text: Giúp bạn
+            - generic [ref=e33]: Chia sẻ biến độ|
+          - paragraph [ref=e34]: SePay là công ty fintech dẫn đầu về giải pháp thanh toán qua Open Banking. SePay hợp tác trực tiếp ngân hàng, không yêu cầu đăng nhập, không lưu mật khẩu internet banking!
+        - generic [ref=e35]:
+          - link "Bắt đầu miễn phí" [ref=e36] [cursor=pointer]:
+            - /url: https://my.sepay.vn/register
+          - button "Liên hệ tư vấn " [ref=e37] [cursor=pointer]:
+            - text: Liên hệ tư vấn
+            - generic [ref=e38]: 
+        - generic [ref=e39]: "Hợp tác chiến lược:"
+        - generic [ref=e40]:
+          - link "NAPAS" [ref=e42] [cursor=pointer]:
+            - /url: https://sepay.vn/cong-thanh-toan-napas.html
+            - img "NAPAS" [ref=e43]
+          - link "Sacombank" [ref=e45] [cursor=pointer]:
+            - /url: https://sepay.vn/sacombank.html
+            - img "Sacombank" [ref=e46]
+          - link "ABBANK" [ref=e48] [cursor=pointer]:
+            - /url: https://sepay.vn/abbank.html
+            - img "ABBANK" [ref=e49]
+          - link "VPBank" [ref=e51] [cursor=pointer]:
+            - /url: https://sepay.vn/vpbank.html
+            - img "VPBank" [ref=e52]
+          - link "TPBank" [ref=e54] [cursor=pointer]:
+            - /url: https://sepay.vn/tpbank.html
+            - img "TPBank" [ref=e55]
+          - link "MBBank" [ref=e57] [cursor=pointer]:
+            - /url: https://sepay.vn/mb.html
+            - img "MBBank" [ref=e58]
+          - link "VietinBank" [ref=e60] [cursor=pointer]:
+            - /url: https://sepay.vn/vietinbank.html
+            - img "VietinBank" [ref=e61]
+          - link "BIDV" [ref=e63] [cursor=pointer]:
+            - /url: https://sepay.vn/bidv.html
+            - img "BIDV" [ref=e64]
+          - link "ACB" [ref=e66] [cursor=pointer]:
+            - /url: acb.html
+            - img "ACB" [ref=e67]
+          - link "OCB" [ref=e69] [cursor=pointer]:
+            - /url: https://sepay.vn/ocb.html
+            - img "OCB" [ref=e70]
+          - link "KienlongBank" [ref=e72] [cursor=pointer]:
+            - /url: https://sepay.vn/kien-long-bank.html
+            - img "KienlongBank" [ref=e73]
+          - link "MSB" [ref=e75] [cursor=pointer]:
+            - /url: https://sepay.vn/msb.html
+            - img "MSB" [ref=e76]
+      - generic [ref=e78]:
+        - generic [ref=e80]:
+          - img "SePay QR Code Checkout" [ref=e82]
+          - img "SePay gateway select" [ref=e84]
+        - generic [ref=e86]:
+          - img "Telegram noti" [ref=e88]
+          - img "Phone noti" [ref=e90]
+        - generic [ref=e92]:
+          - img "SePay payment in mobile app" [ref=e94]
+          - img "Telegram banner" [ref=e96]
+    - generic [ref=e98]:
+      - generic [ref=e99]:
+        - button "Previous" [ref=e100] [cursor=pointer]
+        - generic [ref=e102]:
+          - link [ref=e105] [cursor=pointer]:
+            - /url: https://sepay.vn/blog/sepay-la-doi-tac-chinh-cung-cap-loa-loc-vang-cho-ngan-hang-abbank/
+            - img [ref=e106]
+          - tabpanel [ref=e107]:
+            - link [ref=e1078] [cursor=pointer]:
+              - /url: https://sepay.vn/blog/ra-mat-va-tinh-cho-ca-nhan-ho-kinh-doanh-vpbank/
+              - img [ref=e1079]
+          - tabpanel [ref=e111]:
+            - link [ref=e113] [cursor=pointer]:
+              - /url: https://sepay.vn/blog/sepay-chinh-thuc-hop-tac-voi-ngan-hang-sacombank
+              - img [ref=e114]
+          - tabpanel [ref=e115]:
+            - link "SePay Bank Hub nâng cấp kết nối đa dạng ngân hàng và nhanh chóng hơn" [ref=e1080] [cursor=pointer]:
+              - /url: https://sepay.vn/blog/sepay-bank-hub-nang-cap-ket-noi-da-dang-ngan-hang-va-nhanh-chong-hon/
+              - img "SePay Bank Hub nâng cấp kết nối đa dạng ngân hàng và nhanh chóng hơn" [ref=e1081]
+          - tabpanel [ref=e119]:
+            - link [ref=e121] [cursor=pointer]:
+              - /url: https://sepay.vn/blog/ra-mat-sepay-eshop-va-sepay-einvoice-phan-mem-ban-hang-xuat-hoa-don-dien-tu/
+              - img [ref=e122]
+          - tabpanel [ref=e123]:
+            - link [ref=e125] [cursor=pointer]:
+              - /url: https://sepay.vn/blog/sepay-chinh-thuc-ho-tro-vpbank-doanh-nghiep/
+              - img [ref=e126]
+          - tabpanel [ref=e127]:
+            - link [ref=e129] [cursor=pointer]:
+              - /url: https://sepay.vn/blog/sepay-mo-dich-vu-vietqrpay-chuan-hoa-thanh-toan-qr-cho-moi-mo-hinh-kinh-doanh/
+              - img [ref=e130]
+          - tabpanel [ref=e131]:
+            - link [ref=e133] [cursor=pointer]:
+              - /url: https://sepay.vn/blog/tung-deal-sieu-hoi-mien-phi-2-400-giao-dich-nam/
+              - img [ref=e134]
+          - tabpanel [ref=e135]:
+            - link [ref=e137] [cursor=pointer]:
+              - /url: https://sepay.vn/blog/tang-hon-2000-giao-dich-suot-nam-danh-cho-khach-hang-bidv/
+              - img [ref=e138]
+          - tabpanel [ref=e139]:
+            - link [ref=e141] [cursor=pointer]:
+              - /url: https://sepay.vn/blog/sepay-hop-tac-cung-vpbank-tich-hop-cong-thanh-toan-ecompay/
+              - img [ref=e142]
+          - tabpanel [ref=e143]:
+            - link [ref=e145] [cursor=pointer]:
+              - /url: https://sepay.vn/blog/sepay-hop-tac-cung-napas-tich-hop-giai-phap-thanh-toan-vietqr-pay/
+              - img [ref=e146]
+          - tabpanel [ref=e147]:
+            - link [ref=e149] [cursor=pointer]:
+              - /url: https://sepay.vn/blog/sepay-ra-mat-cong-thanh-toan-voi-tinh-nang-uu-viet/
+              - img [ref=e150]
+          - tabpanel [ref=e151]:
+            - link [ref=e153] [cursor=pointer]:
+              - /url: https://sepay.vn/blog/sepay-hop-tac-cung-vietinbank-trien-khai-loa-thong-bao-nhan-tien/
+              - img [ref=e154]
+          - tabpanel [ref=e155]:
+            - link [ref=e157] [cursor=pointer]:
+              - /url: https://sepay.vn/blog/mo-tk-bidv-doanh-nghiep-nhan-goi-sepay-len-den-5-trieu-dong/
+              - img [ref=e158]
+          - tabpanel [ref=e159]:
+            - link [ref=e161] [cursor=pointer]:
+              - /url: https://sepay.vn/blog/sepay-thong-bao-khai-truong-van-phong-moi/
+              - img [ref=e162]
+          - tabpanel [ref=e163]:
+            - link [ref=e165] [cursor=pointer]:
+              - /url: https://sepay.vn/blog/sepay-la-doi-tac-chinh-cung-cap-loa-loc-vang-cho-ngan-hang-abbank/
+              - img [ref=e166]
+          - link [ref=e169] [cursor=pointer]:
+            - /url: https://sepay.vn/blog/ra-mat-va-tinh-cho-ca-nhan-ho-kinh-doanh-vpbank/
+            - img [ref=e170]
+          - link [ref=e173] [cursor=pointer]:
+            - /url: https://sepay.vn/blog/sepay-chinh-thuc-hop-tac-voi-ngan-hang-sacombank
+            - img [ref=e174]
+          - link [ref=e177] [cursor=pointer]:
+            - /url: https://sepay.vn/blog/sepay-bank-hub-nang-cap-ket-noi-da-dang-ngan-hang-va-nhanh-chong-hon/
+            - img [ref=e178]
+          - link [ref=e181] [cursor=pointer]:
+            - /url: https://sepay.vn/blog/ra-mat-sepay-eshop-va-sepay-einvoice-phan-mem-ban-hang-xuat-hoa-don-dien-tu/
+            - img [ref=e182]
+          - link [ref=e185] [cursor=pointer]:
+            - /url: https://sepay.vn/blog/sepay-chinh-thuc-ho-tro-vpbank-doanh-nghiep/
+            - img [ref=e186]
+          - link [ref=e189] [cursor=pointer]:
+            - /url: https://sepay.vn/blog/sepay-mo-dich-vu-vietqrpay-chuan-hoa-thanh-toan-qr-cho-moi-mo-hinh-kinh-doanh/
+            - img [ref=e190]
+          - link [ref=e193] [cursor=pointer]:
+            - /url: https://sepay.vn/blog/tung-deal-sieu-hoi-mien-phi-2-400-giao-dich-nam/
+            - img [ref=e194]
+          - link [ref=e197] [cursor=pointer]:
+            - /url: https://sepay.vn/blog/tang-hon-2000-giao-dich-suot-nam-danh-cho-khach-hang-bidv/
+            - img [ref=e198]
+          - link [ref=e201] [cursor=pointer]:
+            - /url: https://sepay.vn/blog/sepay-hop-tac-cung-vpbank-tich-hop-cong-thanh-toan-ecompay/
+            - img [ref=e202]
+          - link [ref=e205] [cursor=pointer]:
+            - /url: https://sepay.vn/blog/sepay-hop-tac-cung-napas-tich-hop-giai-phap-thanh-toan-vietqr-pay/
+            - img [ref=e206]
+          - link [ref=e209] [cursor=pointer]:
+            - /url: https://sepay.vn/blog/sepay-ra-mat-cong-thanh-toan-voi-tinh-nang-uu-viet/
+            - img [ref=e210]
+          - link [ref=e213] [cursor=pointer]:
+            - /url: https://sepay.vn/blog/sepay-hop-tac-cung-vietinbank-trien-khai-loa-thong-bao-nhan-tien/
+            - img [ref=e214]
+          - link [ref=e217] [cursor=pointer]:
+            - /url: https://sepay.vn/blog/mo-tk-bidv-doanh-nghiep-nhan-goi-sepay-len-den-5-trieu-dong/
+            - img [ref=e218]
+          - link [ref=e221] [cursor=pointer]:
+            - /url: https://sepay.vn/blog/sepay-thong-bao-khai-truong-van-phong-moi/
+            - img [ref=e222]
+          - link [ref=e225] [cursor=pointer]:
+            - /url: https://sepay.vn/blog/sepay-la-doi-tac-chinh-cung-cap-loa-loc-vang-cho-ngan-hang-abbank/
+            - img [ref=e226]
+        - button "Next" [ref=e227] [cursor=pointer]
+        - tablist [ref=e228]
+      - link "Ngân hàng hợp tác" [ref=e230] [cursor=pointer]:
+        - /url: https://sepay.vn/ngan-hang-hop-tac.html
+        - img "Ngân hàng hợp tác" [ref=e231]
+    - generic [ref=e234]:
+      - generic [ref=e236]:
+        - heading "Cổng thanh toán" [level=2] [ref=e237]
+        - paragraph [ref=e238]: Khách hàng quét QR Code và chuyển khoản thanh toán. SePay phát hiện biến động số dư và bắn webhooks đến POS/Website. Đơn hàng được ghi nhận đã thanh toán. Mọi thứ diễn ra trong 10 giây.
+        - link "Tìm hiểu thêm" [ref=e240] [cursor=pointer]:
+          - /url: https://sepay.vn/cong-thanh-toan-truc-tuyen.html
+      - generic [ref=e242]:
+        - figure [ref=e243]:
+          - img "SePay in mobile app" [ref=e245]
+        - img "SVG" [ref=e247]
+    - generic [ref=e250]:
+      - generic [ref=e252]:
+        - heading "Báo biến động số dư tức thì." [level=2] [ref=e253]
+        - paragraph [ref=e254]: Nhân viên bán hàng dễ dàng nhận biết khách đã chuyển tiền hay chưa qua mobile app hoặc group chat. Hỗ trợ báo chính xác group của từng cửa hàng..
+        - link "Tìm hiểu thêm" [ref=e256] [cursor=pointer]:
+          - /url: https://sepay.vn/chia-se-bien-dong-so-du.html
+      - generic [ref=e258]:
+        - figure [ref=e259]:
+          - img "SePay bot in Telegram" [ref=e261]
+        - img "shape" [ref=e263]
+    - generic [ref=e266]:
+      - generic [ref=e267]:
+        - heading "Tiết kiệm chi phí và nhân lực" [level=2] [ref=e269]
+        - list [ref=e270]:
+          - listitem [ref=e271]: Kế toán của bạn không cần phải làm việc ngày đêm để kiểm tra giao dịch. Nhân viên bán hàng hoàn toàn có thể biết được khách đã thanh toán thành công hay chưa.
+          - listitem [ref=e272]: Giảm chi phí cho cổng thanh toán nhờ chuyển khoản ngân hàng qua QR Code.
+          - listitem [ref=e273]: Trải nghiệm khách hàng tốt hơn bởi không phải chờ lâu.
+      - img "Image Description" [ref=e276]
+    - generic [ref=e279]:
+      - generic [ref=e281]:
+        - paragraph [ref=e282]: Giảm bớt
+        - heading " 80%" [level=2] [ref=e283]:
+          - generic [ref=e284]: 
+          - text: 80%
+        - paragraph [ref=e285]: Thời gian kiểm tra giao dịch của kế toán
+      - generic [ref=e287]:
+        - paragraph [ref=e288]: Giảm bớt
+        - heading " 50%" [level=2] [ref=e289]:
+          - generic [ref=e290]: 
+          - text: 50%
+        - paragraph [ref=e291]: Chi phí cho cổng thanh toán
+      - generic [ref=e293]:
+        - paragraph [ref=e294]: Tăng thêm
+        - heading " 90%" [level=2] [ref=e295]:
+          - generic [ref=e296]: 
+          - text: 90%
+        - paragraph [ref=e297]: Sự hài lòng của khách hàng khi thanh toán
+    - generic [ref=e298]:
+      - generic [ref=e299]:
+        - heading "Triển khai dễ dàng" [level=2] [ref=e300]
+        - generic [ref=e301]: Chỉ với 3 bước
+      - list [ref=e302]:
+        - listitem [ref=e303]:
+          - generic [ref=e304]:
+            - generic [ref=e305]: "1"
+            - generic [ref=e306]:
+              - heading "Đăng ký tài khoản" [level=3] [ref=e307]
+              - paragraph [ref=e308]: Chọn gói phù hợp, đăng ký và thanh toán. Khi hoàn tất hệ thống sẽ khởi tạo tài khoản SePay cho bạn.
+        - listitem [ref=e309]:
+          - generic [ref=e310]:
+            - generic [ref=e311]: "2"
+            - generic [ref=e312]:
+              - heading "Liên kết tài khoản ngân hàng" [level=3] [ref=e313]
+              - paragraph [ref=e314]: Thêm tài khoản ngân hàng, xác nhận qua OTP để liên kết tài khoản với SePay..
+        - listitem [ref=e315]:
+          - generic [ref=e316]:
+            - generic [ref=e317]: "3"
+            - generic [ref=e318]:
+              - heading "Kết nối & tự động hóa" [level=3] [ref=e319]
+              - paragraph [ref=e320]: Sử dụng các tính năng của SePay như Chia sẻ biến động số dư, cổng thanh toán, API Ngân hàng.
+      - link "Đăng ký ngay" [ref=e322] [cursor=pointer]:
+        - /url: https://my.sepay.vn/register
+    - generic [ref=e324]:
+      - heading "Được yêu thích bởi nhiều doanh nghiệp Việt" [level=2] [ref=e326]
+      - generic [ref=e327]:
+        - generic [ref=e329]:
+          - generic [ref=e330]:
+            - generic [ref=e331]:
+              - img "Review rating" [ref=e332]
+              - img "Review rating" [ref=e333]
+              - img "Review rating" [ref=e334]
+              - img "Review rating" [ref=e335]
+              - img "Review rating" [ref=e336]
+            - paragraph [ref=e338]: Với SePay và QR Code, nhận thanh toán chuyển khoản bây giờ còn nhanh và tiện lợi hơn qua trung gian thanh toán.
+          - generic [ref=e340]:
+            - img "Mr Nicky" [ref=e342]
+            - generic [ref=e343]:
+              - heading "Mr. Nicky" [level=5] [ref=e344]
+              - paragraph [ref=e345]: Ashtray Cocktail Factory
+        - generic [ref=e347]:
+          - generic [ref=e348]:
+            - generic [ref=e349]:
+              - img "Review rating" [ref=e350]
+              - img "Review rating" [ref=e351]
+              - img "Review rating" [ref=e352]
+              - img "Review rating" [ref=e353]
+              - img "Review rating" [ref=e354]
+            - paragraph [ref=e356]: SePay helps us save tens of thousands of dollars in payment gateway fees each month.
+          - generic [ref=e358]:
+            - img "Mr Đạt Nguyễn" [ref=e360]
+            - generic [ref=e361]:
+              - heading "Mr. Dat Nguyen" [level=5] [ref=e362]
+              - paragraph [ref=e363]: CEO Di Động Việt
+        - generic [ref=e365]:
+          - generic [ref=e366]:
+            - generic [ref=e367]:
+              - img "Review rating" [ref=e368]
+              - img "Review rating" [ref=e369]
+              - img "Review rating" [ref=e370]
+              - img "Review rating" [ref=e371]
+              - img "Review rating" [ref=e372]
+            - paragraph [ref=e374]: Kế toán của tôi không còn phải trực để kiểm tra giao dịch nữa. Các bạn nhân viên bán hàng đã chủ động xem được biến động số dư qua Telegram.
+          - generic [ref=e376]:
+            - img "Bùi Tấn Việt" [ref=e378]
+            - generic [ref=e379]:
+              - heading "Mr. Hien Phan" [level=5] [ref=e380]
+              - paragraph [ref=e381]: CTO 123HOST
+    - generic [ref=e382]:
+      - heading "30 ngân hàng đã kết nối" [level=2] [ref=e384]
+      - generic [ref=e385]:
+        - img [ref=e388]
+        - img [ref=e391]
+        - img [ref=e394]
+        - img [ref=e397]
+        - img [ref=e400]
+        - img [ref=e403]
+        - img [ref=e406]
+        - img [ref=e409]
+        - img [ref=e412]
+        - img [ref=e415]
+        - img [ref=e418]
+        - img [ref=e421]
+        - link "Xem tất cả ngân hàng " [ref=e425] [cursor=pointer]:
+          - /url: ngan-hang.html
+          - text: Xem tất cả ngân hàng
+          - generic [ref=e426]: 
+    - generic [ref=e428]:
+      - generic [ref=e429]:
+        - heading "Khách hàng tiêu biểu" [level=2] [ref=e430]
+        - paragraph [ref=e431]: Từ startup đến tập đoàn lớn, các khách hàng tiêu biểu đều tin dùng SePay
+      - generic [ref=e432]:
+        - generic [ref=e433]:
+          - link "Di Động Việt" [ref=e435] [cursor=pointer]:
+            - /url: https://didongviet.vn
+            - img "Di Động Việt" [ref=e436]
+          - link "123HOST" [ref=e438] [cursor=pointer]:
+            - /url: https://123host.vn
+            - img "123HOST" [ref=e439]
+          - link "Ladipage" [ref=e441] [cursor=pointer]:
+            - /url: https://ladipage.vn
+            - img "Ladipage" [ref=e442]
+          - link "Levents" [ref=e444] [cursor=pointer]:
+            - /url: https://levents.vn
+            - img "Levents" [ref=e445]
+          - link "WiGroup" [ref=e447] [cursor=pointer]:
+            - /url: https://wigroup.vn
+            - img "WiGroup" [ref=e448]
+          - link "CNV Loyalty" [ref=e450] [cursor=pointer]:
+            - /url: https://cnvloyalty.com
+            - img "CNV Loyalty" [ref=e451]
+          - link "BYD - NEG" [ref=e453] [cursor=pointer]:
+            - /url: https://bydneg.vn
+            - img "BYD - NEG" [ref=e454]
+          - link "FM Style" [ref=e456] [cursor=pointer]:
+            - /url: https://fm.com.vn
+            - img "FM Style" [ref=e457]
+          - link "Famtech" [ref=e459] [cursor=pointer]:
+            - /url: https://famtech.vn
+            - img "Famtech" [ref=e460]
+          - link "ClickBuy" [ref=e462] [cursor=pointer]:
+            - /url: https://clickbuy.vn
+            - img "ClickBuy" [ref=e463]
+          - link "Seoul Center" [ref=e465] [cursor=pointer]:
+            - /url: https://seoulcenter.vn
+            - img "Seoul Center" [ref=e466]
+          - link "New Sun Babies" [ref=e468] [cursor=pointer]:
+            - /url: https://nsbb.vn
+            - img "New Sun Babies" [ref=e469]
+          - link "GEM FINANCE INVESTMENT JOINT STOCK COMPANY" [ref=e471] [cursor=pointer]:
+            - /url: https://gemstock.vn
+            - img "GEM FINANCE INVESTMENT JOINT STOCK COMPANY" [ref=e472]
+          - link "Tapmed" [ref=e474] [cursor=pointer]:
+            - /url: https://tapmed.vn
+            - img "Tapmed" [ref=e475]
+          - link "Di Động Việt" [ref=e477] [cursor=pointer]:
+            - /url: https://didongviet.vn
+            - img "Di Động Việt" [ref=e478]
+          - link "123HOST" [ref=e480] [cursor=pointer]:
+            - /url: https://123host.vn
+            - img "123HOST" [ref=e481]
+          - link "Ladipage" [ref=e483] [cursor=pointer]:
+            - /url: https://ladipage.vn
+            - img "Ladipage" [ref=e484]
+          - link "Levents" [ref=e486] [cursor=pointer]:
+            - /url: https://levents.vn
+            - img "Levents" [ref=e487]
+          - link "WiGroup" [ref=e489] [cursor=pointer]:
+            - /url: https://wigroup.vn
+            - img "WiGroup" [ref=e490]
+          - link "CNV Loyalty" [ref=e492] [cursor=pointer]:
+            - /url: https://cnvloyalty.com
+            - img "CNV Loyalty" [ref=e493]
+          - link "BYD - NEG" [ref=e495] [cursor=pointer]:
+            - /url: https://bydneg.vn
+            - img "BYD - NEG" [ref=e496]
+          - link "FM Style" [ref=e498] [cursor=pointer]:
+            - /url: https://fm.com.vn
+            - img "FM Style" [ref=e499]
+          - link "Famtech" [ref=e501] [cursor=pointer]:
+            - /url: https://famtech.vn
+            - img "Famtech" [ref=e502]
+          - link "ClickBuy" [ref=e504] [cursor=pointer]:
+            - /url: https://clickbuy.vn
+            - img "ClickBuy" [ref=e505]
+          - link "Seoul Center" [ref=e507] [cursor=pointer]:
+            - /url: https://seoulcenter.vn
+            - img "Seoul Center" [ref=e508]
+          - link "New Sun Babies" [ref=e510] [cursor=pointer]:
+            - /url: https://nsbb.vn
+            - img "New Sun Babies" [ref=e511]
+          - link "GEM FINANCE INVESTMENT JOINT STOCK COMPANY" [ref=e513] [cursor=pointer]:
+            - /url: https://gemstock.vn
+            - img "GEM FINANCE INVESTMENT JOINT STOCK COMPANY" [ref=e514]
+          - link "Tapmed" [ref=e516] [cursor=pointer]:
+            - /url: https://tapmed.vn
+            - img "Tapmed" [ref=e517]
+        - generic [ref=e518]:
+          - link "Divine Shop" [ref=e520] [cursor=pointer]:
+            - /url: https://divineshop.vn
+            - img "Divine Shop" [ref=e521]
+          - link "Viện Di Động" [ref=e523] [cursor=pointer]:
+            - /url: https://viendidong.com
+            - img "Viện Di Động" [ref=e524]
+          - link "NORI Food" [ref=e526] [cursor=pointer]:
+            - /url: https://norifood.vn
+            - img "NORI Food" [ref=e527]
+          - link "Edulife" [ref=e529] [cursor=pointer]:
+            - /url: https://edulife.com.vn
+            - img "Edulife" [ref=e530]
+          - link "Nhà thuốc PharCeco" [ref=e532] [cursor=pointer]:
+            - /url: https://nhathuocpharceco.com.vn
+            - img "Nhà thuốc PharCeco" [ref=e533]
+          - link "Asia Booking" [ref=e535] [cursor=pointer]:
+            - /url: https://asiabooking.vn
+            - img "Asia Booking" [ref=e536]
+          - link "The Ciu" [ref=e538] [cursor=pointer]:
+            - /url: https://theciu.vn
+            - img "The Ciu" [ref=e539]
+          - link "Smax AI" [ref=e541] [cursor=pointer]:
+            - /url: https://smax.ai
+            - img "Smax AI" [ref=e542]
+          - link "TicketX" [ref=e544] [cursor=pointer]:
+            - /url: https://ticketx.vn
+            - img "TicketX" [ref=e545]
+          - link "ViHAT Group" [ref=e547] [cursor=pointer]:
+            - /url: https://vihatgroup.com
+            - img "ViHAT Group" [ref=e548]
+          - link "Divine Shop" [ref=e550] [cursor=pointer]:
+            - /url: https://divineshop.vn
+            - img "Divine Shop" [ref=e551]
+          - link "Viện Di Động" [ref=e553] [cursor=pointer]:
+            - /url: https://viendidong.com
+            - img "Viện Di Động" [ref=e554]
+          - link "NORI Food" [ref=e556] [cursor=pointer]:
+            - /url: https://norifood.vn
+            - img "NORI Food" [ref=e557]
+          - link "Edulife" [ref=e559] [cursor=pointer]:
+            - /url: https://edulife.com.vn
+            - img "Edulife" [ref=e560]
+          - link "Nhà thuốc PharCeco" [ref=e562] [cursor=pointer]:
+            - /url: https://nhathuocpharceco.com.vn
+            - img "Nhà thuốc PharCeco" [ref=e563]
+          - link "Asia Booking" [ref=e565] [cursor=pointer]:
+            - /url: https://asiabooking.vn
+            - img "Asia Booking" [ref=e566]
+          - link "The Ciu" [ref=e568] [cursor=pointer]:
+            - /url: https://theciu.vn
+            - img "The Ciu" [ref=e569]
+          - link "Smax AI" [ref=e571] [cursor=pointer]:
+            - /url: https://smax.ai
+            - img "Smax AI" [ref=e572]
+          - link "TicketX" [ref=e574] [cursor=pointer]:
+            - /url: https://ticketx.vn
+            - img "TicketX" [ref=e575]
+          - link "ViHAT Group" [ref=e577] [cursor=pointer]:
+            - /url: https://vihatgroup.com
+            - img "ViHAT Group" [ref=e578]
+        - generic [ref=e579]:
+          - link "F8" [ref=e581] [cursor=pointer]:
+            - /url: https://fullstack.edu.vn
+            - img "F8" [ref=e582]
+          - link "Giày Đông Hải" [ref=e584] [cursor=pointer]:
+            - /url: https://shopdonghai.com
+            - img "Giày Đông Hải" [ref=e585]
+          - link "Tino" [ref=e587] [cursor=pointer]:
+            - /url: https://tino.vn
+            - img "Tino" [ref=e588]
+          - link "GNHÀ" [ref=e590] [cursor=pointer]:
+            - /url: https://gnha.vn
+            - img "GNHÀ" [ref=e591]
+          - link "Chè Liên" [ref=e593] [cursor=pointer]:
+            - /url: https://chelien.com.vn/
+            - img "Chè Liên" [ref=e594]
+          - link "Abaha" [ref=e596] [cursor=pointer]:
+            - /url: https://abaha.vn
+            - img "Abaha" [ref=e597]
+          - link "EContent Hub" [ref=e599] [cursor=pointer]:
+            - /url: https://econtenthub.vn
+            - img "EContent Hub" [ref=e600]
+          - link "Tourkit" [ref=e602] [cursor=pointer]:
+            - /url: https://tourkit.vn
+            - img "Tourkit" [ref=e603]
+          - link "F8" [ref=e605] [cursor=pointer]:
+            - /url: https://fullstack.edu.vn
+            - img "F8" [ref=e606]
+          - link "Giày Đông Hải" [ref=e608] [cursor=pointer]:
+            - /url: https://shopdonghai.com
+            - img "Giày Đông Hải" [ref=e609]
+          - link "Tino" [ref=e611] [cursor=pointer]:
+            - /url: https://tino.vn
+            - img "Tino" [ref=e612]
+          - link "GNHÀ" [ref=e614] [cursor=pointer]:
+            - /url: https://gnha.vn
+            - img "GNHÀ" [ref=e615]
+          - link "Chè Liên" [ref=e617] [cursor=pointer]:
+            - /url: https://chelien.com.vn/
+            - img "Chè Liên" [ref=e618]
+          - link "Abaha" [ref=e620] [cursor=pointer]:
+            - /url: https://abaha.vn
+            - img "Abaha" [ref=e621]
+          - link "EContent Hub" [ref=e623] [cursor=pointer]:
+            - /url: https://econtenthub.vn
+            - img "EContent Hub" [ref=e624]
+          - link "Tourkit" [ref=e626] [cursor=pointer]:
+            - /url: https://tourkit.vn
+            - img "Tourkit" [ref=e627]
+    - generic [ref=e628]:
+      - heading "Báo chí nói về chúng tôi" [level=2] [ref=e630]
+      - generic [ref=e631]:
+        - img [ref=e632]
+        - img [ref=e633]
+        - img [ref=e634]
+        - img [ref=e635]
+        - img [ref=e636]
+        - img [ref=e637]
+        - img [ref=e638]
+        - img [ref=e639]
+        - img [ref=e640]
+        - img [ref=e641]
+        - img [ref=e642]
+        - img [ref=e643]
+      - generic [ref=e645]:
+        - 'link "SePay ra mắt eShop và eInvoice: Phần mềm bán hàng và xuất hóa đơn điện tử số SePay ra mắt eShop và eInvoice: Phần mềm bán hàng và xuất hóa đơn điện tử số CAFEF" [ref=e647] [cursor=pointer]':
+          - /url: https://cafef.vn/sepay-ra-mat-eshop-va-einvoice-phan-mem-ban-hang-va-xuat-hoa-don-dien-tu-188251218152147672.chn
+          - generic [ref=e649]:
+            - 'img "SePay ra mắt eShop và eInvoice: Phần mềm bán hàng và xuất hóa đơn điện tử số" [ref=e651]'
+            - generic [ref=e653]:
+              - paragraph [ref=e654]: "SePay ra mắt eShop và eInvoice: Phần mềm bán hàng và xuất hóa đơn điện tử số"
+              - heading "CAFEF" [level=5] [ref=e655]
+        - link "SePay tiên phong triển khai VietQRPay, chuẩn hóa thanh toán không tiền mặt SePay tiên phong triển khai VietQRPay, chuẩn hóa thanh toán không tiền mặt VTC NEWS" [ref=e657] [cursor=pointer]:
+          - /url: https://vtcnews.vn/sepay-tien-phong-trien-khai-vietqrpay-chuan-hoa-thanh-toan-khong-tien-mat-ar992179.html
+          - generic [ref=e659]:
+            - img "SePay tiên phong triển khai VietQRPay, chuẩn hóa thanh toán không tiền mặt" [ref=e661]
+            - generic [ref=e663]:
+              - paragraph [ref=e664]: SePay tiên phong triển khai VietQRPay, chuẩn hóa thanh toán không tiền mặt
+              - heading "VTC NEWS" [level=5] [ref=e665]
+        - link "SePay hợp tác cùng Ngân hàng TMCP Việt Nam Thịnh Vượng (VPBank) triển khai cổng thanh toán thẻ quốc tế EcomPay (Visa, Mastercard, JCB), mở rộng hệ sinh thái thanh toán và mang đến cho khách hàng SePay thêm nhiều lựa chọn giao dịch linh hoạt, tiện lợi. SePay hợp tác VPBank triển khai cổng thanh toán thẻ EcomPay THỜI BÁO NGÂN HÀNG" [ref=e667] [cursor=pointer]:
+          - /url: https://thoibaonganhang.vn/sepay-hop-tac-vpbank-trien-khai-cong-thanh-toan-the-ecompay-173155.html
+          - generic [ref=e669]:
+            - img "SePay hợp tác cùng Ngân hàng TMCP Việt Nam Thịnh Vượng (VPBank) triển khai cổng thanh toán thẻ quốc tế EcomPay (Visa, Mastercard, JCB), mở rộng hệ sinh thái thanh toán và mang đến cho khách hàng SePay thêm nhiều lựa chọn giao dịch linh hoạt, tiện lợi." [ref=e671]
+            - generic [ref=e673]:
+              - paragraph [ref=e674]: SePay hợp tác VPBank triển khai cổng thanh toán thẻ EcomPay
+              - heading "THỜI BÁO NGÂN HÀNG" [level=5] [ref=e675]
+        - link "SePay chính thức hợp tác cùng Công ty Cổ phần Thanh toán Quốc gia Việt Nam (NAPAS) trong việc triển khai và phát triển mạng lưới thanh toán QR, giải pháp thanh toán hiện đại VIETQR Pay và VIETQR Global SePay hợp tác với NAPAS cung cấp giải pháp thanh toán VIETQRPay TIỀN PHONG" [ref=e677] [cursor=pointer]:
+          - /url: https://tienphong.vn/sepay-hop-tac-voi-napas-cung-cap-giai-phap-thanh-toan-vietqrpay-post1791608.tpo
+          - generic [ref=e679]:
+            - img "SePay chính thức hợp tác cùng Công ty Cổ phần Thanh toán Quốc gia Việt Nam (NAPAS) trong việc triển khai và phát triển mạng lưới thanh toán QR, giải pháp thanh toán hiện đại VIETQR Pay và VIETQR Global" [ref=e681]
+            - generic [ref=e683]:
+              - paragraph [ref=e684]: SePay hợp tác với NAPAS cung cấp giải pháp thanh toán VIETQRPay
+              - heading "TIỀN PHONG" [level=5] [ref=e685]
+        - link "Xem tất cả " [ref=e689] [cursor=pointer]:
+          - /url: bao-chi-noi-ve-sepay.html
+          - text: Xem tất cả
+          - generic [ref=e690]: 
+      - generic [ref=e691]:
+        - heading "Tin mới cập nhật" [level=2] [ref=e693]
+        - generic [ref=e695]:
+          - 'link "Ra mắt SePay eShop và SePay eInvoice: Phần mềm bán hàng & xuất hóa đơn điện tử Hoạt động Ra mắt SePay eShop và SePay eInvoice: Phần mềm bán hàng & xuất hóa đơn điện tử" [ref=e697] [cursor=pointer]':
+            - /url: https://sepay.vn/blog/ra-mat-sepay-eshop-va-sepay-einvoice-phan-mem-ban-hang-xuat-hoa-don-dien-tu
+            - 'img "Ra mắt SePay eShop và SePay eInvoice: Phần mềm bán hàng & xuất hóa đơn điện tử" [ref=e698]'
+            - generic [ref=e699]:
+              - generic [ref=e700]: Hoạt động
+              - 'heading "Ra mắt SePay eShop và SePay eInvoice: Phần mềm bán hàng & xuất hóa đơn điện tử" [level=4] [ref=e701]'
+          - link "SePay hợp tác cùng VPBank tích hợp cổng thanh toán Ecompay Hoạt động SePay hợp tác cùng VPBank tích hợp cổng thanh toán Ecompay" [ref=e703] [cursor=pointer]:
+            - /url: https://sepay.vn/blog/sepay-hop-tac-cung-vpbank-tich-hop-cong-thanh-toan-ecompay
+            - img "SePay hợp tác cùng VPBank tích hợp cổng thanh toán Ecompay" [ref=e704]
+            - generic [ref=e705]:
+              - generic [ref=e706]: Hoạt động
+              - heading "SePay hợp tác cùng VPBank tích hợp cổng thanh toán Ecompay" [level=4] [ref=e707]
+          - link "SePay hợp tác cùng NAPAS tích hợp giải pháp thanh toán VIETQRPay Hoạt động SePay hợp tác cùng NAPAS tích hợp giải pháp thanh toán VIETQRPay" [ref=e709] [cursor=pointer]:
+            - /url: https://sepay.vn/blog/sepay-hop-tac-cung-napas-tich-hop-giai-phap-thanh-toan-vietqr-pay
+            - img "SePay hợp tác cùng NAPAS tích hợp giải pháp thanh toán VIETQRPay" [ref=e710]
+            - generic [ref=e711]:
+              - generic [ref=e712]: Hoạt động
+              - heading "SePay hợp tác cùng NAPAS tích hợp giải pháp thanh toán VIETQRPay" [level=4] [ref=e713]
+      - generic [ref=e717]:
+        - generic [ref=e718]:
+          - heading "Chuyển đổi số thanh toán ngay hôm nay!" [level=4] [ref=e720]
+          - link "Bắt đầu miễn phí" [ref=e722] [cursor=pointer]:
+            - /url: https://my.sepay.vn/register
+        - figure [ref=e723]:
+          - img [ref=e724]
+      - text:   
+  - contentinfo [ref=e726]:
+    - generic [ref=e728]:
+      - heading "Mọi người cũng tìm kiếm" [level=5] [ref=e729]
+      - link "API Ngân hàng ," [ref=e730] [cursor=pointer]:
+        - /url: https://sepay.vn/api-ngan-hang.html
+      - link "API Vietcombank ," [ref=e731] [cursor=pointer]:
+        - /url: https://sepay.vn/blog/api-vietcombank-api-ngan-hang-vietcombank-moi-nhat/
+      - link "API VPBank ," [ref=e732] [cursor=pointer]:
+        - /url: https://sepay.vn/blog/api-vpbank-api-ngan-hang-vpbank-moi-nhat/
+      - link "API VIB ," [ref=e733] [cursor=pointer]:
+        - /url: https://sepay.vn/blog/api-vib-api-ngan-hang-vib-moi-nhat/
+      - link "API VietinBank ," [ref=e734] [cursor=pointer]:
+        - /url: https://sepay.vn/blog/api-vietinbank-api-ngan-hang-vietinbank-moi-nhat/
+      - link "API MBBank ," [ref=e735] [cursor=pointer]:
+        - /url: https://sepay.vn/blog/api-mbbank-api-ngan-hang-mbbank-moi-nhat/
+      - link "API ACB ," [ref=e736] [cursor=pointer]:
+        - /url: https://sepay.vn/blog/api-acb-api-ngan-hang-acb-moi-nhat/
+      - link "API Sacombank ," [ref=e737] [cursor=pointer]:
+        - /url: https://sepay.vn/blog/api-sacombank-api-ngan-hang-sacombank-moi-nhat/
+      - link "API TPBank ," [ref=e738] [cursor=pointer]:
+        - /url: https://sepay.vn/blog/api-tpbank-api-ngan-hang-tpbank-moi-nhat/
+      - link "API Eximbank ," [ref=e739] [cursor=pointer]:
+        - /url: https://sepay.vn/blog/api-eximbank-api-ngan-hang-eximbank-moi-nhat/
+      - link "API HDBank ," [ref=e740] [cursor=pointer]:
+        - /url: https://sepay.vn/blog/api-hdbank-api-ngan-hang-hdbank-moi-nhat/
+      - link "API BIDV ," [ref=e741] [cursor=pointer]:
+        - /url: https://sepay.vn/blog/api-bidv-api-ngan-hang-bidv-moi-nhat/
+      - link "API Techcombank ," [ref=e742] [cursor=pointer]:
+        - /url: https://sepay.vn/blog/api-techcombank-api-ngan-hang-techcombank-moi-nhat/
+      - link "API MSB ," [ref=e743] [cursor=pointer]:
+        - /url: https://sepay.vn/blog/api-msb-api-ngan-hang-msb-moi-nhat/
+      - link "API Agribank ," [ref=e744] [cursor=pointer]:
+        - /url: https://sepay.vn/blog/api-agribank-api-ngan-hang-agribank-moi-nhat/
+      - link "API Public Bank Việt Nam ," [ref=e745] [cursor=pointer]:
+        - /url: https://sepay.vn/blog/api-public-bank-viet-nam/
+      - link "API OCB ," [ref=e746] [cursor=pointer]:
+        - /url: https://sepay.vn/blog/api-ocb-api-ngan-hang-ocb-moi-nhat/
+      - link "API KienlongBank ," [ref=e747] [cursor=pointer]:
+        - /url: https://sepay.vn/blog/api-kienlongbank-api-ngan-hang-kienlongbank-moi-nhat/
+      - link "API ABBank ," [ref=e748] [cursor=pointer]:
+        - /url: https://sepay.vn/blog/api-abbank-api-ngan-hang-abbank-moi-nhat/
+      - link "API LPBank ," [ref=e749] [cursor=pointer]:
+        - /url: https://sepay.vn/blog/api-lpbank-api-ngan-hang-lpbank-moi-nhat/
+      - link "API Bac A Bank ," [ref=e750] [cursor=pointer]:
+        - /url: https://sepay.vn/blog/api-bac-a-bank-api-ngan-hang-bac-a-bank-moi-nhat/
+      - link "API SeaBank ," [ref=e751] [cursor=pointer]:
+        - /url: https://sepay.vn/blog/api-seabank-api-ngan-hang-seabank-moi-nhat/
+      - link "API SHB ," [ref=e752] [cursor=pointer]:
+        - /url: https://sepay.vn/blog/api-shb-api-ngan-hang-shb-moi-nhat/
+      - link "API NCB ," [ref=e753] [cursor=pointer]:
+        - /url: https://sepay.vn/blog/api-ncb-api-ngan-hang-ncb-moi-nhat/
+      - link "API Woori Bank ," [ref=e754] [cursor=pointer]:
+        - /url: https://sepay.vn/blog/api-woori-bank-api-ngan-hang-woori-bank-moi-nhat/
+      - link "API VietABank ," [ref=e755] [cursor=pointer]:
+        - /url: https://sepay.vn/blog/api-vietabank-api-ngan-hang-vietabank-moi-nhat/
+      - link "API Vietbank ," [ref=e756] [cursor=pointer]:
+        - /url: https://sepay.vn/blog/api-vietbank-api-ngan-hang-vietbank-moi-nhat/
+      - link "API Nam A Bank ," [ref=e757] [cursor=pointer]:
+        - /url: https://sepay.vn/blog/api-nam-a-bank-api-ngan-hang-nam-a-bank-moi-nhat/
+      - link "API PGBank ," [ref=e758] [cursor=pointer]:
+        - /url: https://sepay.vn/blog/api-pgbank-api-ngan-hang-pgbank-moi-nhat/
+      - link "Tài khoản ngân hàng ảo là gì? ," [ref=e759] [cursor=pointer]:
+        - /url: https://sepay.vn/blog/tai-khoan-ngan-hang-ao-la-gi-phan-loai-va-ung-dung/
+      - link "Lập trình cổng thanh toán ," [ref=e760] [cursor=pointer]:
+        - /url: https://sepay.vn/lap-trinh-cong-thanh-toan.html
+      - link "Loa thanh toán ," [ref=e761] [cursor=pointer]:
+        - /url: https://sepay.vn/loa-thanh-toan.html
+      - link "Loa VPBank ," [ref=e762] [cursor=pointer]:
+        - /url: https://sepay.vn/loa-vpbank.html
+      - link "Loa TPBank ," [ref=e763] [cursor=pointer]:
+        - /url: https://sepay.vn/loa-tpbank.html
+      - link "Loa VietinBank ," [ref=e764] [cursor=pointer]:
+        - /url: https://sepay.vn/loa-vietinbank.html
+      - link "Loa ACB ," [ref=e765] [cursor=pointer]:
+        - /url: https://sepay.vn/loa-acb.html
+      - link "Loa BIDV ," [ref=e766] [cursor=pointer]:
+        - /url: https://sepay.vn/loa-bidv.html
+      - link "Loa MB ," [ref=e767] [cursor=pointer]:
+        - /url: https://sepay.vn/loa-mb.html
+      - link "Loa OCB ," [ref=e768] [cursor=pointer]:
+        - /url: https://sepay.vn/loa-ocb.html
+      - link "Loa KienLongBank ," [ref=e769] [cursor=pointer]:
+        - /url: https://sepay.vn/loa-kienlongbank.html
+      - link "Loa MSB ," [ref=e770] [cursor=pointer]:
+        - /url: https://sepay.vn/loa-msb.html
+      - link "Loa thông báo chuyển khoản ," [ref=e771] [cursor=pointer]:
+        - /url: https://sepay.vn/loa-thong-bao-chuyen-khoan.html
+      - link "Loa Lộc Vang ABBank ," [ref=e772] [cursor=pointer]:
+        - /url: https://sepay.vn/loa-loc-vang-abbank.html
+      - link "VietQR là gì? ," [ref=e773] [cursor=pointer]:
+        - /url: https://sepay.vn/blog/vietqr-la-gi-ung-dung-cua-vietqr-trong-thanh-toan/
+      - link "Cổng thanh toán ," [ref=e774] [cursor=pointer]:
+        - /url: https://sepay.vn/cong-thanh-toan-truc-tuyen.html
+      - link "Cổng thanh toán VietQR ," [ref=e775] [cursor=pointer]:
+        - /url: https://sepay.vn/cong-thanh-toan-vietqr.html
+      - link "Cổng thanh toán NAPAS ," [ref=e776] [cursor=pointer]:
+        - /url: https://sepay.vn/cong-thanh-toan-napas.html
+      - link "Cổng thanh toán thẻ Quốc tế ," [ref=e777] [cursor=pointer]:
+        - /url: https://sepay.vn/cong-thanh-toan-the-quoc-te.html
+      - link "Dịch vụ VietQRPay ," [ref=e778] [cursor=pointer]:
+        - /url: https://sepay.vn/dich-vu-vietqrpay.html
+      - link "Đăng ký VietQRPay ," [ref=e779] [cursor=pointer]:
+        - /url: https://sepay.vn/dich-vu-vietqrpay.html
+      - link "Dịch vụ VietQRGlobal ," [ref=e780] [cursor=pointer]:
+        - /url: https://sepay.vn/dich-vu-vietqrglobal.html
+      - link "Đăng ký VietQRGlobal ," [ref=e781] [cursor=pointer]:
+        - /url: https://sepay.vn/dich-vu-vietqrglobal.html
+      - link "SePay eShop ," [ref=e782] [cursor=pointer]:
+        - /url: https://sepay.vn/sepay-eshop.html
+      - link "SePay eInvoice ," [ref=e783] [cursor=pointer]:
+        - /url: https://sepay.vn/sepay-einvoice.html
+      - link "Ebook & Nghiên cứu" [ref=e784] [cursor=pointer]:
+        - /url: https://sepay.vn/resources/
+    - generic [ref=e786]:
+      - generic [ref=e787]:
+        - generic [ref=e788]:
+          - link "Space" [ref=e790] [cursor=pointer]:
+            - /url: https://sepay.vn/
+            - img "SePay logo" [ref=e791]
+          - list [ref=e792]:
+            - listitem [ref=e793]: Công Ty Cổ Phần SePay
+            - listitem [ref=e794]:
+              - paragraph [ref=e795]: SePay là công ty fintech hỗ trợ thanh toán hàng đầu Việt Nam, dẫn đầu trong xu hướng kết nối Ngân hàng qua Open Banking. SePay đã kết nối trực tiếp với rất nhiều ngân hàng tại Việt Nam như MB Bank, OCB, BIDV, Kienlong.
+              - paragraph [ref=e796]: SePay cung cấp giải pháp thanh toán và xác nhận thanh toán chuyển khoản. Giúp người bán giảm chi phí cổng thanh toán, tự động hoá các tác vụ thanh toán của mình.
+            - listitem [ref=e797]:
+              - link " 13 Đường số 38, Vạn Phúc City, P. Hiệp Bình Phước, Thủ Đức, TP. Hồ Chí Minh, Việt Nam" [ref=e798] [cursor=pointer]:
+                - /url: https://goo.gl/maps/HGZVhsbv3NhR7kan8
+                - generic [ref=e799]: 
+                - text: 13 Đường số 38, Vạn Phúc City, P. Hiệp Bình Phước, Thủ Đức, TP. Hồ Chí Minh, Việt Nam
+            - listitem [ref=e800]:
+              - link " 02873.059.589" [ref=e801] [cursor=pointer]:
+                - /url: tel:+842873059589
+                - generic [ref=e802]: 
+                - text: 02873.059.589
+            - listitem [ref=e803]:
+              - generic [ref=e804]:
+                - generic [ref=e805]: 
+                - text: info@sepay.vn
+            - listitem [ref=e806]: "MST: 0317887567, cấp ngày 19/06/2023 tại Sở Kế hoạch và Đầu tư TP.HCM"
+          - generic [ref=e807]:
+            - link "Bộ Công Thương":
+              - /url: http://online.gov.vn/Home/WebDetails/107586
+              - img "Bộ Công Thương"
+          - generic [ref=e808]: "Tải ứng dụng SePay:"
+          - generic [ref=e809]:
+            - generic [ref=e810]:
+              - link "Tải SePay trên App Store":
+                - /url: https://apps.apple.com/app/sepay/id6523435118
+                - img "Tải SePay trên App Store"
+            - generic [ref=e811]:
+              - link "Tải SePay trên Google Play":
+                - /url: https://play.google.com/store/apps/details?id=com.sepay.trans
+                - img "Tải SePay trên Google Play"
+          - generic [ref=e812]: "Hợp tác chiến lược:"
+          - generic [ref=e813]:
+            - link "NAPAS" [ref=e815] [cursor=pointer]:
+              - /url: https://sepay.vn/cong-thanh-toan-truc-tuyen.html
+              - img "NAPAS" [ref=e816]
+            - link "ABBANK" [ref=e818] [cursor=pointer]:
+              - /url: https://sepay.vn/abbank.html
+              - img "ABBANK" [ref=e819]
+            - link "Sacombank" [ref=e821] [cursor=pointer]:
+              - /url: https://sepay.vn/sacombank.html
+              - img "Sacombank" [ref=e822]
+            - link "VPBank" [ref=e824] [cursor=pointer]:
+              - /url: https://sepay.vn/vpbank.html
+              - img "VPBank" [ref=e825]
+            - link "TPBank" [ref=e827] [cursor=pointer]:
+              - /url: https://sepay.vn/tpbank.html
+              - img "TPBank" [ref=e828]
+            - link "MBBank" [ref=e830] [cursor=pointer]:
+              - /url: https://sepay.vn/mb.html
+              - img "MBBank" [ref=e831]
+            - link "VietinBank" [ref=e833] [cursor=pointer]:
+              - /url: https://sepay.vn/vietinbank.html
+              - img "VietinBank" [ref=e834]
+            - link "BIDV" [ref=e836] [cursor=pointer]:
+              - /url: https://sepay.vn/bidv.html
+              - img "BIDV" [ref=e837]
+            - link "ACB" [ref=e839] [cursor=pointer]:
+              - /url: acb.html
+              - img "ACB" [ref=e840]
+            - link "OCB" [ref=e842] [cursor=pointer]:
+              - /url: https://sepay.vn/ocb.html
+              - img "OCB" [ref=e843]
+            - link "KienlongBank" [ref=e845] [cursor=pointer]:
+              - /url: https://sepay.vn/kien-long-bank.html
+              - img "KienlongBank" [ref=e846]
+            - link "MSB" [ref=e848] [cursor=pointer]:
+              - /url: https://sepay.vn/msb.html
+              - img "MSB" [ref=e849]
+        - generic [ref=e850]:
+          - heading "Công ty" [level=5] [ref=e851]
+          - list [ref=e852]:
+            - listitem [ref=e853]:
+              - link "Giới thiệu" [ref=e854] [cursor=pointer]:
+                - /url: https://sepay.vn/gioi-thieu.html
+            - listitem [ref=e855]:
+              - link "Bảng giá" [ref=e856] [cursor=pointer]:
+                - /url: https://sepay.vn/bang-gia.html
+            - listitem [ref=e857]:
+              - link "Blog" [ref=e858] [cursor=pointer]:
+                - /url: https://sepay.vn/blog
+            - listitem [ref=e859]:
+              - link "Tuyển dụng We're hiring" [ref=e860] [cursor=pointer]:
+                - /url: https://sepay.vn/blog/category/tuyen-dung/
+                - text: Tuyển dụng
+                - generic [ref=e861]: We're hiring
+            - listitem [ref=e862]:
+              - link "Liên hệ" [ref=e863] [cursor=pointer]:
+                - /url: https://sepay.vn/lien-he.html
+            - listitem [ref=e864]:
+              - link "Chứng nhận" [ref=e865] [cursor=pointer]:
+                - /url: https://sepay.vn/chung-nhan.html
+          - heading "Developers" [level=5] [ref=e866]
+          - list [ref=e867]:
+            - listitem [ref=e868]:
+              - link "WebHooks" [ref=e869] [cursor=pointer]:
+                - /url: https://docs.sepay.vn/tich-hop-webhooks.html
+            - listitem [ref=e870]:
+              - link "User API" [ref=e871] [cursor=pointer]:
+                - /url: https://docs.sepay.vn/gioi-thieu-api.html
+            - listitem [ref=e872]:
+              - link "Bank Hub API" [ref=e873] [cursor=pointer]:
+                - /url: https://docs.google.com/document/d/1TC7BaVQ8TmLPK0ggmNGH57fvl3dRWqBbZj0Njz57VEk
+            - listitem [ref=e874]:
+              - link "Tích hợp" [ref=e875] [cursor=pointer]:
+                - /url: https://sepay.vn/tich-hop.html
+            - listitem [ref=e876]:
+              - link "Changelog" [ref=e877] [cursor=pointer]:
+                - /url: https://sepay.vn/changelog.html
+            - listitem [ref=e878]:
+              - link "API Status" [ref=e879] [cursor=pointer]:
+                - /url: https://sepay.vn/status
+          - heading "Tài nguyên" [level=5] [ref=e880]
+          - list [ref=e881]:
+            - listitem [ref=e882]:
+              - link "Ebook & Nghiên cứu" [ref=e883] [cursor=pointer]:
+                - /url: https://sepay.vn/resources/
+              - generic [ref=e884]: Mới
+          - heading "Loa thanh toán New" [level=5] [ref=e885]:
+            - text: Loa thanh toán
+            - generic [ref=e886]: New
+          - list [ref=e887]:
+            - listitem [ref=e888]:
+              - link "Loa thanh toán" [ref=e889] [cursor=pointer]:
+                - /url: https://sepay.vn/loa-thanh-toan.html
+            - listitem [ref=e890]:
+              - link "Loa VPBank" [ref=e891] [cursor=pointer]:
+                - /url: https://sepay.vn/loa-vpbank.html
+            - listitem [ref=e892]:
+              - link "Loa TPBank" [ref=e893] [cursor=pointer]:
+                - /url: https://sepay.vn/loa-tpbank.html
+            - listitem [ref=e894]:
+              - link "Loa VietinBank" [ref=e895] [cursor=pointer]:
+                - /url: https://sepay.vn/loa-vietinbank.html
+            - listitem [ref=e896]:
+              - link "Loa ACB" [ref=e897] [cursor=pointer]:
+                - /url: https://sepay.vn/loa-acb.html
+            - listitem [ref=e898]:
+              - link "Loa BIDV" [ref=e899] [cursor=pointer]:
+                - /url: https://sepay.vn/loa-bidv.html
+            - listitem [ref=e900]:
+              - link "Loa MB" [ref=e901] [cursor=pointer]:
+                - /url: https://sepay.vn/loa-mb.html
+            - listitem [ref=e902]:
+              - link "Loa OCB" [ref=e903] [cursor=pointer]:
+                - /url: https://sepay.vn/loa-ocb.html
+            - listitem [ref=e904]:
+              - link "Loa KienLongBank" [ref=e905] [cursor=pointer]:
+                - /url: https://sepay.vn/loa-kienlongbank.html
+            - listitem [ref=e906]:
+              - link "Loa MSB" [ref=e907] [cursor=pointer]:
+                - /url: https://sepay.vn/loa-msb.html
+            - listitem [ref=e908]:
+              - link "Loa thông báo chuyển khoản" [ref=e909] [cursor=pointer]:
+                - /url: https://sepay.vn/loa-thong-bao-chuyen-khoan.html
+            - listitem [ref=e910]:
+              - link "Loa Lộc Vang ABBank" [ref=e911] [cursor=pointer]:
+                - /url: https://sepay.vn/loa-loc-vang-abbank.html
+        - generic [ref=e912]:
+          - heading "Dịch vụ" [level=5] [ref=e913]
+          - list [ref=e914]:
+            - listitem [ref=e915]:
+              - link "Chia sẻ biến động số dư" [ref=e916] [cursor=pointer]:
+                - /url: https://sepay.vn/chia-se-bien-dong-so-du.html
+            - listitem [ref=e917]:
+              - link "Dịch vụ VietQRPay New" [ref=e918] [cursor=pointer]:
+                - /url: https://sepay.vn/dich-vu-vietqrpay.html
+                - text: Dịch vụ VietQRPay
+                - generic [ref=e919]: New
+            - listitem [ref=e920]:
+              - link "Dịch vụ VietQRGlobal New" [ref=e921] [cursor=pointer]:
+                - /url: https://sepay.vn/dich-vu-vietqrglobal.html
+                - text: Dịch vụ VietQRGlobal
+                - generic [ref=e922]: New
+            - listitem [ref=e923]:
+              - link "Thống kê dòng tiền" [ref=e924] [cursor=pointer]:
+                - /url: https://sepay.vn/thong-ke-dong-tien.html
+            - listitem [ref=e925]:
+              - link "API ngân hàng" [ref=e926] [cursor=pointer]:
+                - /url: https://sepay.vn/api-ngan-hang.html
+            - listitem [ref=e927]:
+              - link "SePay Bank Hub New" [ref=e928] [cursor=pointer]:
+                - /url: https://sepay.vn/sepay-bank-hub.html
+                - text: SePay Bank Hub
+                - generic [ref=e929]: New
+          - heading "Tiện ích" [level=5] [ref=e930]
+          - list [ref=e931]:
+            - listitem [ref=e932]:
+              - link "Tạo ảnh VietQR " [ref=e933] [cursor=pointer]:
+                - /url: https://qr.sepay.vn
+                - text: Tạo ảnh VietQR
+                - generic [ref=e934]: 
+            - listitem [ref=e935]:
+              - link "Tra cứu đơn hàng" [ref=e936] [cursor=pointer]:
+                - /url: https://sepay.vn/tra-cuu-don-hang.html
+          - heading "Cổng thanh toán Mới" [level=5] [ref=e937]:
+            - text: Cổng thanh toán
+            - generic [ref=e938]: Mới
+          - list [ref=e939]:
+            - listitem [ref=e940]:
+              - link "Cổng thanh toán" [ref=e941] [cursor=pointer]:
+                - /url: https://sepay.vn/cong-thanh-toan-truc-tuyen.html
+            - listitem [ref=e942]:
+              - link "Cổng thanh toán VietQR" [ref=e943] [cursor=pointer]:
+                - /url: https://sepay.vn/cong-thanh-toan-vietqr.html
+            - listitem [ref=e944]:
+              - link "Cổng thanh toán NAPAS" [ref=e945] [cursor=pointer]:
+                - /url: https://sepay.vn/cong-thanh-toan-napas.html
+            - listitem [ref=e946]:
+              - link "Cổng thanh toán thẻ Quốc tế" [ref=e947] [cursor=pointer]:
+                - /url: https://sepay.vn/cong-thanh-toan-the-quoc-te.html
+          - heading "Đối tác" [level=5] [ref=e948]
+          - list [ref=e949]:
+            - listitem [ref=e950]:
+              - link "Cộng tác viên (Affiliate)" [ref=e951] [cursor=pointer]:
+                - /url: https://sepay.vn/affiliate.html
+            - listitem [ref=e952]:
+              - link "Liên hệ hợp tác" [ref=e953] [cursor=pointer]:
+                - /url: https://sepay.vn/hop-tac.html
+          - heading "Hướng dẫn" [level=5] [ref=e954]
+          - list [ref=e955]:
+            - listitem [ref=e956]:
+              - link "Hướng dẫn sử dụng" [ref=e957] [cursor=pointer]:
+                - /url: https://docs.sepay.vn/
+            - listitem [ref=e958]:
+              - link "Lập trình cổng thanh toán" [ref=e959] [cursor=pointer]:
+                - /url: https://sepay.vn/lap-trinh-cong-thanh-toan.html
+            - listitem [ref=e960]:
+              - link "Hướng dẫn thanh toán" [ref=e961] [cursor=pointer]:
+                - /url: https://sepay.vn/thanh-toan.html
+            - listitem [ref=e962]:
+              - link "Quy định hoàn tiền" [ref=e963] [cursor=pointer]:
+                - /url: https://sepay.vn/hoan-tien.html
+            - listitem [ref=e964]:
+              - link "Ngân hàng kết nối" [ref=e965] [cursor=pointer]:
+                - /url: https://sepay.vn/ngan-hang.html
+            - listitem [ref=e966]:
+              - link "FAQ" [ref=e967] [cursor=pointer]:
+                - /url: https://sepay.vn/faq.html
+            - listitem [ref=e968]:
+              - link "Brand assets" [ref=e969] [cursor=pointer]:
+                - /url: https://sepay.vn/brand-assets.html
+        - generic [ref=e970]:
+          - generic [ref=e971]:
+            - heading "Tích hợp" [level=5] [ref=e972]
+            - list [ref=e973]:
+              - listitem [ref=e974]:
+                - link "WooCommerce Icon WooCommerce" [ref=e975] [cursor=pointer]:
+                  - /url: https://sepay.vn/cong-thanh-toan-woocommerce.html
+                  - img "WooCommerce Icon" [ref=e976]
+                  - text: WooCommerce
+              - listitem [ref=e977]:
+                - link "Haravan Icon Haravan" [ref=e978] [cursor=pointer]:
+                  - /url: https://sepay.vn/cong-thanh-toan-haravan.html
+                  - img "Haravan Icon" [ref=e979]
+                  - text: Haravan
+              - listitem [ref=e980]:
+                - link "Shopify Icon Shopify" [ref=e981] [cursor=pointer]:
+                  - /url: https://sepay.vn/cong-thanh-toan-shopify.html
+                  - img "Shopify Icon" [ref=e982]
+                  - text: Shopify
+              - listitem [ref=e983]:
+                - link "Sapo Icon Sapo" [ref=e984] [cursor=pointer]:
+                  - /url: https://sepay.vn/cong-thanh-toan-sapo.html
+                  - img "Sapo Icon" [ref=e985]
+                  - text: Sapo
+              - listitem [ref=e986]:
+                - link "Google Sheets Icon Google Sheets" [ref=e987] [cursor=pointer]:
+                  - /url: https://docs.sepay.vn/tich-hop-google-sheets.html
+                  - img "Google Sheets Icon" [ref=e988]
+                  - text: Google Sheets
+              - listitem [ref=e989]:
+                - link "Lark Icon Lark" [ref=e990] [cursor=pointer]:
+                  - /url: https://sepay.vn/chia-se-bien-dong-so-du-lark.html
+                  - img "Lark Icon" [ref=e991]
+                  - text: Lark
+              - listitem [ref=e992]:
+                - link " Telegram" [ref=e993] [cursor=pointer]:
+                  - /url: https://sepay.vn/chia-se-bien-dong-so-du-telegram.html
+                  - generic [ref=e994]: 
+                  - text: Telegram
+              - listitem [ref=e995]:
+                - link " Mobile App" [ref=e996] [cursor=pointer]:
+                  - /url: https://sepay.vn/chia-se-bien-dong-so-du-mobile-app.html
+                  - generic [ref=e997]: 
+                  - text: Mobile App
+          - generic [ref=e998]:
+            - heading "Mạng xã hội" [level=5] [ref=e999]
+            - list [ref=e1000]:
+              - listitem [ref=e1001]:
+                - link " Facebook" [ref=e1002] [cursor=pointer]:
+                  - /url: https://www.facebook.com/sepay.vn
+                  - generic [ref=e1003]: 
+                  - text: Facebook
+              - listitem [ref=e1004]:
+                - link " Telegram" [ref=e1005] [cursor=pointer]:
+                  - /url: https://t.me/s/sepaychannel
+                  - generic [ref=e1006]: 
+                  - text: Telegram
+              - listitem [ref=e1007]:
+                - link " Youtube" [ref=e1008] [cursor=pointer]:
+                  - /url: https://www.youtube.com/@SePayVN
+                  - generic [ref=e1009]: 
+                  - text: Youtube
+              - listitem [ref=e1010]:
+                - link " X (Twitter)" [ref=e1011] [cursor=pointer]:
+                  - /url: https://x.com/sepayvn
+                  - generic [ref=e1012]: 
+                  - text: X (Twitter)
+              - listitem [ref=e1013]:
+                - link " Pinterest" [ref=e1014] [cursor=pointer]:
+                  - /url: https://www.pinterest.com/sepayvn/
+                  - generic [ref=e1015]: 
+                  - text: Pinterest
+              - listitem [ref=e1016]:
+                - link " GitHub" [ref=e1017] [cursor=pointer]:
+                  - /url: https://github.com/sepayvn
+                  - generic [ref=e1018]: 
+                  - text: GitHub
+            - heading "Liên hệ hợp tác" [level=5] [ref=e1019]
+            - list [ref=e1020]:
+              - listitem [ref=e1021]:
+                - link "02873.059.589" [ref=e1022] [cursor=pointer]:
+                  - /url: tel:+842873059589
+              - listitem [ref=e1023]: info@sepay.vn
+          - generic [ref=e1024]:
+            - generic [ref=e1025]: Chứng chỉ & Chứng nhận
+            - generic [ref=e1026]:
+              - generic [ref=e1027]:
+                - link "Cookie Area Logo":
+                  - /url: https://sepay.vn/uploads/chung-nhan/Chung-nhan-danh-gia-ket-qua-Sepay-Cookie-Arena.pdf
+                  - img "Cookie Area Logo"
+              - generic [ref=e1028]:
+                - img "RapidSSL SEAL icon"
+            - generic [ref=e1029]:
+              - generic [ref=e1030]: CHỨNG CHỈ ISO 27001
+              - generic [ref=e1031]: Hệ thống quản lý an toàn thông tin
+              - link "Chứng chỉ ISO 27001" [ref=e1032] [cursor=pointer]:
+                - /url: https://sepay.vn/uploads/chung-nhan/GCN-ISO-SEPAY-27001-2025.pdf
+                - img "Chứng chỉ ISO 27001" [ref=e1033]
+      - generic [ref=e1035]:
+        - list [ref=e1037]:
+          - listitem [ref=e1038]:
+            - link "Thoả thuận sử dụng dịch vụ" [ref=e1039] [cursor=pointer]:
+              - /url: https://sepay.vn/terms-of-service.html
+            - text: /
+          - listitem [ref=e1040]:
+            - link "Chính sách riêng tư" [ref=e1041] [cursor=pointer]:
+              - /url: https://sepay.vn/privacy.html
+            - text: /
+          - listitem [ref=e1042]:
+            - link "Chính sách riêng tư cho Google Sheets" [ref=e1043] [cursor=pointer]:
+              - /url: https://sepay.vn/en/privacy-policy.html
+        - list [ref=e1045]:
+          - listitem [ref=e1046]:
+            - link "" [ref=e1047] [cursor=pointer]:
+              - /url: https://www.facebook.com/sepay.vn
+              - generic [ref=e1048]: 
+          - listitem [ref=e1049]:
+            - link "" [ref=e1050] [cursor=pointer]:
+              - /url: https://www.youtube.com/@SePayVN
+              - generic [ref=e1051]: 
+          - listitem [ref=e1052]:
+            - link "" [ref=e1053] [cursor=pointer]:
+              - /url: https://www.pinterest.com/sepayvn/
+              - generic [ref=e1054]: 
+          - listitem [ref=e1055]:
+            - link "" [ref=e1056] [cursor=pointer]:
+              - /url: https://t.me/s/sepaychannel
+              - generic [ref=e1057]: 
+          - listitem [ref=e1058]:
+            - link "" [ref=e1059] [cursor=pointer]:
+              - /url: https://x.com/sepayvn
+              - generic [ref=e1060]: 
+          - listitem [ref=e1061]:
+            - link "Zalo Icon" [ref=e1062] [cursor=pointer]:
+              - /url: https://zalo.me/1966404590345410935
+              - img "Zalo Icon"
+          - listitem
+      - paragraph [ref=e1065]: © SePay 2026. All rights reserved.
+  - generic [ref=e1067] [cursor=pointer]:
+    - img [ref=e1072]
+    - generic [ref=e1074]: Liên hệ chúng tôi
+  - text: next prev
