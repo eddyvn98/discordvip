@@ -1,4 +1,4 @@
-import crypto from "node:crypto";
+import { createHmac, timingSafeEqual } from "node:crypto";
 
 import { z } from "zod";
 
@@ -44,15 +44,12 @@ export function normalizeSepayPayload(payload: unknown): NormalizedSepayPayload 
   const nestedPayload = envelope.data ?? envelope;
   const normalized = transactionSchema.parse(nestedPayload);
 
-  const transactionId = String(
-    normalized.id ??
-      normalized.transaction_id ??
-      envelope.id ??
-      crypto
-        .createHash("sha1")
-        .update(JSON.stringify(payload))
-        .digest("hex"),
-  );
+  const explicitTransactionId = normalized.id ?? normalized.transaction_id ?? envelope.id;
+  if (!explicitTransactionId) {
+    throw new Error("Payload SePay thiếu transaction id.");
+  }
+
+  const transactionId = String(explicitTransactionId);
 
   const amount =
     normalized.transferAmount ??
@@ -60,6 +57,9 @@ export function normalizeSepayPayload(payload: unknown): NormalizedSepayPayload 
     envelope.transferAmount ??
     envelope.amount ??
     0;
+  if (!Number.isFinite(amount) || amount <= 0) {
+    throw new Error("Payload SePay thiếu số tiền hợp lệ.");
+  }
   const transferContent =
     normalized.transferContent ??
     normalized.content ??
@@ -89,7 +89,7 @@ export function verifySepaySignature(rawBody: string, secret: string, signature:
     return false;
   }
 
-  const expected = crypto.createHmac("sha256", secret).update(rawBody).digest("hex");
+  const expected = createHmac("sha256", secret).update(rawBody).digest("hex");
   const expectedBuffer = Buffer.from(expected);
   const actualBuffer = Buffer.from(signature);
 
@@ -97,5 +97,5 @@ export function verifySepaySignature(rawBody: string, secret: string, signature:
     return false;
   }
 
-  return crypto.timingSafeEqual(expectedBuffer, actualBuffer);
+  return timingSafeEqual(expectedBuffer, actualBuffer);
 }

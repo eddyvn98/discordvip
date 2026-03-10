@@ -24,6 +24,7 @@ export type TransactionItem = {
     id: string;
     orderCode: string;
     discordUserId: string;
+    discordDisplayName?: string | null;
     plan: {
       code: string;
       name: string;
@@ -36,8 +37,10 @@ export type TransactionItem = {
 export type MembershipItem = {
   id: string;
   discordUserId: string;
+  discordDisplayName?: string | null;
   source: "PAID" | "TRIAL";
   status: "ACTIVE" | "EXPIRED";
+  createdAt: string;
   expireAt: string;
   lastError: string | null;
   removeRetries: number;
@@ -56,6 +59,7 @@ export type PendingOrderItem = {
   id: string;
   orderCode: string;
   discordUserId: string;
+  discordDisplayName?: string | null;
   amount: number;
   status: "PENDING" | "PAID" | "EXPIRED" | "CANCELLED";
   expiresAt: string;
@@ -72,9 +76,16 @@ export type OrderSearchItem = {
   id: string;
   orderCode: string;
   discordUserId: string;
+  discordDisplayName?: string | null;
   amount: number;
   status: string;
   plan: {
     name: string;
   };
+};
+
+export type VipStatsResponse = {
+  activeVipCount: number;
+  expiringTodayCount: number;
+  monthlyRevenue: number;
 };

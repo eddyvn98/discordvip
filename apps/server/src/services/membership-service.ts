@@ -187,19 +187,27 @@ export class MembershipService {
   async grantTrial(discordUserId: string) {
     const now = new Date();
     const expireAt = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+    const cooldownStart = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
 
     return prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       const existingClaim = await tx.trialClaim.findUnique({
         where: { discordUserId },
       });
 
-      if (existingClaim) {
-        throw new Error("Tài khoản này đã dùng trial VIP trước đó.");
+      if (existingClaim && existingClaim.claimedAt > cooldownStart) {
+        throw new Error("Tài khoản này đã dùng trial VIP trong 30 ngày gần đây.");
       }
 
-      await tx.trialClaim.create({
-        data: { discordUserId },
-      });
+      if (existingClaim) {
+        await tx.trialClaim.update({
+          where: { discordUserId },
+          data: { claimedAt: now },
+        });
+      } else {
+        await tx.trialClaim.create({
+          data: { discordUserId, claimedAt: now },
+        });
+      }
 
       const existingMembership = await tx.membership.findUnique({
         where: {
@@ -256,6 +264,52 @@ export class MembershipService {
       },
       take: limit,
     });
+  }
+
+  async listMembershipsNeedingReminder(thresholdDays: number, limit = 20) {
+    const now = new Date();
+    const threshold = new Date(now.getTime() + thresholdDays * 24 * 60 * 60 * 1000);
+    const reminderField =
+      thresholdDays === 3 ? "reminded3dAt" : thresholdDays === 1 ? "reminded1dAt" : null;
+
+    if (!reminderField) {
+      throw new Error("Unsupported reminder threshold.");
+    }
+
+    return prisma.membership.findMany({
+      where: {
+        guildId: env.DISCORD_GUILD_ID,
+        roleId: env.DISCORD_VIP_ROLE_ID,
+        status: MembershipStatus.ACTIVE,
+        expireAt: {
+          gt: now,
+          lte: threshold,
+        },
+        [reminderField]: null,
+      },
+      orderBy: {
+        expireAt: "asc",
+      },
+      take: limit,
+    });
+  }
+
+  async markReminderSent(membershipId: string, thresholdDays: number) {
+    if (thresholdDays === 3) {
+      return prisma.membership.update({
+        where: { id: membershipId },
+        data: { reminded3dAt: new Date() },
+      });
+    }
+
+    if (thresholdDays === 1) {
+      return prisma.membership.update({
+        where: { id: membershipId },
+        data: { reminded1dAt: new Date() },
+      });
+    }
+
+    throw new Error("Unsupported reminder threshold.");
   }
 
   async markMembershipExpired(membershipId: string) {

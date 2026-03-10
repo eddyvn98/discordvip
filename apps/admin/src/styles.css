@@ -1,5 +1,5 @@
 :root {
-  font-family: Inter, system-ui, sans-serif;
+  font-family: "Be Vietnam Pro", "Noto Sans", "Segoe UI", system-ui, sans-serif;
   color: #e5eef9;
   background: #0f172a;
 }
@@ -132,6 +132,9 @@ input {
 
 .table-wrap {
   overflow: auto;
+  max-height: min(60vh, 720px);
+  border-radius: 12px;
+  border: 1px solid rgba(148, 163, 184, 0.12);
 }
 
 table {
@@ -191,6 +194,14 @@ th {
 .pending-list {
   display: grid;
   gap: 16px;
+}
+
+.scroll-panel {
+  overflow: auto;
+  max-height: min(60vh, 720px);
+  border-radius: 12px;
+  border: 1px solid rgba(148, 163, 184, 0.12);
+  padding: 8px;
 }
 
 .pending-card {

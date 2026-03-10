@@ -16,7 +16,7 @@ export function extractOrderCode(transferContent: string | null | undefined) {
     return null;
   }
 
-  const match = transferContent.toUpperCase().match(/\bVIP\s+([A-Z0-9_-]{6,})\b/);
+  const match = transferContent.toUpperCase().match(/\b(?:VIP|DONATE)\s+([A-Z0-9_-]{6,})\b/);
   return match?.[1] ?? null;
 }
 
@@ -47,7 +47,7 @@ export function buildVietQrImageUrl({
 
   const params = new URLSearchParams({
     amount: String(amount),
-    addInfo: `VIP ${orderCode}`,
+    addInfo: `DONATE ${orderCode}`,
     accountName,
   });
 

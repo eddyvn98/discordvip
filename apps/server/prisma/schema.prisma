@@ -91,6 +91,8 @@ model Membership {
   status        MembershipStatus @default(ACTIVE)
   startAt       DateTime
   expireAt      DateTime
+  reminded3dAt  DateTime?
+  reminded1dAt  DateTime?
   removeRetries Int              @default(0)
   lastError     String?
   createdAt     DateTime         @default(now())

@@ -1,4 +1,4 @@
-import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
+﻿import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import { NavLink, Route, Routes } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { api } from "./api";
@@ -11,6 +11,9 @@ function currency(amount) {
 }
 function datetime(value) {
     return new Date(value).toLocaleString("vi-VN");
+}
+function formatDiscordUser(discordUserId, discordDisplayName) {
+    return discordDisplayName ? `${discordDisplayName} (${discordUserId})` : discordUserId;
 }
 function useCurrentUser() {
     const [user, setUser] = useState(null);
@@ -50,7 +53,9 @@ function DashboardPage() {
                             item.providerTransactionId,
                             currency(item.amount),
                             item.status,
-                            item.order?.orderCode ?? "-",
+                            item.order
+                                ? `${item.order.orderCode} - ${formatDiscordUser(item.order.discordUserId, item.order.discordDisplayName)}`
+                                : "-",
                         ]) })] })] }));
 }
 function TransactionsPage() {
@@ -68,27 +73,56 @@ function TransactionsPage() {
                     currency(item.amount),
                     item.payerName ?? "-",
                     item.transferContent ?? "-",
-                    item.order?.orderCode ?? "-",
+                    item.order
+                                ? `${item.order.orderCode} - ${formatDiscordUser(item.order.discordUserId, item.order.discordDisplayName)}`
+                                : "-",
                     item.status,
                 ]) }))] }));
 }
 function MembershipsPage() {
     const [items, setItems] = useState([]);
     const [error, setError] = useState("");
-    useEffect(() => {
-        api
-            .get("/api/admin/memberships")
+    const [search, setSearch] = useState("");
+    const [message, setMessage] = useState("");
+    const load = (query = "") => {
+        const path = query.trim()
+            ? `/api/admin/memberships/search?q=${encodeURIComponent(query.trim())}`
+            : "/api/admin/memberships";
+        return api
+            .get(path)
             .then(setItems)
             .catch((value) => setError(value.message));
+    };
+    useEffect(() => {
+        void load();
     }, []);
-    return (_jsxs("section", { className: "card", children: [_jsx("div", { className: "section-header", children: _jsxs("div", { children: [_jsx("h1", { children: "Memberships" }), _jsx("p", { children: "Danh s\u00E1ch user VIP hi\u1EC7n t\u1EA1i v\u00E0 l\u1ECBch s\u1EED l\u1ED7i g\u1EE1 role." })] }) }), error ? (_jsxs("p", { children: ["L\u1ED7i: ", error] })) : (_jsx(Table, { headers: ["Discord user", "Nguồn", "Status", "Hết hạn", "Retry", "Lỗi gần nhất"], rows: items.map((item) => [
-                    item.discordUserId,
+    const revokeMembership = async (membershipId) => {
+        setError("");
+        setMessage("");
+        try {
+            await api.post(`/api/admin/memberships/${membershipId}/revoke`);
+            setMessage("Đã thu hồi VIP thành công.");
+            await load(search);
+        }
+        catch (value) {
+            setError(value.message);
+        }
+    };
+    return (_jsxs("section", { className: "card", children: [_jsx("div", { className: "section-header", children: _jsxs("div", { children: [_jsx("h1", { children: "Memberships" }), _jsx("p", { children: "Danh s\u00E1ch user VIP hi\u1EC7n t\u1EA1i v\u00E0 l\u1ECBch s\u1EED l\u1ED7i g\u1EE1 role." })] }) }), error ? (_jsxs("p", { children: ["L\u1ED7i: ", error] })) : (_jsx(Table, { headers: ["Discord user", "Nguồn", "Status", "Ngày đăng ký", "Hết hạn", "Số lần thử gỡ role", "Lỗi gần nhất (nếu có)"], rows: items.map((item) => [
+                    formatDiscordUser(item.discordUserId, item.discordDisplayName),
                     item.source,
                     item.status,
+                    datetime(item.createdAt),
                     datetime(item.expireAt),
                     String(item.removeRetries),
-                    item.lastError ?? "-",
-                ]) }))] }));
+                    item.lastError ?? "Không có",
+                    item.status === "ACTIVE"
+                        ? _jsx("button", { className: "button secondary", onClick: () => void revokeMembership(item.id), children: "Thu hồi VIP" })
+                        : "-",
+                ]) }), _jsx("div", { style: { marginBottom: "16px" }, children: _jsxs("div", { style: { display: "flex", gap: "8px", flexWrap: "wrap" }, children: [_jsx("input", { value: search, onChange: (event) => setSearch(event.target.value), placeholder: "Tìm theo ID, tên, trạng thái ACTIVE/EXPIRED, nguồn PAID/TRIAL", style: { minWidth: "320px", flex: 1, padding: "12px 14px", borderRadius: "12px", border: "1px solid rgba(148,163,184,.2)", background: "#0f172a", color: "#fff" } }), _jsx("button", { className: "button", onClick: () => void load(search), children: "Tìm kiếm" }), _jsx("button", { className: "button secondary", onClick: () => {
+                                        setSearch("");
+                                        void load("");
+                                    }, children: "Reset" })] }) }), message ? _jsx("p", { className: "success", children: message }) : null, error ? _jsx("p", { className: "error", children: error }) : null] }));
 }
 function PendingPage() {
     const [items, setItems] = useState([]);
@@ -118,14 +152,14 @@ function PendingPage() {
             await api.post(`/api/admin/pending/${paymentId}/resolve`, {
                 orderCode: orderCodes[paymentId],
             });
-            setMessage("Đã resolve payment pending.");
+            setMessage("Đã xử lý payment pending.");
             await load();
         }
         catch (value) {
             setError(value.message);
         }
     };
-    return (_jsxs("section", { className: "card", children: [_jsx("div", { className: "section-header", children: _jsxs("div", { children: [_jsx("h1", { children: "Pending review" }), _jsx("p", { children: "Giao d\u1ECBch ch\u01B0a match t\u1EF1 \u0111\u1ED9ng. Nh\u1EADp order code \u0111\u1EC3 c\u1EA5p VIP th\u1EE7 c\u00F4ng." })] }) }), message ? _jsx("p", { className: "success", children: message }) : null, error ? _jsx("p", { className: "error", children: error }) : null, _jsx("div", { className: "pending-list", children: items.map((item) => (_jsxs("div", { className: "pending-card", children: [_jsxs("div", { className: "pending-meta", children: [_jsx("strong", { children: currency(item.amount) }), _jsx("span", { children: item.providerTransactionId }), _jsx("span", { children: datetime(item.createdAt) }), _jsx("span", { children: item.payerName ?? "Không rõ người gửi" })] }), _jsx("p", { children: item.transferContent ?? "Không có nội dung chuyển khoản" }), _jsx("input", { list: `orders-${item.id}`, placeholder: "Nh\u1EADp order code", value: orderCodes[item.id] ?? "", onChange: (event) => void searchOrders(item.id, event.target.value) }), _jsx("datalist", { id: `orders-${item.id}`, children: (suggestions[item.id] ?? []).map((order) => (_jsx("option", { value: order.orderCode, children: `${order.orderCode} - ${order.discordUserId} - ${order.plan.name}` }, order.id))) }), _jsx("button", { className: "button", onClick: () => void resolvePayment(item.id), children: "Resolve" })] }, item.id))) })] }));
+    return (_jsxs("section", { className: "card", children: [_jsx("div", { className: "section-header", children: _jsxs("div", { children: [_jsx("h1", { children: "Pending review" }), _jsx("p", { children: "Giao d\u1ECBch ch\u01B0a match t\u1EF1 \u0111\u1ED9ng. Nh\u1EADp order code \u0111\u1EC3 c\u1EA5p VIP th\u1EE7 c\u00F4ng." })] }) }), message ? _jsx("p", { className: "success", children: message }) : null, error ? _jsx("p", { className: "error", children: error }) : null, _jsx("div", { className: "pending-list", children: items.map((item) => (_jsxs("div", { className: "pending-card", children: [_jsxs("div", { className: "pending-meta", children: [_jsx("strong", { children: currency(item.amount) }), _jsx("span", { children: item.providerTransactionId }), _jsx("span", { children: datetime(item.createdAt) }), _jsx("span", { children: item.payerName ?? "Không rõ người gửi" })] }), _jsx("p", { children: item.transferContent ?? "Không có nội dung chuyển khoản" }), _jsx("input", { list: `orders-${item.id}`, placeholder: "Nh\u1EADp order code", value: orderCodes[item.id] ?? "", onChange: (event) => void searchOrders(item.id, event.target.value) }), _jsx("datalist", { id: `orders-${item.id}`, children: (suggestions[item.id] ?? []).map((order) => (_jsx("option", { value: order.orderCode, children: `${order.orderCode} - ${formatDiscordUser(order.discordUserId, order.discordDisplayName)} - ${order.plan.name}` }, order.id))) }), _jsx("button", { className: "button", onClick: () => void resolvePayment(item.id), children: "Resolve" })] }, item.id))) })] }));
 }
 function Table({ headers, rows, }) {
     return (_jsx("div", { className: "table-wrap", children: _jsxs("table", { children: [_jsx("thead", { children: _jsx("tr", { children: headers.map((item) => (_jsx("th", { children: item }, item))) }) }), _jsx("tbody", { children: rows.map((row, index) => (_jsx("tr", { children: row.map((cell, cellIndex) => (_jsx("td", { children: cell }, `${cell}-${cellIndex}`))) }, `${row[0]}-${index}`))) })] }) }));
@@ -143,3 +177,4 @@ export default function App() {
             setUser(null);
         } }));
 }
+

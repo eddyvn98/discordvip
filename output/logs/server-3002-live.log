@@ -1,0 +1,20 @@
+
+> dev:server
+> npm run dev -w @discordvip/server
+
+
+> @discordvip/server@1.0.0 dev
+> tsx watch src/index.ts
+
+{"level":"info","message":"Server started","meta":{"port":3002},"time":"2026-03-09T17:45:56.700Z"}
+{"level":"info","message":"Discord bot connected","meta":{"user":"BOT VIP#8201"},"time":"2026-03-09T17:45:57.165Z"}
+12:53:40 AM [tsx] change in ./src\index.ts Restarting...
+c{"level":"info","message":"Server started","meta":{"port":3002},"time":"2026-03-09T17:54:07.911Z"}
+{"level":"info","message":"Discord bot connected","meta":{"user":"BOT VIP#8201"},"time":"2026-03-09T17:54:08.092Z"}
+npm error Lifecycle script `dev` failed with error:
+npm error code 4294967295
+npm error path D:\discordvip\apps\server
+npm error workspace @discordvip/server@1.0.0
+npm error location D:\discordvip\apps\server
+npm error command failed
+npm error command C:\WINDOWS\system32\cmd.exe /d /s /c tsx watch src/index.ts

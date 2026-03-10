@@ -1,20 +1,28 @@
 FROM node:24-alpine AS build
 WORKDIR /app
 
-COPY package.json ./
+COPY package.json package-lock.json ./
+COPY tsconfig.base.json ./
 COPY apps/server/package.json apps/server/package.json
-COPY apps/admin/package.json apps/admin/package.json
 COPY apps/server/prisma apps/server/prisma
-RUN npm install
+RUN npm install --workspace @discordvip/server --include-workspace-root=false
 
-COPY . .
+COPY apps/server apps/server
 RUN npm run prisma:generate -w @discordvip/server
 RUN npm run build -w @discordvip/server
 
 FROM node:24-alpine
 WORKDIR /app
 
-COPY --from=build /app /app
+COPY package.json package-lock.json ./
+COPY tsconfig.base.json ./
+COPY apps/server/package.json apps/server/package.json
+COPY apps/server/tsconfig.json apps/server/tsconfig.json
+COPY apps/server/prisma apps/server/prisma
+RUN npm install --workspace @discordvip/server --include-workspace-root=false --no-audit --no-fund \
+  && npm cache clean --force
+
+COPY --from=build /app/apps/server/dist /app/apps/server/dist
 WORKDIR /app/apps/server
 EXPOSE 3000
 CMD ["sh", "-c", "npm run prisma:generate && npm run prisma:push && npm run seed && npm run start"]

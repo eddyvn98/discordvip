@@ -1,0 +1,22 @@
+
+> @discordvip/server@1.0.0 dev
+> tsx watch src/index.ts
+
+{"level":"info","message":"Server started","meta":{"port":3002},"time":"2026-03-09T17:10:24.539Z"}
+{"level":"info","message":"Discord bot connected","meta":{"user":"BOT VIP#8201"},"time":"2026-03-09T17:10:24.788Z"}
+12:36:02 AM [tsx] change in ./src\lib\billing.ts Restarting...
+c{"level":"info","message":"Server started","meta":{"port":3002},"time":"2026-03-09T17:36:07.641Z"}
+{"level":"info","message":"Discord bot connected","meta":{"user":"BOT VIP#8201"},"time":"2026-03-09T17:36:07.865Z"}
+12:36:57 AM [tsx] unlink in ./src\services\discord-service.ts Restarting...
+c{"level":"info","message":"Server started","meta":{"port":3002},"time":"2026-03-09T17:37:18.212Z"}
+{"level":"info","message":"Discord bot connected","meta":{"user":"BOT VIP#8201"},"time":"2026-03-09T17:37:18.674Z"}
+12:53:40 AM [tsx] change in ./src\index.ts Rerunning...
+c{"level":"info","message":"Server started","meta":{"port":3002},"time":"2026-03-09T17:53:46.657Z"}
+{"level":"info","message":"Discord bot connected","meta":{"user":"BOT VIP#8201"},"time":"2026-03-09T17:53:46.901Z"}
+npm error Lifecycle script `dev` failed with error:
+npm error code 4294967295
+npm error path D:\discordvip\apps\server
+npm error workspace @discordvip/server@1.0.0
+npm error location D:\discordvip\apps\server
+npm error command failed
+npm error command C:\WINDOWS\system32\cmd.exe /d /s /c tsx watch src/index.ts

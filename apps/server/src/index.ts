@@ -25,10 +25,10 @@ const discordService = new DiscordService();
 const orderService = new OrderService();
 const membershipService = new MembershipService();
 const paymentService = new PaymentService(orderService, membershipService, discordService);
-const adminService = new AdminService();
+const adminService = new AdminService(discordService);
 const authService = new AuthService(discordService);
 
-async function handleBuyVip(interaction: ChatInputCommandInteraction) {
+async function handleDonate(interaction: ChatInputCommandInteraction) {
   const planCode = interaction.options.getString("plan", true);
   const order = await orderService.createOrder(interaction.user.id, interaction.guildId!, planCode);
 
@@ -42,18 +42,18 @@ async function handleBuyVip(interaction: ChatInputCommandInteraction) {
 
   const paymentInstruction =
     env.PAYMENT_MODE === "manual"
-      ? "Admin sẽ xác nhận thanh toán thủ công và cấp role VIP sau khi kiểm tra."
-      : "Bot sẽ tự cấp role VIP sau khi SePay báo đã nhận tiền.";
+      ? "Admin sẽ xác nhận khoản ủng hộ thủ công và cấp role VIP sau khi kiểm tra."
+      : "Bot sẽ tự cấp role VIP sau khi hệ thống xác nhận chuyển khoản.";
 
   await interaction.reply({
     flags: MessageFlags.Ephemeral,
     embeds: [
       {
-        title: `Mua ${order.plan.name}`,
+        title: `Ủng hộ server - ${order.plan.name}`,
         description: [
           `Số tiền: **${formatCurrency(order.amount)}**`,
-          `Nội dung CK: \`VIP ${order.orderCode}\``,
-          `Hạn thanh toán: <t:${Math.floor(order.expiresAt.getTime() / 1000)}:R>`,
+          `Nội dung CK: \`DONATE ${order.orderCode}\``,
+          `Quét QR hoặc chuyển khoản trước: <t:${Math.floor(order.expiresAt.getTime() / 1000)}:R>`,
           paymentInstruction,
         ].join("\n"),
         image: qrImageUrl ? { url: qrImageUrl } : undefined,
@@ -104,6 +104,31 @@ async function handleVipStatus(interaction: ChatInputCommandInteraction) {
   });
 }
 
+async function handleAdminStats(interaction: ChatInputCommandInteraction) {
+  const canAccess = await discordService.memberHasAdminAccess(interaction.user.id);
+  if (!canAccess) {
+    await interaction.reply({
+      flags: MessageFlags.Ephemeral,
+      content: "Bạn không có quyền sử dụng lệnh này.",
+    });
+    return;
+  }
+
+  const stats = await adminService.getVipStats();
+  await interaction.reply({
+    embeds: [
+      {
+        title: "Thống kê VIP",
+        fields: [
+          { name: "VIP đang active", value: String(stats.activeVipCount), inline: true },
+          { name: "VIP hết hạn hôm nay", value: String(stats.expiringTodayCount), inline: true },
+          { name: "Doanh thu tháng", value: formatCurrency(stats.monthlyRevenue), inline: true },
+        ],
+      },
+    ],
+  });
+}
+
 function buildManualReviewComponents(orderId: string, disabled = false) {
   const approveButton = new ButtonBuilder()
     .setCustomId(`manual_confirm:${orderId}`)
@@ -125,11 +150,11 @@ async function lockManualReviewMessage(
   adminDiscordUserId: string,
 ) {
   const currentContent = interaction.message.content || "";
-  const auditLine = `Trang thai: ${statusText} boi <@${adminDiscordUserId}>`;
+  const auditLine = `Trạng thái: ${statusText} bởi <@${adminDiscordUserId}>`;
 
   await interaction.update({
-    content: currentContent.includes("Trang thai:")
-      ? currentContent.replace(/Trang thai:.*/u, auditLine)
+    content: currentContent.includes("Trạng thái:")
+      ? currentContent.replace(/Trạng thái:.*/u, auditLine)
       : `${currentContent}\n${auditLine}`.trim(),
     components: buildManualReviewComponents(interaction.customId.split(":")[1] ?? "", true),
   });
@@ -143,14 +168,14 @@ async function handleManualReviewAction(customId: string, adminDiscordUserId: st
 
   const canAccess = await discordService.memberHasAdminAccess(adminDiscordUserId);
   if (!canAccess) {
-    throw new Error("Ban khong co quyen duyet don nay.");
+    throw new Error("Bạn không có quyền duyệt đơn này.");
   }
 
   if (action === "manual_confirm") {
     await paymentService.confirmManualOrder(orderId);
     return {
       statusText: "DA_XAC_NHAN",
-      responseText: "Da xac nhan thanh toan va cap VIP.",
+      responseText: "Đã xác nhận khoản ủng hộ và cấp VIP.",
     };
   }
 
@@ -158,7 +183,7 @@ async function handleManualReviewAction(customId: string, adminDiscordUserId: st
     await paymentService.rejectManualOrder(orderId);
     return {
       statusText: "DA_TU_CHOI",
-      responseText: "Da tu choi don hang.",
+      responseText: "Đã từ chối đơn ủng hộ.",
     };
   }
 
@@ -188,8 +213,8 @@ async function bootstrap() {
         return;
       }
 
-      if (interaction.commandName === "buyvip") {
-        await handleBuyVip(interaction);
+      if (interaction.commandName === "donate") {
+        await handleDonate(interaction);
         return;
       }
 
@@ -200,6 +225,11 @@ async function bootstrap() {
 
       if (interaction.commandName === "vipstatus") {
         await handleVipStatus(interaction);
+        return;
+      }
+
+      if (interaction.commandName === "adminstats") {
+        await handleAdminStats(interaction);
       }
     } catch (error) {
       logger.error("Interaction handling failed", { error });

@@ -44,28 +44,33 @@ export class DiscordService {
       const guild = await this.client.guilds.fetch(env.DISCORD_GUILD_ID);
       await guild.commands.set([
         {
-          name: "buyvip",
-          description: "Tạo đơn mua VIP",
+          name: "donate",
+          description: "Tạo đơn ủng hộ server",
           options: [
             {
               name: "plan",
-              description: "Chọn gói VIP",
+              description: "Chọn gói ủng hộ",
               type: 3,
               required: true,
               choices: [
-                { name: "30.000đ / 30 ngày", value: "VIP_30_DAYS" },
-                { name: "300.000đ / 365 ngày", value: "VIP_365_DAYS" },
+                { name: "39.000đ tặng VIP 31 ngày", value: "VIP_30_DAYS" },
+                { name: "99.000đ tặng VIP 90 ngày", value: "VIP_90_DAYS" },
+                { name: "199.000đ tặng VIP 365 ngày", value: "VIP_365_DAYS" },
               ],
             },
           ],
         },
         {
           name: "trialvip",
-          description: "Nhận trial VIP 24h (mỗi account 1 lần)",
+          description: "Nhận trial VIP 24h (mỗi 30 ngày 1 lần)",
         },
         {
           name: "vipstatus",
           description: "Xem trạng thái VIP hiện tại",
+        },
+        {
+          name: "adminstats",
+          description: "Xem thống kê VIP và doanh thu tháng",
         },
       ]);
     });
@@ -118,15 +123,15 @@ export class DiscordService {
 
     const row = new ActionRowBuilder<ButtonBuilder>().addComponents(approveButton, rejectButton);
     await channel.send({
-      content: `Don mua VIP moi tu <@${order.discordUserId}>`,
+      content: `Đơn ủng hộ server mới từ <@${order.discordUserId}>`,
       embeds: [
         {
-          title: `Duyet don ${order.orderCode}`,
+          title: `Duyệt donate ${order.orderCode}`,
           fields: [
-            { name: "Nguoi mua", value: `<@${order.discordUserId}>`, inline: true },
-            { name: "Goi", value: order.plan.name, inline: true },
-            { name: "So tien", value: `${order.amount.toLocaleString("vi-VN")} VND`, inline: true },
-            { name: "Het han", value: `<t:${Math.floor(order.expiresAt.getTime() / 1000)}:R>` },
+            { name: "Người ủng hộ", value: `<@${order.discordUserId}>`, inline: true },
+            { name: "Gói ủng hộ", value: order.plan.name, inline: true },
+            { name: "Số tiền", value: `${order.amount.toLocaleString("vi-VN")} VND`, inline: true },
+            { name: "Hết hạn", value: `<t:${Math.floor(order.expiresAt.getTime() / 1000)}:R>` },
           ],
         },
       ],
@@ -140,6 +145,41 @@ export class DiscordService {
     if (member.roles.cache.has(env.DISCORD_VIP_ROLE_ID)) {
       await member.roles.remove(env.DISCORD_VIP_ROLE_ID);
     }
+  }
+
+  async sendVipExpiryReminder(discordUserId: string, expireAt: Date, thresholdDays: number) {
+    const user = await this.client.users.fetch(discordUserId);
+    await user.send({
+      content: [
+        `VIP của bạn sẽ hết hạn <t:${Math.floor(expireAt.getTime() / 1000)}:R>.`,
+        `Mốc nhắc hiện tại: còn khoảng ${thresholdDays} ngày.`,
+        "Nếu muốn gia hạn, hãy dùng lệnh `/donate` trong server.",
+      ].join("\n"),
+    });
+  }
+
+  async sendAdminVipExpiryReminder(
+    discordUserId: string,
+    expireAt: Date,
+    thresholdDays: number,
+  ) {
+    if (!env.DISCORD_ADMIN_CHANNEL_ID) {
+      return;
+    }
+
+    const channel = await this.client.channels.fetch(env.DISCORD_ADMIN_CHANNEL_ID);
+    if (!channel || channel.type !== ChannelType.GuildText) {
+      throw new Error("DISCORD_ADMIN_CHANNEL_ID must point to a guild text channel.");
+    }
+
+    await channel.send({
+      content: [
+        `Nhắc hết hạn VIP: <@${discordUserId}>`,
+        `Hết hạn: <t:${Math.floor(expireAt.getTime() / 1000)}:F>`,
+        `Mốc nhắc: còn khoảng ${thresholdDays} ngày`,
+      ].join("\n"),
+      flags: MessageFlags.SuppressNotifications,
+    });
   }
 
   async memberHasAdminAccess(discordUserId: string) {

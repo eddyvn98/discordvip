@@ -55,6 +55,9 @@ Monorepo gồm:
 docker compose up --build
 ```
 
+Tai lieu van hanh:
+- `docs/vps-khuyen-nghi-va-database.md`: Cau hinh VPS khuyen nghi va noi luu/backup database.
+
 ### Chế độ xác nhận thủ công
 
 - Đặt `PAYMENT_MODE=manual` để bỏ qua SePay trước mắt.

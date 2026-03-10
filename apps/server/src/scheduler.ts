@@ -10,6 +10,46 @@ export function startSchedulers(
 ) {
   const run = async () => {
     await orderService.markExpiredOrders();
+
+    for (const thresholdDays of [3, 1]) {
+      const membershipsToRemind = await membershipService.listMembershipsNeedingReminder(
+        thresholdDays,
+        20,
+      );
+
+      for (const membership of membershipsToRemind) {
+        try {
+          await discordService.sendVipExpiryReminder(
+            membership.discordUserId,
+            membership.expireAt,
+            thresholdDays,
+          );
+        } catch (error) {
+          logger.warn("Failed to send VIP expiry DM", {
+            membershipId: membership.id,
+            thresholdDays,
+            error,
+          });
+        }
+
+        try {
+          await discordService.sendAdminVipExpiryReminder(
+            membership.discordUserId,
+            membership.expireAt,
+            thresholdDays,
+          );
+        } catch (error) {
+          logger.warn("Failed to send VIP expiry admin reminder", {
+            membershipId: membership.id,
+            thresholdDays,
+            error,
+          });
+        }
+
+        await membershipService.markReminderSent(membership.id, thresholdDays);
+      }
+    }
+
     const dueMemberships = await membershipService.expireDueMemberships(20);
 
     for (const membership of dueMemberships) {

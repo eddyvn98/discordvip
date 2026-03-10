@@ -25,12 +25,26 @@ export function registerAdminRoutes(
     res.json(await paymentService.getDashboardSummary());
   });
 
+  app.get("/api/admin/vip-stats", requireAdmin, async (_req, res) => {
+    res.json(await adminService.getVipStats());
+  });
+
   app.get("/api/admin/transactions", requireAdmin, async (_req, res) => {
     res.json(await adminService.listTransactions());
   });
 
   app.get("/api/admin/memberships", requireAdmin, async (_req, res) => {
     res.json(await adminService.listMemberships());
+  });
+
+  app.get("/api/admin/memberships/search", requireAdmin, async (req, res) => {
+    const query = typeof req.query.q === "string" ? req.query.q.trim() : "";
+    if (!query) {
+      res.json(await adminService.listMemberships());
+      return;
+    }
+
+    res.json(await adminService.searchMemberships(query));
   });
 
   app.get("/api/admin/pending", requireAdmin, async (_req, res) => {
@@ -66,6 +80,17 @@ export function registerAdminRoutes(
     }
   });
 
+  app.post("/api/admin/pending/:paymentId/delete", requireAdmin, async (req, res) => {
+    try {
+      await adminService.deletePendingPayment(String(req.params.paymentId ?? ""));
+      res.status(204).send();
+    } catch (error) {
+      res.status(400).json({
+        error: error instanceof Error ? error.message : "Delete pending payment failed",
+      });
+    }
+  });
+
   app.post("/api/admin/orders/:orderId/confirm", requireAdmin, async (req, res) => {
     try {
       const result = await paymentService.confirmManualOrder(String(req.params.orderId ?? ""));
@@ -73,6 +98,17 @@ export function registerAdminRoutes(
     } catch (error) {
       res.status(400).json({
         error: error instanceof Error ? error.message : "Manual confirm failed",
+      });
+    }
+  });
+
+  app.post("/api/admin/memberships/:membershipId/revoke", requireAdmin, async (req, res) => {
+    try {
+      const result = await adminService.revokeMembership(String(req.params.membershipId ?? ""));
+      res.json(result);
+    } catch (error) {
+      res.status(400).json({
+        error: error instanceof Error ? error.message : "Revoke membership failed",
       });
     }
   });

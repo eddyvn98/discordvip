@@ -12,3 +12,18 @@
   [32m➜[39m  [1mLocal[22m:   [36mhttp://localhost:[1m4511[22m/[39m
   [32m➜[39m  [1mNetwork[22m: [36mhttp://192.168.1.123:[1m4511[22m/[39m
   [32m➜[39m  [1mNetwork[22m: [36mhttp://172.21.16.1:[1m4511[22m/[39m
+[2m9:20:25 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/App.js[22m
+[2m9:25:12 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/App.js[22m
+[2m9:25:20 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mindex.html[22m
+[2m9:25:24 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/styles.css[22m
+[2m9:27:32 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/App.js[22m
+[2m9:36:08 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/App.js[22m
+[2m9:36:37 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2msrc/main.tsx[22m
+[2m9:38:40 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2msrc/main.tsx[22m
+[2m9:38:45 AM[22m [36m[1m[vite][22m[39m [32mvite.config.ts changed, restarting server...[39m
+[2m9:38:45 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m Re-optimizing dependencies because vite config has changed
+[2m9:38:45 AM[22m [36m[1m[vite][22m[39m server restarted.
+
+  [32m➜[39m  [1mLocal[22m:   [36mhttp://localhost:[1m4511[22m/[39m
+  [32m➜[39m  [1mNetwork[22m: [36mhttp://192.168.1.218:[1m4511[22m/[39m
+  [32m➜[39m  [1mNetwork[22m: [36mhttp://172.21.16.1:[1m4511[22m/[39m

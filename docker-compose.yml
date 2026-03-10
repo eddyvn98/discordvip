@@ -32,6 +32,8 @@ services:
     restart: unless-stopped
     depends_on:
       - app-server
+    ports:
+      - "13001:4173"
     expose:
       - "4173"
 
@@ -50,7 +52,10 @@ services:
     image: cloudflare/cloudflared:latest
     restart: unless-stopped
     profiles: ["tunnel"]
-    command: tunnel --no-autoupdate run --token ${CLOUDFLARE_TUNNEL_TOKEN}
+    command: tunnel --no-autoupdate --config /etc/cloudflared/config.yml run
+    volumes:
+      - ./cloudflared/config.yml:/etc/cloudflared/config.yml:ro
+      - C:/Users/eddyvn/.cloudflared/214e0dc2-0c10-427a-9060-74fe09b52486.json:/etc/cloudflared/credentials.json:ro
     depends_on:
       - web-gateway
 

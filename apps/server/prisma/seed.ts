@@ -9,16 +9,33 @@ async function main() {
   await prisma.plan.upsert({
     where: { code: "VIP_30_DAYS" },
     update: {
-      name: "VIP 30 ngày",
-      amount: 30000,
-      durationDays: 30,
+      name: "39.000đ tặng VIP 31 ngày",
+      amount: 39000,
+      durationDays: 31,
       isActive: true,
     },
     create: {
       code: "VIP_30_DAYS",
-      name: "VIP 30 ngày",
-      amount: 30000,
-      durationDays: 30,
+      name: "39.000đ tặng VIP 31 ngày",
+      amount: 39000,
+      durationDays: 31,
+      isActive: true,
+    },
+  });
+
+  await prisma.plan.upsert({
+    where: { code: "VIP_90_DAYS" },
+    update: {
+      name: "99.000đ tặng VIP 90 ngày",
+      amount: 99000,
+      durationDays: 90,
+      isActive: true,
+    },
+    create: {
+      code: "VIP_90_DAYS",
+      name: "99.000đ tặng VIP 90 ngày",
+      amount: 99000,
+      durationDays: 90,
       isActive: true,
     },
   });
@@ -26,15 +43,15 @@ async function main() {
   await prisma.plan.upsert({
     where: { code: "VIP_365_DAYS" },
     update: {
-      name: "VIP 1 năm",
-      amount: 300000,
+      name: "199.000đ tặng VIP 365 ngày",
+      amount: 199000,
       durationDays: 365,
       isActive: true,
     },
     create: {
       code: "VIP_365_DAYS",
-      name: "VIP 1 năm",
-      amount: 300000,
+      name: "199.000đ tặng VIP 365 ngày",
+      amount: 199000,
       durationDays: 365,
       isActive: true,
     },

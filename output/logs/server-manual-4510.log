@@ -64,3 +64,160 @@ Node.js v24.13.1
 c{"level":"info","message":"Discord bot startup skipped","meta":{"reason":"DISCORD_BOT_ENABLED=false"},"time":"2026-03-08T11:48:05.743Z"}
 {"level":"info","message":"Server started","meta":{"port":4510},"time":"2026-03-08T11:48:05.758Z"}
 {"level":"error","message":"Failed to remove VIP role","meta":{"membershipId":"cmmhodjqi0001mu6f6urrpw66","error":{"name":"Error","message":"Discord bot is disabled in this environment.","stack":"Error: Discord bot is disabled in this environment.\n    at DiscordService.getGuildMember (D:\\discordvip\\apps\\server\\src\\services\\discord-service.ts:78:13)\n    at DiscordService.removeVipRole (D:\\discordvip\\apps\\server\\src\\services\\discord-service.ts:139:31)\n    at run (D:\\discordvip\\apps\\server\\src\\scheduler.ts:17:30)"}},"time":"2026-03-08T12:01:05.865Z"}
+D:\discordvip\node_modules\@prisma\client\src\runtime\RequestHandler.ts:228
+      throw new PrismaClientKnownRequestError(message, {
+            ^
+
+PrismaClientKnownRequestError: 
+Invalid `prisma.order.updateMany()` invocation in
+D:\discordvip\apps\server\src\services\order-service.ts:43:25
+
+  40 }
+  41 
+  42 async markExpiredOrders() {
+→ 43   return prisma.order.updateMany(
+Can't reach database server at `localhost:5432`
+
+Please make sure your database server is running at `localhost:5432`.
+    at ei.handleRequestError (D:\discordvip\node_modules\@prisma\client\src\runtime\RequestHandler.ts:228:13)
+    at ei.handleAndLogRequestError (D:\discordvip\node_modules\@prisma\client\src\runtime\RequestHandler.ts:174:12)
+    at ei.request (D:\discordvip\node_modules\@prisma\client\src\runtime\RequestHandler.ts:143:12)
+    at async a (D:\discordvip\node_modules\@prisma\client\src\runtime\getPrismaClient.ts:833:24)
+    at async run (D:\discordvip\apps\server\src\scheduler.ts:12:5) {
+  code: 'P1001',
+  meta: { modelName: 'Order', database_location: 'localhost:5432' },
+  clientVersion: '6.19.2'
+}
+
+Node.js v24.13.1
+10:42:10 AM [tsx] change in ./src\services\admin-service.ts Rerunning...
+c{"level":"info","message":"Discord bot startup skipped","meta":{"reason":"DISCORD_BOT_ENABLED=false"},"time":"2026-03-09T03:42:12.048Z"}
+{"level":"info","message":"Server started","meta":{"port":4510},"time":"2026-03-09T03:42:12.117Z"}
+10:42:15 AM [tsx] change in ./src\http\admin.ts Restarting...
+c{"level":"info","message":"Discord bot startup skipped","meta":{"reason":"DISCORD_BOT_ENABLED=false"},"time":"2026-03-09T03:42:17.023Z"}
+{"level":"info","message":"Server started","meta":{"port":4510},"time":"2026-03-09T03:42:17.038Z"}
+10:54:38 AM [tsx] change in ./src\services\discord-service.ts Restarting...
+c{"level":"info","message":"Discord bot startup skipped","meta":{"reason":"DISCORD_BOT_ENABLED=false"},"time":"2026-03-09T03:54:39.665Z"}
+{"level":"info","message":"Server started","meta":{"port":4510},"time":"2026-03-09T03:54:39.682Z"}
+10:54:59 AM [tsx] change in ./src\index.ts Restarting...
+c{"level":"info","message":"Discord bot startup skipped","meta":{"reason":"DISCORD_BOT_ENABLED=false"},"time":"2026-03-09T03:55:00.487Z"}
+{"level":"info","message":"Server started","meta":{"port":4510},"time":"2026-03-09T03:55:00.502Z"}
+9:00:11 PM [tsx] change in ./src\services\discord-service.ts Restarting...
+c{"level":"info","message":"Discord bot startup skipped","meta":{"reason":"DISCORD_BOT_ENABLED=false"},"time":"2026-03-09T14:00:13.627Z"}
+{"level":"info","message":"Server started","meta":{"port":4510},"time":"2026-03-09T14:00:13.644Z"}
+12:36:02 AM [tsx] change in ./src\lib\billing.ts Restarting...
+c{"level":"info","message":"Server started","meta":{"port":4510},"time":"2026-03-09T17:36:18.602Z"}
+{"level":"info","message":"Discord bot connected","meta":{"user":"BOT VIP#8201"},"time":"2026-03-09T17:36:18.835Z"}
+12:36:57 AM [tsx] unlink in ./src\services\discord-service.ts Restarting...
+c{"level":"info","message":"Server started","meta":{"port":4510},"time":"2026-03-09T17:37:01.903Z"}
+{"level":"info","message":"Discord bot connected","meta":{"user":"BOT VIP#8201"},"time":"2026-03-09T17:37:02.416Z"}
+{"level":"error","message":"Interaction handling failed","meta":{"error":{"name":"Error","message":"Order nÃ y khÃ´ng cÃ²n á»Ÿ tráº¡ng thÃ¡i pending.","stack":"Error: Order nÃ y khÃ´ng cÃ²n á»Ÿ tráº¡ng thÃ¡i pending.\n    at PaymentService.rejectManualOrder (D:\\discordvip\\apps\\server\\src\\services\\payment-service.ts:207:13)\n    at async handleManualReviewAction (D:\\discordvip\\apps\\server\\src\\index.ts:183:5)\n    at async Client.<anonymous> (D:\\discordvip\\apps\\server\\src\\index.ts:203:24)"}},"time":"2026-03-09T17:42:58.451Z"}
+node:events:486
+      throw er; // Unhandled 'error' event
+      ^
+
+DiscordAPIError[40060]: Interaction has already been acknowledged.
+    at handleErrors (D:\discordvip\node_modules\@discordjs\rest\src\lib\handlers\Shared.ts:148:10)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async BurstHandler.runRequest (D:\discordvip\node_modules\@discordjs\rest\src\lib\handlers\BurstHandler.ts:144:20)
+    at async _REST.request (D:\discordvip\node_modules\@discordjs\rest\src\lib\REST.ts:210:20)
+    at async ButtonInteraction.reply (D:\discordvip\node_modules\discord.js\src\structures\interfaces\InteractionResponses.js:193:22)
+    at async Client.<anonymous> (D:\discordvip\apps\server\src\index.ts:242:9)
+Emitted 'error' event on Client instance at:
+    at emitUnhandledRejectionOrErr (node:events:391:10)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21) {
+  requestBody: {
+    files: [],
+    json: {
+      type: 4,
+      data: {
+        content: 'Da co loi xay ra, vui long thu lai.',
+        tts: false,
+        nonce: undefined,
+        enforce_nonce: false,
+        embeds: undefined,
+        components: undefined,
+        username: undefined,
+        avatar_url: undefined,
+        allowed_mentions: undefined,
+        flags: 64,
+        message_reference: undefined,
+        attachments: undefined,
+        sticker_ids: undefined,
+        thread_name: undefined,
+        applied_tags: undefined,
+        poll: undefined
+      }
+    }
+  },
+  rawError: {
+    message: 'Interaction has already been acknowledged.',
+    code: 40060
+  },
+  code: 40060,
+  status: 400,
+  method: 'POST',
+  url: 'https://discord.com/api/v10/interactions/1480621934965424282/aW50ZXJhY3Rpb246MTQ4MDYyMTkzNDk2NTQyNDI4MjpOOElJWFdzMjVJTHlHQ1ZGdnB0ZEY1NVN1bXFCeXIyUXZTbzZIckJXVUpJYkJ0WEJUUlZCZk0wdEZ2cDNOTFBwYjAyMVBDQThNY1FlaW5hU1lJQmtkQkNocFZoaWtPSVdvQXBQUE5zSW5ib0RLWFhDWkNEQXUzTFM2NlpYWTR5ag/callback?with_response=false'
+}
+
+Node.js v24.13.1
+12:53:40 AM [tsx] change in ./src\index.ts Rerunning...
+c{"level":"info","message":"Server started","meta":{"port":4510},"time":"2026-03-09T17:53:57.447Z"}
+{"level":"info","message":"Discord bot connected","meta":{"user":"BOT VIP#8201"},"time":"2026-03-09T17:53:57.942Z"}
+{"level":"error","message":"Interaction handling failed","meta":{"error":{"name":"DiscordAPIError[10062]","message":"Unknown interaction","stack":"DiscordAPIError[10062]: Unknown interaction\n    at handleErrors (D:\\discordvip\\node_modules\\@discordjs\\rest\\src\\lib\\handlers\\Shared.ts:148:10)\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)\n    at async BurstHandler.runRequest (D:\\discordvip\\node_modules\\@discordjs\\rest\\src\\lib\\handlers\\BurstHandler.ts:144:20)\n    at async _REST.request (D:\\discordvip\\node_modules\\@discordjs\\rest\\src\\lib\\REST.ts:210:20)\n    at async ChatInputCommandInteraction.reply (D:\\discordvip\\node_modules\\discord.js\\src\\structures\\interfaces\\InteractionResponses.js:193:22)\n    at async handleDonate (D:\\discordvip\\apps\\server\\src\\index.ts:48:3)\n    at async Client.<anonymous> (D:\\discordvip\\apps\\server\\src\\index.ts:217:9)"}},"time":"2026-03-09T17:55:27.316Z"}
+node:events:486
+      throw er; // Unhandled 'error' event
+      ^
+
+DiscordAPIError[40060]: Interaction has already been acknowledged.
+    at handleErrors (D:\discordvip\node_modules\@discordjs\rest\src\lib\handlers\Shared.ts:148:10)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async BurstHandler.runRequest (D:\discordvip\node_modules\@discordjs\rest\src\lib\handlers\BurstHandler.ts:144:20)
+    at async _REST.request (D:\discordvip\node_modules\@discordjs\rest\src\lib\REST.ts:210:20)
+    at async ChatInputCommandInteraction.reply (D:\discordvip\node_modules\discord.js\src\structures\interfaces\InteractionResponses.js:193:22)
+    at async Client.<anonymous> (D:\discordvip\apps\server\src\index.ts:242:9)
+Emitted 'error' event on Client instance at:
+    at emitUnhandledRejectionOrErr (node:events:391:10)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21) {
+  requestBody: {
+    files: [],
+    json: {
+      type: 4,
+      data: {
+        content: 'Đã có lỗi xảy ra, vui lòng thử lại.',
+        tts: false,
+        nonce: undefined,
+        enforce_nonce: false,
+        embeds: undefined,
+        components: undefined,
+        username: undefined,
+        avatar_url: undefined,
+        allowed_mentions: undefined,
+        flags: 64,
+        message_reference: undefined,
+        attachments: undefined,
+        sticker_ids: undefined,
+        thread_name: undefined,
+        applied_tags: undefined,
+        poll: undefined
+      }
+    }
+  },
+  rawError: {
+    message: 'Interaction has already been acknowledged.',
+    code: 40060
+  },
+  code: 40060,
+  status: 400,
+  method: 'POST',
+  url: 'https://discord.com/api/v10/interactions/1480625074234069114/aW50ZXJhY3Rpb246MTQ4MDYyNTA3NDIzNDA2OTExNDpKZXdmaXpleDNLckQ0dWZlWGdGQ2dlQ2Z2azZXWVZUZ29PQWhYUmRUUTJpN1RobGFSSDhMZlhLOURYVVZVVWtLT2xzOFpNMnlPN2VLU0YwdWwxYmljTWZtRklEazJwc3JkVnhER3ptdFJpVzlFbFViYkZCN3BQZGlBbmlSV29ZUw/callback?with_response=false'
+}
+
+Node.js v24.13.1
+npm error Lifecycle script `dev` failed with error:
+npm error code 4294967295
+npm error path D:\discordvip\apps\server
+npm error workspace @discordvip/server@1.0.0
+npm error location D:\discordvip\apps\server
+npm error command failed
+npm error command C:\WINDOWS\system32\cmd.exe /d /s /c tsx watch src/index.ts
