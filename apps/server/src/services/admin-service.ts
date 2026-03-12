@@ -5,6 +5,13 @@ import { prisma } from "../prisma.js";
 import { DiscordService } from "./discord-service.js";
 
 export class AdminService {
+  private readonly discordNameCache = new Map<string, { name: string; expiresAt: number }>();
+  private readonly discordNameInflight = new Map<string, Promise<string | null>>();
+  private static readonly DISCORD_NAME_CACHE_TTL_MS = 10 * 60 * 1000;
+  private static readonly DISCORD_NAME_FETCH_TIMEOUT_MS = 1200;
+  private static readonly DISCORD_NAME_FETCH_LIMIT = 40;
+  private static readonly DISCORD_NAME_FETCH_CONCURRENCY = 8;
+
   constructor(private readonly discordService?: DiscordService) {}
 
   private getTodayRangeInVietnam() {
@@ -67,22 +74,81 @@ export class AdminService {
     return user.username;
   }
 
+  private getCachedDiscordDisplayName(userId: string) {
+    const cached = this.discordNameCache.get(userId);
+    if (!cached) {
+      return null;
+    }
+    if (cached.expiresAt <= Date.now()) {
+      this.discordNameCache.delete(userId);
+      return null;
+    }
+    return cached.name;
+  }
+
+  private setCachedDiscordDisplayName(userId: string, displayName: string) {
+    this.discordNameCache.set(userId, {
+      name: displayName,
+      expiresAt: Date.now() + AdminService.DISCORD_NAME_CACHE_TTL_MS,
+    });
+  }
+
+  private async fetchDiscordDisplayName(userId: string) {
+    const cached = this.getCachedDiscordDisplayName(userId);
+    if (cached) {
+      return cached;
+    }
+
+    const inflight = this.discordNameInflight.get(userId);
+    if (inflight) {
+      return inflight;
+    }
+
+    const fetchPromise = (async () => {
+      try {
+        const user = await Promise.race([
+          this.discordService!.client.users.fetch(userId),
+          new Promise<never>((_, reject) =>
+            setTimeout(
+              () => reject(new Error("discord_fetch_timeout")),
+              AdminService.DISCORD_NAME_FETCH_TIMEOUT_MS,
+            ),
+          ),
+        ]);
+        const displayName = this.formatDiscordDisplayName(user);
+        this.setCachedDiscordDisplayName(userId, displayName);
+        return displayName;
+      } catch {
+        return null;
+      } finally {
+        this.discordNameInflight.delete(userId);
+      }
+    })();
+
+    this.discordNameInflight.set(userId, fetchPromise);
+    return fetchPromise;
+  }
+
   private async resolveDiscordDisplayNames(userIds: string[]) {
-    const uniqueUserIds = [...new Set(userIds.filter(Boolean))];
+    const uniqueUserIds = [...new Set(userIds.filter(Boolean))].slice(
+      0,
+      AdminService.DISCORD_NAME_FETCH_LIMIT,
+    );
     if (!uniqueUserIds.length || !this.discordService || !env.DISCORD_BOT_ENABLED) {
       return {} as Record<string, string>;
     }
 
-    const records = await Promise.all(
-      uniqueUserIds.map(async (userId) => {
-        try {
-          const user = await this.discordService!.client.users.fetch(userId);
-          return [userId, this.formatDiscordDisplayName(user)] as const;
-        } catch {
-          return [userId, null] as const;
-        }
-      }),
-    );
+    const records: Array<readonly [string, string | null]> = [];
+    for (let i = 0; i < uniqueUserIds.length; i += AdminService.DISCORD_NAME_FETCH_CONCURRENCY) {
+      const batch = uniqueUserIds.slice(i, i + AdminService.DISCORD_NAME_FETCH_CONCURRENCY);
+      const batchRecords = await Promise.all(
+        batch.map(async (userId) => {
+          const displayName = await this.fetchDiscordDisplayName(userId);
+          return [userId, displayName] as const;
+        }),
+      );
+      records.push(...batchRecords);
+    }
 
     return Object.fromEntries(
       records.filter((record): record is readonly [string, string] => Boolean(record[1])),

@@ -268,7 +268,8 @@ export class MembershipService {
 
   async listMembershipsNeedingReminder(thresholdDays: number, limit = 20) {
     const now = new Date();
-    const threshold = new Date(now.getTime() + thresholdDays * 24 * 60 * 60 * 1000);
+    const upperThreshold = new Date(now.getTime() + thresholdDays * 24 * 60 * 60 * 1000);
+    const lowerThreshold = new Date(now.getTime() + (thresholdDays - 1) * 24 * 60 * 60 * 1000);
     const reminderField =
       thresholdDays === 3 ? "reminded3dAt" : thresholdDays === 1 ? "reminded1dAt" : null;
 
@@ -280,10 +281,11 @@ export class MembershipService {
       where: {
         guildId: env.DISCORD_GUILD_ID,
         roleId: env.DISCORD_VIP_ROLE_ID,
+        source: MembershipSource.PAID,
         status: MembershipStatus.ACTIVE,
         expireAt: {
-          gt: now,
-          lte: threshold,
+          gt: lowerThreshold,
+          lte: upperThreshold,
         },
         [reminderField]: null,
       },

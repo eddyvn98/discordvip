@@ -92,6 +92,17 @@ export class DiscordService {
     await member.roles.add(env.DISCORD_VIP_ROLE_ID);
   }
 
+  async sendVipActivatedNotice(discordUserId: string, expireAt: Date) {
+    const user = await this.client.users.fetch(discordUserId);
+    await user.send({
+      content: [
+        "Thanh toán đã được xác nhận thành công. VIP của bạn đã được kích hoạt.",
+        `Hạn sử dụng hiện tại: <t:${Math.floor(expireAt.getTime() / 1000)}:F>.`,
+        "Bạn có thể tự kiểm tra bất kỳ lúc nào bằng lệnh `/vipstatus` trong server.",
+      ].join("\n"),
+    });
+  }
+
   async sendManualOrderReview(order: {
     id: string;
     orderCode: string;
@@ -172,11 +183,55 @@ export class DiscordService {
       throw new Error("DISCORD_ADMIN_CHANNEL_ID must point to a guild text channel.");
     }
 
+    let userLabel = `ID ${discordUserId}`;
+    let membershipHint = "";
+    try {
+      const member = await this.getGuildMember(discordUserId);
+      userLabel = `<@${member.id}>`;
+    } catch {
+      try {
+        const user = await this.client.users.fetch(discordUserId);
+        userLabel = `${user.username} (${user.id})`;
+        membershipHint = " [không còn trong guild]";
+      } catch {
+        userLabel = `ID ${discordUserId}`;
+      }
+    }
+
     await channel.send({
       content: [
-        `Nhắc hết hạn VIP: <@${discordUserId}>`,
+        `Nhắc hết hạn VIP: ${userLabel}${membershipHint}`,
         `Hết hạn: <t:${Math.floor(expireAt.getTime() / 1000)}:F>`,
         `Mốc nhắc: còn khoảng ${thresholdDays} ngày`,
+      ].join("\n"),
+      flags: MessageFlags.SuppressNotifications,
+    });
+  }
+
+  async sendAdminAutoPaymentConfirmedNotice(input: {
+    discordUserId: string;
+    orderCode: string;
+    amount: number;
+    expireAt: Date;
+    providerTransactionId: string;
+  }) {
+    if (!env.DISCORD_ADMIN_CHANNEL_ID) {
+      return;
+    }
+
+    const channel = await this.client.channels.fetch(env.DISCORD_ADMIN_CHANNEL_ID);
+    if (!channel || channel.type !== ChannelType.GuildText) {
+      throw new Error("DISCORD_ADMIN_CHANNEL_ID must point to a guild text channel.");
+    }
+
+    await channel.send({
+      content: [
+        "Da xac nhan thanh toan tu dong.",
+        `User: <@${input.discordUserId}>`,
+        `Order: ${input.orderCode}`,
+        `So tien: ${input.amount.toLocaleString("vi-VN")} VND`,
+        `Ma giao dich: ${input.providerTransactionId}`,
+        `VIP het han: <t:${Math.floor(input.expireAt.getTime() / 1000)}:F>`,
       ].join("\n"),
       flags: MessageFlags.SuppressNotifications,
     });

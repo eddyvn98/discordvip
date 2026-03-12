@@ -1,4 +1,5 @@
-﻿import { NavLink, Route, Routes } from "react-router-dom";
+﻿import { useState } from "react";
+import { NavLink, Route, Routes } from "react-router-dom";
 
 import type { AdminUser } from "../../types";
 import { DashboardPage } from "../../pages/DashboardPage";
@@ -13,19 +14,47 @@ type AdminLayoutProps = {
 };
 
 export function AdminLayout({ user, onLogout }: AdminLayoutProps) {
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+
   return (
     <div className="layout">
-      <aside className="sidebar">
+      <button
+        className="mobile-menu-button"
+        type="button"
+        aria-label="Mở menu"
+        onClick={() => setMobileSidebarOpen(true)}
+      >
+        Menu
+      </button>
+      {mobileSidebarOpen ? (
+        <button
+          className="sidebar-backdrop"
+          type="button"
+          aria-label="Đóng menu"
+          onClick={() => setMobileSidebarOpen(false)}
+        />
+      ) : null}
+      <aside className={`sidebar ${mobileSidebarOpen ? "open" : ""}`}>
         <div>
           <p className="eyebrow">Discord VIP</p>
           <h2>Quản trị</h2>
         </div>
         <nav>
-          <NavLink to="/">Tổng quan</NavLink>
-          <NavLink to="/vip-stats">Thống kê VIP</NavLink>
-          <NavLink to="/transactions">Giao dịch</NavLink>
-          <NavLink to="/memberships">Thành viên VIP</NavLink>
-          <NavLink to="/pending">Chờ xử lý</NavLink>
+          <NavLink to="/" onClick={() => setMobileSidebarOpen(false)}>
+            Tổng quan
+          </NavLink>
+          <NavLink to="/vip-stats" onClick={() => setMobileSidebarOpen(false)}>
+            Thống kê VIP
+          </NavLink>
+          <NavLink to="/transactions" onClick={() => setMobileSidebarOpen(false)}>
+            Giao dịch
+          </NavLink>
+          <NavLink to="/memberships" onClick={() => setMobileSidebarOpen(false)}>
+            Thành viên VIP
+          </NavLink>
+          <NavLink to="/pending" onClick={() => setMobileSidebarOpen(false)}>
+            Chờ xử lý
+          </NavLink>
         </nav>
         <div className="sidebar-footer">
           <div className="user-card">

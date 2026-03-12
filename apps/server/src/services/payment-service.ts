@@ -114,6 +114,37 @@ export class PaymentService {
           error,
         });
       }
+
+      if (applied.membership) {
+        try {
+          await this.discordService.sendVipActivatedNotice(
+            order.discordUserId,
+            applied.membership.expireAt,
+          );
+        } catch (error) {
+          logger.warn("Failed to send VIP activated DM", {
+            discordUserId: order.discordUserId,
+            error,
+          });
+        }
+
+        try {
+          await this.discordService.sendAdminAutoPaymentConfirmedNotice({
+            discordUserId: order.discordUserId,
+            orderCode: order.orderCode,
+            amount: normalized.amount,
+            expireAt: applied.membership.expireAt,
+            providerTransactionId: normalized.transactionId,
+          });
+        } catch (error) {
+          logger.warn("Failed to send admin auto payment confirmation", {
+            discordUserId: order.discordUserId,
+            orderCode: order.orderCode,
+            transactionId: normalized.transactionId,
+            error,
+          });
+        }
+      }
     }
 
     return { duplicate: false, status: "matched" as const };

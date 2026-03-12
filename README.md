@@ -58,6 +58,30 @@ docker compose up --build
 Tai lieu van hanh:
 - `docs/vps-khuyen-nghi-va-database.md`: Cau hinh VPS khuyen nghi va noi luu/backup database.
 
+### Sao luu database tu dong
+
+Stack Docker da co san service `db-backup`:
+- Tu dong backup ngay khi khoi dong stack
+- Chay dinh ky theo cron (mac dinh: `03:00` moi ngay)
+- Luu file tai thu muc host `./backups` (dinh dang `.sql.gz`)
+- Tu dong xoa ban backup cu qua so ngay giu (mac dinh: 14 ngay)
+
+Co the tuy chinh trong file `.env`:
+
+```bash
+POSTGRES_DB=discordvip
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=postgres
+BACKUP_CRON=0 3 * * *
+BACKUP_RETENTION_DAYS=14
+```
+
+Khoi phuc tu file backup:
+
+```bash
+gzip -dc ./backups/<file>.sql.gz | docker exec -i discordvip-postgres-1 psql -U postgres -d discordvip
+```
+
 ### Chế độ xác nhận thủ công
 
 - Đặt `PAYMENT_MODE=manual` để bỏ qua SePay trước mắt.

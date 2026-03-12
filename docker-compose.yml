@@ -11,6 +11,25 @@ services:
     volumes:
       - postgres-data:/var/lib/postgresql/data
 
+  db-backup:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: ${POSTGRES_DB:-discordvip}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      BACKUP_CRON: ${BACKUP_CRON:-0 3 * * *}
+      RETENTION_DAYS: ${BACKUP_RETENTION_DAYS:-14}
+      BACKUP_DIR: /backups
+    depends_on:
+      - postgres
+    volumes:
+      - ./scripts/db-backup:/scripts:ro
+      - ./backups:/backups
+    command: ["/bin/sh", "/scripts/entrypoint.sh"]
+
   app-server:
     build:
       context: .

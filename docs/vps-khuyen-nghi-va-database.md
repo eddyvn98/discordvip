@@ -75,15 +75,28 @@ Uu diem:
 
 ## 4) Backup toi thieu de tranh mat du lieu
 
-Backup logic hang ngay:
+Repo da co service backup tu dong `db-backup` trong `docker-compose.yml`:
+- Chay backup ngay khi container backup start
+- Chay cron theo bien `BACKUP_CRON` (mac dinh: `0 3 * * *`)
+- Luu backup `.sql.gz` vao `./backups` tren host
+- Xoa backup cu hon `BACKUP_RETENTION_DAYS` (mac dinh: 14)
+
+Cau hinh nhanh trong `.env`:
 
 ```bash
-docker exec -t <postgres_container> pg_dump -U postgres -d discordvip > /opt/discordvip/backups/discordvip-$(date +%F).sql
+BACKUP_CRON=0 3 * * *
+BACKUP_RETENTION_DAYS=14
 ```
 
-Nen giu it nhat:
-- Ban backup 7 ngay gan nhat (local)
-- Them 1 ban sao offsite (S3, R2, Google Drive, ...)
+Restore tu backup:
+
+```bash
+gzip -dc ./backups/<file>.sql.gz | docker exec -i <postgres_container> psql -U postgres -d discordvip
+```
+
+Khuyen nghi them:
+- Giu toi thieu 7 ngay local
+- Co them 1 ban sao offsite (S3, R2, Google Drive, ...)
 
 ## 5) Checklist van hanh production (toi gian)
 

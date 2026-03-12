@@ -397,3 +397,529 @@ Emitted 'error' event on Server instance at:
 }
 
 Node.js v24.13.1
+2:12:41 PM [tsx] change in ./src\services\membership-service.ts Rerunning...
+cnode:events:486
+      throw er; // Unhandled 'error' event
+      ^
+
+Error: listen EADDRINUSE: address already in use :::3001
+    at Server.setupListenHandle [as _listen2] (node:net:1940:16)
+    at listenInCluster (node:net:1997:12)
+    at Server.listen (node:net:2102:7)
+    at app.listen (D:\discordvip\node_modules\express\lib\application.js:635:24)
+    at bootstrap (D:\discordvip\apps\server\src\index.ts:258:7)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+Emitted 'error' event on Server instance at:
+    at emitErrorNT (node:net:1976:8)
+    at process.processTicksAndRejections (node:internal/process/task_queues:89:21) {
+  code: 'EADDRINUSE',
+  errno: -4091,
+  syscall: 'listen',
+  address: '::',
+  port: 3001
+}
+
+Node.js v24.13.1
+2:19:25 PM [tsx] change in ./src\services\discord-service.ts Rerunning...
+cnode:events:486
+      throw er; // Unhandled 'error' event
+      ^
+
+Error: listen EADDRINUSE: address already in use :::3001
+    at Server.setupListenHandle [as _listen2] (node:net:1940:16)
+    at listenInCluster (node:net:1997:12)
+    at Server.listen (node:net:2102:7)
+    at app.listen (D:\discordvip\node_modules\express\lib\application.js:635:24)
+    at bootstrap (D:\discordvip\apps\server\src\index.ts:258:7)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+Emitted 'error' event on Server instance at:
+    at emitErrorNT (node:net:1976:8)
+    at process.processTicksAndRejections (node:internal/process/task_queues:89:21) {
+  code: 'EADDRINUSE',
+  errno: -4091,
+  syscall: 'listen',
+  address: '::',
+  port: 3001
+}
+
+Node.js v24.13.1
+2:19:31 PM [tsx] change in ./src\services\payment-service.ts Rerunning...
+cnode:events:486
+      throw er; // Unhandled 'error' event
+      ^
+
+Error: listen EADDRINUSE: address already in use :::3001
+    at Server.setupListenHandle [as _listen2] (node:net:1940:16)
+    at listenInCluster (node:net:1997:12)
+    at Server.listen (node:net:2102:7)
+    at app.listen (D:\discordvip\node_modules\express\lib\application.js:635:24)
+    at bootstrap (D:\discordvip\apps\server\src\index.ts:258:7)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+Emitted 'error' event on Server instance at:
+    at emitErrorNT (node:net:1976:8)
+    at process.processTicksAndRejections (node:internal/process/task_queues:89:21) {
+  code: 'EADDRINUSE',
+  errno: -4091,
+  syscall: 'listen',
+  address: '::',
+  port: 3001
+}
+
+Node.js v24.13.1
+5:12:14 PM [tsx] change in ./src\services\membership-service.ts Rerunning...
+cnode:events:486
+      throw er; // Unhandled 'error' event
+      ^
+
+Error: listen EADDRINUSE: address already in use :::3001
+    at Server.setupListenHandle [as _listen2] (node:net:1940:16)
+    at listenInCluster (node:net:1997:12)
+    at Server.listen (node:net:2102:7)
+    at app.listen (D:\discordvip\node_modules\express\lib\application.js:635:24)
+    at bootstrap (D:\discordvip\apps\server\src\index.ts:258:7)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+Emitted 'error' event on Server instance at:
+    at emitErrorNT (node:net:1976:8)
+    at process.processTicksAndRejections (node:internal/process/task_queues:89:21) {
+  code: 'EADDRINUSE',
+  errno: -4091,
+  syscall: 'listen',
+  address: '::',
+  port: 3001
+}
+
+Node.js v24.13.1
+5:12:45 PM [tsx] change in ./src\services\discord-service.ts Rerunning...
+cnode:events:486
+      throw er; // Unhandled 'error' event
+      ^
+
+Error: listen EADDRINUSE: address already in use :::3001
+    at Server.setupListenHandle [as _listen2] (node:net:1940:16)
+    at listenInCluster (node:net:1997:12)
+    at Server.listen (node:net:2102:7)
+    at app.listen (D:\discordvip\node_modules\express\lib\application.js:635:24)
+    at bootstrap (D:\discordvip\apps\server\src\index.ts:258:7)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+Emitted 'error' event on Server instance at:
+    at emitErrorNT (node:net:1976:8)
+    at process.processTicksAndRejections (node:internal/process/task_queues:89:21) {
+  code: 'EADDRINUSE',
+  errno: -4091,
+  syscall: 'listen',
+  address: '::',
+  port: 3001
+}
+
+Node.js v24.13.1
+5:14:15 PM [tsx] change in ./src\services\membership-service.ts Rerunning...
+cnode:events:486
+      throw er; // Unhandled 'error' event
+      ^
+
+Error: listen EADDRINUSE: address already in use :::3001
+    at Server.setupListenHandle [as _listen2] (node:net:1940:16)
+    at listenInCluster (node:net:1997:12)
+    at Server.listen (node:net:2102:7)
+    at app.listen (D:\discordvip\node_modules\express\lib\application.js:635:24)
+    at bootstrap (D:\discordvip\apps\server\src\index.ts:258:7)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+Emitted 'error' event on Server instance at:
+    at emitErrorNT (node:net:1976:8)
+    at process.processTicksAndRejections (node:internal/process/task_queues:89:21) {
+  code: 'EADDRINUSE',
+  errno: -4091,
+  syscall: 'listen',
+  address: '::',
+  port: 3001
+}
+
+Node.js v24.13.1
+5:14:42 PM [tsx] change in ./src\services\discord-service.ts Rerunning...
+cnode:events:486
+      throw er; // Unhandled 'error' event
+      ^
+
+Error: listen EADDRINUSE: address already in use :::3001
+    at Server.setupListenHandle [as _listen2] (node:net:1940:16)
+    at listenInCluster (node:net:1997:12)
+    at Server.listen (node:net:2102:7)
+    at app.listen (D:\discordvip\node_modules\express\lib\application.js:635:24)
+    at bootstrap (D:\discordvip\apps\server\src\index.ts:258:7)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+Emitted 'error' event on Server instance at:
+    at emitErrorNT (node:net:1976:8)
+    at process.processTicksAndRejections (node:internal/process/task_queues:89:21) {
+  code: 'EADDRINUSE',
+  errno: -4091,
+  syscall: 'listen',
+  address: '::',
+  port: 3001
+}
+
+Node.js v24.13.1
+5:14:50 PM [tsx] change in ./src\services\discord-service.ts Rerunning...
+c
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+Error [TransformError]: Transform failed with 1 error:
+D:\discordvip\apps\server\src\services\discord-service.ts:100:67: ERROR: Unterminated string literal
+    at failureErrorWithLog (D:\discordvip\node_modules\esbuild\lib\main.js:1467:15)
+    at D:\discordvip\node_modules\esbuild\lib\main.js:736:50
+    at responseCallbacks.<computed> (D:\discordvip\node_modules\esbuild\lib\main.js:603:9)
+    at handleIncomingPacket (D:\discordvip\node_modules\esbuild\lib\main.js:658:12)
+    at Socket.readFromStdout (D:\discordvip\node_modules\esbuild\lib\main.js:581:7)
+    at Socket.emit (node:events:508:28)
+    at addChunk (node:internal/streams/readable:559:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:510:3)
+    at Readable.push (node:internal/streams/readable:390:5)
+    at Pipe.onStreamRead (node:internal/stream_base_commons:189:23)
+
+Node.js v24.13.1
+5:15:08 PM [tsx] change in ./src\services\discord-service.ts Rerunning...
+cnode:events:486
+      throw er; // Unhandled 'error' event
+      ^
+
+Error: listen EADDRINUSE: address already in use :::3001
+    at Server.setupListenHandle [as _listen2] (node:net:1940:16)
+    at listenInCluster (node:net:1997:12)
+    at Server.listen (node:net:2102:7)
+    at app.listen (D:\discordvip\node_modules\express\lib\application.js:635:24)
+    at bootstrap (D:\discordvip\apps\server\src\index.ts:258:7)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+Emitted 'error' event on Server instance at:
+    at emitErrorNT (node:net:1976:8)
+    at process.processTicksAndRejections (node:internal/process/task_queues:89:21) {
+  code: 'EADDRINUSE',
+  errno: -4091,
+  syscall: 'listen',
+  address: '::',
+  port: 3001
+}
+
+Node.js v24.13.1
+5:15:35 PM [tsx] change in ./src\services\discord-service.ts Rerunning...
+cnode:events:486
+      throw er; // Unhandled 'error' event
+      ^
+
+Error: listen EADDRINUSE: address already in use :::3001
+    at Server.setupListenHandle [as _listen2] (node:net:1940:16)
+    at listenInCluster (node:net:1997:12)
+    at Server.listen (node:net:2102:7)
+    at app.listen (D:\discordvip\node_modules\express\lib\application.js:635:24)
+    at bootstrap (D:\discordvip\apps\server\src\index.ts:258:7)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+Emitted 'error' event on Server instance at:
+    at emitErrorNT (node:net:1976:8)
+    at process.processTicksAndRejections (node:internal/process/task_queues:89:21) {
+  code: 'EADDRINUSE',
+  errno: -4091,
+  syscall: 'listen',
+  address: '::',
+  port: 3001
+}
+
+Node.js v24.13.1
+5:15:56 PM [tsx] change in ./src\services\membership-service.ts Rerunning...
+cnode:events:486
+      throw er; // Unhandled 'error' event
+      ^
+
+Error: listen EADDRINUSE: address already in use :::3001
+    at Server.setupListenHandle [as _listen2] (node:net:1940:16)
+    at listenInCluster (node:net:1997:12)
+    at Server.listen (node:net:2102:7)
+    at app.listen (D:\discordvip\node_modules\express\lib\application.js:635:24)
+    at bootstrap (D:\discordvip\apps\server\src\index.ts:258:7)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+Emitted 'error' event on Server instance at:
+    at emitErrorNT (node:net:1976:8)
+    at process.processTicksAndRejections (node:internal/process/task_queues:89:21) {
+  code: 'EADDRINUSE',
+  errno: -4091,
+  syscall: 'listen',
+  address: '::',
+  port: 3001
+}
+
+Node.js v24.13.1
+5:16:03 PM [tsx] change in ./src\services\membership-service.ts Rerunning...
+cnode:events:486
+      throw er; // Unhandled 'error' event
+      ^
+
+Error: listen EADDRINUSE: address already in use :::3001
+    at Server.setupListenHandle [as _listen2] (node:net:1940:16)
+    at listenInCluster (node:net:1997:12)
+    at Server.listen (node:net:2102:7)
+    at app.listen (D:\discordvip\node_modules\express\lib\application.js:635:24)
+    at bootstrap (D:\discordvip\apps\server\src\index.ts:258:7)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+Emitted 'error' event on Server instance at:
+    at emitErrorNT (node:net:1976:8)
+    at process.processTicksAndRejections (node:internal/process/task_queues:89:21) {
+  code: 'EADDRINUSE',
+  errno: -4091,
+  syscall: 'listen',
+  address: '::',
+  port: 3001
+}
+
+Node.js v24.13.1
+5:16:09 PM [tsx] change in ./src\services\discord-service.ts Rerunning...
+cnode:events:486
+      throw er; // Unhandled 'error' event
+      ^
+
+Error: listen EADDRINUSE: address already in use :::3001
+    at Server.setupListenHandle [as _listen2] (node:net:1940:16)
+    at listenInCluster (node:net:1997:12)
+    at Server.listen (node:net:2102:7)
+    at app.listen (D:\discordvip\node_modules\express\lib\application.js:635:24)
+    at bootstrap (D:\discordvip\apps\server\src\index.ts:258:7)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+Emitted 'error' event on Server instance at:
+    at emitErrorNT (node:net:1976:8)
+    at process.processTicksAndRejections (node:internal/process/task_queues:89:21) {
+  code: 'EADDRINUSE',
+  errno: -4091,
+  syscall: 'listen',
+  address: '::',
+  port: 3001
+}
+
+Node.js v24.13.1
+5:21:49 PM [tsx] change in ./src\services\membership-service.ts Rerunning...
+cnode:events:486
+      throw er; // Unhandled 'error' event
+      ^
+
+Error: listen EADDRINUSE: address already in use :::3001
+    at Server.setupListenHandle [as _listen2] (node:net:1940:16)
+    at listenInCluster (node:net:1997:12)
+    at Server.listen (node:net:2102:7)
+    at app.listen (D:\discordvip\node_modules\express\lib\application.js:635:24)
+    at bootstrap (D:\discordvip\apps\server\src\index.ts:258:7)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+Emitted 'error' event on Server instance at:
+    at emitErrorNT (node:net:1976:8)
+    at process.processTicksAndRejections (node:internal/process/task_queues:89:21) {
+  code: 'EADDRINUSE',
+  errno: -4091,
+  syscall: 'listen',
+  address: '::',
+  port: 3001
+}
+
+Node.js v24.13.1
+5:22:28 PM [tsx] change in ./src\services\discord-service.ts Rerunning...
+cnode:events:486
+      throw er; // Unhandled 'error' event
+      ^
+
+Error: listen EADDRINUSE: address already in use :::3001
+    at Server.setupListenHandle [as _listen2] (node:net:1940:16)
+    at listenInCluster (node:net:1997:12)
+    at Server.listen (node:net:2102:7)
+    at app.listen (D:\discordvip\node_modules\express\lib\application.js:635:24)
+    at bootstrap (D:\discordvip\apps\server\src\index.ts:258:7)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+Emitted 'error' event on Server instance at:
+    at emitErrorNT (node:net:1976:8)
+    at process.processTicksAndRejections (node:internal/process/task_queues:89:21) {
+  code: 'EADDRINUSE',
+  errno: -4091,
+  syscall: 'listen',
+  address: '::',
+  port: 3001
+}
+
+Node.js v24.13.1
+5:22:33 PM [tsx] change in ./src\services\discord-service.ts Rerunning...
+cnode:events:486
+      throw er; // Unhandled 'error' event
+      ^
+
+Error: listen EADDRINUSE: address already in use :::3001
+    at Server.setupListenHandle [as _listen2] (node:net:1940:16)
+    at listenInCluster (node:net:1997:12)
+    at Server.listen (node:net:2102:7)
+    at app.listen (D:\discordvip\node_modules\express\lib\application.js:635:24)
+    at bootstrap (D:\discordvip\apps\server\src\index.ts:258:7)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+Emitted 'error' event on Server instance at:
+    at emitErrorNT (node:net:1976:8)
+    at process.processTicksAndRejections (node:internal/process/task_queues:89:21) {
+  code: 'EADDRINUSE',
+  errno: -4091,
+  syscall: 'listen',
+  address: '::',
+  port: 3001
+}
+
+Node.js v24.13.1
+5:22:48 PM [tsx] change in ./src\services\discord-service.ts Rerunning...
+cnode:events:486
+      throw er; // Unhandled 'error' event
+      ^
+
+Error: listen EADDRINUSE: address already in use :::3001
+    at Server.setupListenHandle [as _listen2] (node:net:1940:16)
+    at listenInCluster (node:net:1997:12)
+    at Server.listen (node:net:2102:7)
+    at app.listen (D:\discordvip\node_modules\express\lib\application.js:635:24)
+    at bootstrap (D:\discordvip\apps\server\src\index.ts:258:7)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+Emitted 'error' event on Server instance at:
+    at emitErrorNT (node:net:1976:8)
+    at process.processTicksAndRejections (node:internal/process/task_queues:89:21) {
+  code: 'EADDRINUSE',
+  errno: -4091,
+  syscall: 'listen',
+  address: '::',
+  port: 3001
+}
+
+Node.js v24.13.1
+5:23:14 PM [tsx] change in ./src\services\discord-service.ts Rerunning...
+cnode:events:486
+      throw er; // Unhandled 'error' event
+      ^
+
+Error: listen EADDRINUSE: address already in use :::3001
+    at Server.setupListenHandle [as _listen2] (node:net:1940:16)
+    at listenInCluster (node:net:1997:12)
+    at Server.listen (node:net:2102:7)
+    at app.listen (D:\discordvip\node_modules\express\lib\application.js:635:24)
+    at bootstrap (D:\discordvip\apps\server\src\index.ts:258:7)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+Emitted 'error' event on Server instance at:
+    at emitErrorNT (node:net:1976:8)
+    at process.processTicksAndRejections (node:internal/process/task_queues:89:21) {
+  code: 'EADDRINUSE',
+  errno: -4091,
+  syscall: 'listen',
+  address: '::',
+  port: 3001
+}
+
+Node.js v24.13.1
+5:23:27 PM [tsx] change in ./src\services\discord-service.ts Rerunning...
+cnode:events:486
+      throw er; // Unhandled 'error' event
+      ^
+
+Error: listen EADDRINUSE: address already in use :::3001
+    at Server.setupListenHandle [as _listen2] (node:net:1940:16)
+    at listenInCluster (node:net:1997:12)
+    at Server.listen (node:net:2102:7)
+    at app.listen (D:\discordvip\node_modules\express\lib\application.js:635:24)
+    at bootstrap (D:\discordvip\apps\server\src\index.ts:258:7)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+Emitted 'error' event on Server instance at:
+    at emitErrorNT (node:net:1976:8)
+    at process.processTicksAndRejections (node:internal/process/task_queues:89:21) {
+  code: 'EADDRINUSE',
+  errno: -4091,
+  syscall: 'listen',
+  address: '::',
+  port: 3001
+}
+
+Node.js v24.13.1
+5:23:44 PM [tsx] change in ./src\services\membership-service.ts Rerunning...
+cnode:events:486
+      throw er; // Unhandled 'error' event
+      ^
+
+Error: listen EADDRINUSE: address already in use :::3001
+    at Server.setupListenHandle [as _listen2] (node:net:1940:16)
+    at listenInCluster (node:net:1997:12)
+    at Server.listen (node:net:2102:7)
+    at app.listen (D:\discordvip\node_modules\express\lib\application.js:635:24)
+    at bootstrap (D:\discordvip\apps\server\src\index.ts:258:7)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+Emitted 'error' event on Server instance at:
+    at emitErrorNT (node:net:1976:8)
+    at process.processTicksAndRejections (node:internal/process/task_queues:89:21) {
+  code: 'EADDRINUSE',
+  errno: -4091,
+  syscall: 'listen',
+  address: '::',
+  port: 3001
+}
+
+Node.js v24.13.1
+5:25:31 PM [tsx] change in ./src\services\discord-service.ts Rerunning...
+cnode:events:486
+      throw er; // Unhandled 'error' event
+      ^
+
+Error: listen EADDRINUSE: address already in use :::3001
+    at Server.setupListenHandle [as _listen2] (node:net:1940:16)
+    at listenInCluster (node:net:1997:12)
+    at Server.listen (node:net:2102:7)
+    at app.listen (D:\discordvip\node_modules\express\lib\application.js:635:24)
+    at bootstrap (D:\discordvip\apps\server\src\index.ts:258:7)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+Emitted 'error' event on Server instance at:
+    at emitErrorNT (node:net:1976:8)
+    at process.processTicksAndRejections (node:internal/process/task_queues:89:21) {
+  code: 'EADDRINUSE',
+  errno: -4091,
+  syscall: 'listen',
+  address: '::',
+  port: 3001
+}
+
+Node.js v24.13.1
+5:27:45 PM [tsx] change in ./src\services\discord-service.ts Rerunning...
+cnode:events:486
+      throw er; // Unhandled 'error' event
+      ^
+
+Error: listen EADDRINUSE: address already in use :::3001
+    at Server.setupListenHandle [as _listen2] (node:net:1940:16)
+    at listenInCluster (node:net:1997:12)
+    at Server.listen (node:net:2102:7)
+    at app.listen (D:\discordvip\node_modules\express\lib\application.js:635:24)
+    at bootstrap (D:\discordvip\apps\server\src\index.ts:258:7)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+Emitted 'error' event on Server instance at:
+    at emitErrorNT (node:net:1976:8)
+    at process.processTicksAndRejections (node:internal/process/task_queues:89:21) {
+  code: 'EADDRINUSE',
+  errno: -4091,
+  syscall: 'listen',
+  address: '::',
+  port: 3001
+}
+
+Node.js v24.13.1
+5:29:25 PM [tsx] change in ./src\services\discord-service.ts Rerunning...
+cnode:events:486
+      throw er; // Unhandled 'error' event
+      ^
+
+Error: listen EADDRINUSE: address already in use :::3001
+    at Server.setupListenHandle [as _listen2] (node:net:1940:16)
+    at listenInCluster (node:net:1997:12)
+    at Server.listen (node:net:2102:7)
+    at app.listen (D:\discordvip\node_modules\express\lib\application.js:635:24)
+    at bootstrap (D:\discordvip\apps\server\src\index.ts:258:7)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+Emitted 'error' event on Server instance at:
+    at emitErrorNT (node:net:1976:8)
+    at process.processTicksAndRejections (node:internal/process/task_queues:89:21) {
+  code: 'EADDRINUSE',
+  errno: -4091,
+  syscall: 'listen',
+  address: '::',
+  port: 3001
+}
+
+Node.js v24.13.1
+^C^C^C
