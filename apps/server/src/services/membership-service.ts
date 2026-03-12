@@ -9,15 +9,52 @@ import {
 import { env } from "../config.js";
 import { calculateExtendedExpiry } from "../lib/billing.js";
 import { prisma } from "../prisma.js";
+import { PlatformKey, fromPrismaPlatform, legacyUserIdFor, toPrismaPlatform } from "./platform.js";
+
+type MembershipScope = {
+  platform: PlatformKey;
+  platformUserId: string;
+  platformChatId: string;
+};
+
+type MembershipIdentity = MembershipScope & {
+  legacyUserId: string;
+  roleId: string;
+};
 
 export class MembershipService {
-  async getActiveMembership(discordUserId: string) {
+  private resolveRoleId(platform: PlatformKey, platformChatId: string) {
+    return platform === "telegram" ? platformChatId : env.DISCORD_VIP_ROLE_ID;
+  }
+
+  private toIdentity(scope: MembershipScope): MembershipIdentity {
+    return {
+      ...scope,
+      legacyUserId: legacyUserIdFor(scope.platform, scope.platformUserId),
+      roleId: this.resolveRoleId(scope.platform, scope.platformChatId),
+    };
+  }
+
+  async backfillPlatformColumns() {
+    await prisma.$executeRawUnsafe(
+      'UPDATE "Order" SET "platform" = \'DISCORD\', "platformUserId" = "discordUserId", "platformChatId" = "guildId" WHERE "platformUserId" IS NULL',
+    );
+    await prisma.$executeRawUnsafe(
+      'UPDATE "Membership" SET "platform" = \'DISCORD\', "platformUserId" = "discordUserId", "platformChatId" = "guildId" WHERE "platformUserId" IS NULL',
+    );
+    await prisma.$executeRawUnsafe(
+      'UPDATE "TrialClaim" SET "platform" = \'DISCORD\', "platformUserId" = "discordUserId" WHERE "platformUserId" IS NULL',
+    );
+  }
+
+  async getActiveMembership(scope: MembershipScope) {
+    const identity = this.toIdentity(scope);
     return prisma.membership.findUnique({
       where: {
         discordUserId_guildId_roleId: {
-          discordUserId,
-          guildId: env.DISCORD_GUILD_ID,
-          roleId: env.DISCORD_VIP_ROLE_ID,
+          discordUserId: identity.legacyUserId,
+          guildId: identity.platformChatId,
+          roleId: identity.roleId,
         },
       },
     });
@@ -25,7 +62,9 @@ export class MembershipService {
 
   async applyPaidOrder(input: {
     orderId: string;
-    discordUserId: string;
+    platform: PlatformKey;
+    platformUserId: string;
+    platformChatId: string;
     amount: number;
     durationDays: number;
     providerTransactionId: string;
@@ -35,6 +74,11 @@ export class MembershipService {
     raw: Prisma.InputJsonValue;
   }) {
     const now = new Date();
+    const identity = this.toIdentity({
+      platform: input.platform,
+      platformUserId: input.platformUserId,
+      platformChatId: input.platformChatId,
+    });
 
     return prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       const order = await tx.order.findUnique({
@@ -56,9 +100,9 @@ export class MembershipService {
           membership: await tx.membership.findUnique({
             where: {
               discordUserId_guildId_roleId: {
-                discordUserId: input.discordUserId,
-                guildId: env.DISCORD_GUILD_ID,
-                roleId: env.DISCORD_VIP_ROLE_ID,
+                discordUserId: identity.legacyUserId,
+                guildId: identity.platformChatId,
+                roleId: identity.roleId,
               },
             },
           }),
@@ -70,9 +114,9 @@ export class MembershipService {
       const currentMembership = await tx.membership.findUnique({
         where: {
           discordUserId_guildId_roleId: {
-            discordUserId: input.discordUserId,
-            guildId: env.DISCORD_GUILD_ID,
-            roleId: env.DISCORD_VIP_ROLE_ID,
+            discordUserId: identity.legacyUserId,
+            guildId: identity.platformChatId,
+            roleId: identity.roleId,
           },
         },
       });
@@ -87,12 +131,15 @@ export class MembershipService {
         ? await tx.membership.update({
             where: {
               discordUserId_guildId_roleId: {
-                discordUserId: input.discordUserId,
-                guildId: env.DISCORD_GUILD_ID,
-                roleId: env.DISCORD_VIP_ROLE_ID,
+                discordUserId: identity.legacyUserId,
+                guildId: identity.platformChatId,
+                roleId: identity.roleId,
               },
             },
             data: {
+              platform: toPrismaPlatform(input.platform),
+              platformUserId: input.platformUserId,
+              platformChatId: input.platformChatId,
               source: MembershipSource.PAID,
               status: MembershipStatus.ACTIVE,
               startAt: currentMembership.expireAt > now ? currentMembership.startAt : now,
@@ -103,9 +150,12 @@ export class MembershipService {
           })
         : await tx.membership.create({
             data: {
-              discordUserId: input.discordUserId,
-              guildId: env.DISCORD_GUILD_ID,
-              roleId: env.DISCORD_VIP_ROLE_ID,
+              discordUserId: identity.legacyUserId,
+              guildId: identity.platformChatId,
+              roleId: identity.roleId,
+              platform: toPrismaPlatform(input.platform),
+              platformUserId: input.platformUserId,
+              platformChatId: input.platformChatId,
               source: MembershipSource.PAID,
               status: MembershipStatus.ACTIVE,
               startAt: now,
@@ -184,14 +234,18 @@ export class MembershipService {
     });
   }
 
-  async grantTrial(discordUserId: string) {
+  async grantTrial(scope: MembershipScope) {
+    const identity = this.toIdentity(scope);
     const now = new Date();
     const expireAt = new Date(now.getTime() + 24 * 60 * 60 * 1000);
     const cooldownStart = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
 
     return prisma.$transaction(async (tx: Prisma.TransactionClient) => {
-      const existingClaim = await tx.trialClaim.findUnique({
-        where: { discordUserId },
+      const existingClaim = await tx.trialClaim.findFirst({
+        where: {
+          platform: toPrismaPlatform(scope.platform),
+          OR: [{ platformUserId: scope.platformUserId }, { discordUserId: identity.legacyUserId }],
+        },
       });
 
       if (existingClaim && existingClaim.claimedAt > cooldownStart) {
@@ -200,21 +254,31 @@ export class MembershipService {
 
       if (existingClaim) {
         await tx.trialClaim.update({
-          where: { discordUserId },
-          data: { claimedAt: now },
+          where: { id: existingClaim.id },
+          data: {
+            claimedAt: now,
+            platform: toPrismaPlatform(scope.platform),
+            platformUserId: scope.platformUserId,
+            discordUserId: identity.legacyUserId,
+          },
         });
       } else {
         await tx.trialClaim.create({
-          data: { discordUserId, claimedAt: now },
+          data: {
+            discordUserId: identity.legacyUserId,
+            platform: toPrismaPlatform(scope.platform),
+            platformUserId: scope.platformUserId,
+            claimedAt: now,
+          },
         });
       }
 
       const existingMembership = await tx.membership.findUnique({
         where: {
           discordUserId_guildId_roleId: {
-            discordUserId,
-            guildId: env.DISCORD_GUILD_ID,
-            roleId: env.DISCORD_VIP_ROLE_ID,
+            discordUserId: identity.legacyUserId,
+            guildId: identity.platformChatId,
+            roleId: identity.roleId,
           },
         },
       });
@@ -223,12 +287,15 @@ export class MembershipService {
         ? tx.membership.update({
             where: {
               discordUserId_guildId_roleId: {
-                discordUserId,
-                guildId: env.DISCORD_GUILD_ID,
-                roleId: env.DISCORD_VIP_ROLE_ID,
+                discordUserId: identity.legacyUserId,
+                guildId: identity.platformChatId,
+                roleId: identity.roleId,
               },
             },
             data: {
+              platform: toPrismaPlatform(scope.platform),
+              platformUserId: scope.platformUserId,
+              platformChatId: scope.platformChatId,
               source: MembershipSource.TRIAL,
               status: MembershipStatus.ACTIVE,
               startAt: now,
@@ -239,9 +306,12 @@ export class MembershipService {
           })
         : tx.membership.create({
             data: {
-              discordUserId,
-              guildId: env.DISCORD_GUILD_ID,
-              roleId: env.DISCORD_VIP_ROLE_ID,
+              discordUserId: identity.legacyUserId,
+              guildId: identity.platformChatId,
+              roleId: identity.roleId,
+              platform: toPrismaPlatform(scope.platform),
+              platformUserId: scope.platformUserId,
+              platformChatId: scope.platformChatId,
               source: MembershipSource.TRIAL,
               status: MembershipStatus.ACTIVE,
               startAt: now,
@@ -279,8 +349,6 @@ export class MembershipService {
 
     return prisma.membership.findMany({
       where: {
-        guildId: env.DISCORD_GUILD_ID,
-        roleId: env.DISCORD_VIP_ROLE_ID,
         source: MembershipSource.PAID,
         status: MembershipStatus.ACTIVE,
         expireAt: {
@@ -334,5 +402,24 @@ export class MembershipService {
         lastError: message,
       },
     });
+  }
+
+  getMembershipTarget(membership: {
+    platform: unknown;
+    platformUserId: string | null;
+    platformChatId: string | null;
+    discordUserId: string;
+    guildId: string;
+  }): MembershipScope {
+    const platform = fromPrismaPlatform(String(membership.platform ?? "DISCORD"));
+    return {
+      platform,
+      platformUserId:
+        membership.platformUserId ??
+        (platform === "telegram"
+          ? membership.discordUserId.replace(/^tg_/u, "")
+          : membership.discordUserId),
+      platformChatId: membership.platformChatId ?? membership.guildId,
+    };
   }
 }

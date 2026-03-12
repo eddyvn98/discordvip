@@ -16,22 +16,30 @@ import { prisma } from "./prisma.js";
 import { startSchedulers } from "./scheduler.js";
 import { AdminService } from "./services/admin-service.js";
 import { AuthService } from "./services/auth-service.js";
+import { DiscordPlatformAdapter } from "./services/discord-platform-adapter.js";
 import { DiscordService } from "./services/discord-service.js";
 import { MembershipService } from "./services/membership-service.js";
 import { OrderService } from "./services/order-service.js";
 import { PaymentService } from "./services/payment-service.js";
+import { PlatformRegistry } from "./services/platform-registry.js";
+import { TelegramService } from "./services/telegram-service.js";
 
 const discordService = new DiscordService();
+const telegramService = new TelegramService();
+const discordAdapter = new DiscordPlatformAdapter(discordService);
+const platformRegistry = new PlatformRegistry([discordAdapter, telegramService]);
 const orderService = new OrderService();
 const membershipService = new MembershipService();
-const paymentService = new PaymentService(orderService, membershipService, discordService);
-const adminService = new AdminService(discordService);
+const paymentService = new PaymentService(orderService, membershipService, platformRegistry);
+const adminService = new AdminService(discordService, platformRegistry);
 const authService = new AuthService(discordService);
 
-async function handleDonate(interaction: ChatInputCommandInteraction) {
-  const planCode = interaction.options.getString("plan", true);
-  const order = await orderService.createOrder(interaction.user.id, interaction.guildId!, planCode);
-
+async function buildOrderMessage(order: {
+  amount: number;
+  orderCode: string;
+  expiresAt: Date;
+  plan: { name: string };
+}) {
   const qrImageUrl = buildVietQrImageUrl({
     bankBin: env.SEPAY_BANK_BIN,
     accountNumber: env.SEPAY_ACCOUNT_NO,
@@ -42,8 +50,25 @@ async function handleDonate(interaction: ChatInputCommandInteraction) {
 
   const paymentInstruction =
     env.PAYMENT_MODE === "manual"
-      ? "Admin sẽ xác nhận khoản ủng hộ thủ công và cấp role VIP sau khi kiểm tra."
-      : "Bot sẽ tự cấp role VIP sau khi hệ thống xác nhận chuyển khoản.";
+      ? "Admin sẽ xác nhận khoản ủng hộ thủ công và cấp VIP sau khi kiểm tra."
+      : "Bot sẽ tự cấp VIP sau khi hệ thống xác nhận chuyển khoản.";
+
+  return {
+    qrImageUrl,
+    paymentInstruction,
+  };
+}
+
+async function handleDonate(interaction: ChatInputCommandInteraction) {
+  const planCode = interaction.options.getString("plan", true);
+  const order = await orderService.createOrder({
+    platform: "discord",
+    platformUserId: interaction.user.id,
+    platformChatId: interaction.guildId!,
+    planCode,
+  });
+
+  const { qrImageUrl, paymentInstruction } = await buildOrderMessage(order);
 
   await interaction.reply({
     flags: MessageFlags.Ephemeral,
@@ -62,14 +87,31 @@ async function handleDonate(interaction: ChatInputCommandInteraction) {
   });
 
   if (env.PAYMENT_MODE === "manual") {
-    await discordService.sendManualOrderReview(order);
+    await discordAdapter.sendManualOrderReview?.({
+      id: order.id,
+      orderCode: order.orderCode,
+      platform: "discord",
+      platformUserId: interaction.user.id,
+      platformChatId: interaction.guildId!,
+      amount: order.amount,
+      expiresAt: order.expiresAt,
+      plan: order.plan,
+    });
   }
 }
 
 async function handleTrial(interaction: ChatInputCommandInteraction) {
   try {
-    const membership = await membershipService.grantTrial(interaction.user.id);
-    await discordService.addVipRole(interaction.user.id);
+    const membership = await membershipService.grantTrial({
+      platform: "discord",
+      platformUserId: interaction.user.id,
+      platformChatId: interaction.guildId!,
+    });
+    await discordAdapter.grantAccess({
+      platform: "discord",
+      platformUserId: interaction.user.id,
+      platformChatId: interaction.guildId!,
+    });
 
     await interaction.reply({
       flags: MessageFlags.Ephemeral,
@@ -84,7 +126,20 @@ async function handleTrial(interaction: ChatInputCommandInteraction) {
 }
 
 async function handleVipStatus(interaction: ChatInputCommandInteraction) {
-  const membership = await membershipService.getActiveMembership(interaction.user.id);
+  const membershipInCurrentGuild = await membershipService.getActiveMembership({
+    platform: "discord",
+    platformUserId: interaction.user.id,
+    platformChatId: interaction.guildId ?? env.DISCORD_GUILD_ID,
+  });
+  const membership =
+    membershipInCurrentGuild ??
+    (interaction.guildId && interaction.guildId !== env.DISCORD_GUILD_ID
+      ? await membershipService.getActiveMembership({
+          platform: "discord",
+          platformUserId: interaction.user.id,
+          platformChatId: env.DISCORD_GUILD_ID,
+        })
+      : null);
 
   if (!membership || membership.expireAt.getTime() <= Date.now()) {
     await interaction.reply({
@@ -105,7 +160,7 @@ async function handleVipStatus(interaction: ChatInputCommandInteraction) {
 }
 
 async function handleAdminStats(interaction: ChatInputCommandInteraction) {
-  const canAccess = await discordService.memberHasAdminAccess(interaction.user.id);
+  const canAccess = await discordAdapter.isAdmin(interaction.user.id);
   if (!canAccess) {
     await interaction.reply({
       flags: MessageFlags.Ephemeral,
@@ -166,7 +221,7 @@ async function handleManualReviewAction(customId: string, adminDiscordUserId: st
     throw new Error("Manual review action is invalid.");
   }
 
-  const canAccess = await discordService.memberHasAdminAccess(adminDiscordUserId);
+  const canAccess = await discordAdapter.isAdmin(adminDiscordUserId);
   if (!canAccess) {
     throw new Error("Bạn không có quyền duyệt đơn này.");
   }
@@ -190,8 +245,100 @@ async function handleManualReviewAction(customId: string, adminDiscordUserId: st
   throw new Error("Unknown manual review action.");
 }
 
+async function bootstrapTelegramHandlers() {
+  telegramService.setHandlers({
+    onDonate: async ({ userId, chatId, planCode }) => {
+      const order = await orderService.createOrder({
+        platform: "telegram",
+        platformUserId: userId,
+        platformChatId: env.TELEGRAM_VIP_CHAT_ID,
+        planCode,
+      });
+
+      const { qrImageUrl, paymentInstruction } = await buildOrderMessage(order);
+      await telegramService.sendMessage(
+        chatId,
+        [
+          `Ung ho server - ${order.plan.name}`,
+          `So tien: ${formatCurrency(order.amount)}`,
+          `Noi dung CK: DONATE ${order.orderCode}`,
+          `Han thanh toan: ${order.expiresAt.toLocaleString("vi-VN")}`,
+          paymentInstruction,
+          qrImageUrl ? `QR: ${qrImageUrl}` : "",
+        ]
+          .filter(Boolean)
+          .join("\n"),
+      );
+    },
+    onTrialVip: async ({ userId, chatId }) => {
+      try {
+        const membership = await membershipService.grantTrial({
+          platform: "telegram",
+          platformUserId: userId,
+          platformChatId: env.TELEGRAM_VIP_CHAT_ID,
+        });
+
+        await telegramService.grantAccess({
+          platform: "telegram",
+          platformUserId: userId,
+          platformChatId: env.TELEGRAM_VIP_CHAT_ID,
+        });
+        await telegramService.sendMessage(
+          chatId,
+          `Da kich hoat trial VIP toi ${membership.expireAt.toLocaleString("vi-VN")}.`,
+        );
+      } catch (error) {
+        await telegramService.sendMessage(
+          chatId,
+          error instanceof Error ? error.message : "Khong the kich hoat trial.",
+        );
+      }
+    },
+    onVipStatus: async ({ userId, chatId }) => {
+      const membership = await membershipService.getActiveMembership({
+        platform: "telegram",
+        platformUserId: userId,
+        platformChatId: env.TELEGRAM_VIP_CHAT_ID,
+      });
+      if (!membership || membership.expireAt.getTime() <= Date.now()) {
+        await telegramService.sendMessage(chatId, "Ban chua co VIP dang hoat dong.");
+        return;
+      }
+      const sourceLabel = membership.source === "TRIAL" ? "Trial" : "Paid";
+      await telegramService.sendMessage(
+        chatId,
+        [
+          `Nguon VIP: ${sourceLabel}`,
+          `Het han: ${membership.expireAt.toLocaleString("vi-VN")}`,
+        ].join("\n"),
+      );
+    },
+    onAdminStats: async ({ userId, chatId }) => {
+      const canAccess = await telegramService.isAdmin(userId);
+      if (!canAccess) {
+        await telegramService.sendMessage(chatId, "Ban khong co quyen su dung lenh nay.");
+        return;
+      }
+
+      const stats = await adminService.getVipStats();
+      await telegramService.sendMessage(
+        chatId,
+        [
+          "Thong ke VIP (Discord):",
+          `VIP dang active: ${stats.activeVipCount}`,
+          `VIP het han hom nay: ${stats.expiringTodayCount}`,
+          `Doanh thu thang: ${formatCurrency(stats.monthlyRevenue)}`,
+        ].join("\n"),
+      );
+    },
+  });
+}
+
 async function bootstrap() {
-  await discordService.start();
+  await membershipService.backfillPlatformColumns();
+  await bootstrapTelegramHandlers();
+
+  await Promise.all(platformRegistry.list().map((adapter) => adapter.start()));
 
   discordService.client.on(Events.InteractionCreate, async (interaction) => {
     try {
@@ -247,7 +394,7 @@ async function bootstrap() {
     }
   });
 
-  startSchedulers(membershipService, discordService, orderService);
+  startSchedulers(membershipService, platformRegistry, orderService);
 
   const app = createApp({
     adminService,

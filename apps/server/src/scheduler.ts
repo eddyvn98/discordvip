@@ -1,11 +1,11 @@
 import { logger } from "./lib/logger.js";
-import { DiscordService } from "./services/discord-service.js";
 import { MembershipService } from "./services/membership-service.js";
 import { OrderService } from "./services/order-service.js";
+import { PlatformRegistry } from "./services/platform-registry.js";
 
 export function startSchedulers(
   membershipService: MembershipService,
-  discordService: DiscordService,
+  platformRegistry: PlatformRegistry,
   orderService: OrderService,
 ) {
   const run = async () => {
@@ -18,29 +18,26 @@ export function startSchedulers(
       );
 
       for (const membership of membershipsToRemind) {
+        const target = membershipService.getMembershipTarget(membership);
+        const adapter = platformRegistry.get(target.platform);
+
         try {
-          await discordService.sendVipExpiryReminder(
-            membership.discordUserId,
-            membership.expireAt,
-            thresholdDays,
-          );
+          await adapter.sendVipExpiryReminder(target, membership.expireAt, thresholdDays);
         } catch (error) {
           logger.warn("Failed to send VIP expiry DM", {
             membershipId: membership.id,
+            platform: target.platform,
             thresholdDays,
             error,
           });
         }
 
         try {
-          await discordService.sendAdminVipExpiryReminder(
-            membership.discordUserId,
-            membership.expireAt,
-            thresholdDays,
-          );
+          await adapter.sendAdminVipExpiryReminder(target, membership.expireAt, thresholdDays);
         } catch (error) {
           logger.warn("Failed to send VIP expiry admin reminder", {
             membershipId: membership.id,
+            platform: target.platform,
             thresholdDays,
             error,
           });
@@ -53,12 +50,16 @@ export function startSchedulers(
     const dueMemberships = await membershipService.expireDueMemberships(20);
 
     for (const membership of dueMemberships) {
+      const target = membershipService.getMembershipTarget(membership);
+      const adapter = platformRegistry.get(target.platform);
+
       try {
-        await discordService.removeVipRole(membership.discordUserId);
+        await adapter.revokeAccess(target);
         await membershipService.markMembershipExpired(membership.id);
         logger.info("Expired VIP membership removed", {
           membershipId: membership.id,
-          userId: membership.discordUserId,
+          platform: target.platform,
+          userId: target.platformUserId,
         });
       } catch (error) {
         await membershipService.markMembershipRemoveError(

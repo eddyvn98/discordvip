@@ -13,3 +13,15 @@ export function datetime(value: string) {
 export function formatDiscordUser(discordUserId: string, discordDisplayName?: string | null) {
   return discordDisplayName ? `${discordDisplayName} (${discordUserId})` : discordUserId;
 }
+
+export function formatPlatformUser(input: {
+  platform: "discord" | "telegram";
+  platformUserId: string;
+  discordDisplayName?: string | null;
+}) {
+  if (input.platform === "discord") {
+    return formatDiscordUser(input.platformUserId, input.discordDisplayName);
+  }
+
+  return `Telegram (${input.platformUserId})`;
+}

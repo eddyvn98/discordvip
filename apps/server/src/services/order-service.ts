@@ -4,13 +4,19 @@ import { OrderStatus } from "@prisma/client";
 
 import { normalizeOrderCodeToken } from "../lib/billing.js";
 import { prisma } from "../prisma.js";
+import { PlatformKey, legacyUserIdFor, toPrismaPlatform } from "./platform.js";
 
 const generateOrderCode = customAlphabet("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789", 10);
 
 export class OrderService {
-  async createOrder(discordUserId: string, guildId: string, planCode: string) {
+  async createOrder(input: {
+    platform: PlatformKey;
+    platformUserId: string;
+    platformChatId: string;
+    planCode: string;
+  }) {
     const plan = await prisma.plan.findUnique({
-      where: { code: planCode },
+      where: { code: input.planCode },
     });
 
     if (!plan || !plan.isActive) {
@@ -23,8 +29,11 @@ export class OrderService {
     return prisma.order.create({
       data: {
         orderCode,
-        discordUserId,
-        guildId,
+        discordUserId: legacyUserIdFor(input.platform, input.platformUserId),
+        guildId: input.platformChatId,
+        platform: toPrismaPlatform(input.platform),
+        platformUserId: input.platformUserId,
+        platformChatId: input.platformChatId,
         planId: plan.id,
         amount: plan.amount,
         expiresAt,

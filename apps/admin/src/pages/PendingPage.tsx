@@ -1,8 +1,8 @@
-﻿import { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 
 import { api } from "../api";
 import type { OrderSearchItem, PendingItem, PendingOrderItem } from "../types";
-import { currency, datetime, formatDiscordUser } from "../utils/format";
+import { currency, datetime, formatPlatformUser } from "../utils/format";
 
 export function PendingPage() {
   const [items, setItems] = useState<PendingItem[]>([]);
@@ -11,6 +11,7 @@ export function PendingPage() {
   const [orderCodes, setOrderCodes] = useState<Record<string, string>>({});
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  const [platform, setPlatform] = useState<"discord" | "telegram" | "all">("discord");
 
   const load = async () => {
     setError("");
@@ -18,7 +19,7 @@ export function PendingPage() {
     try {
       const [pendingPayments, pendingOrders] = await Promise.all([
         api.get<PendingItem[]>("/api/admin/pending"),
-        api.get<PendingOrderItem[]>("/api/admin/orders/pending"),
+        api.get<PendingOrderItem[]>(`/api/admin/orders/pending?platform=${platform}`),
       ]);
       setItems(pendingPayments);
       setOrders(pendingOrders);
@@ -29,7 +30,7 @@ export function PendingPage() {
 
   useEffect(() => {
     void load();
-  }, []);
+  }, [platform]);
 
   const searchOrders = async (paymentId: string, query: string) => {
     setOrderCodes((current) => ({ ...current, [paymentId]: query }));
@@ -37,7 +38,9 @@ export function PendingPage() {
       return;
     }
 
-    const result = await api.get<OrderSearchItem[]>(`/api/admin/orders/search?q=${encodeURIComponent(query)}`);
+    const result = await api.get<OrderSearchItem[]>(
+      `/api/admin/orders/search?q=${encodeURIComponent(query)}&platform=${platform}`,
+    );
     setSuggestions((current) => ({ ...current, [paymentId]: result }));
   };
 
@@ -49,7 +52,7 @@ export function PendingPage() {
       await api.post(`/api/admin/pending/${paymentId}/resolve`, {
         orderCode: orderCodes[paymentId],
       });
-      setMessage("Đã xử lý giao dịch chờ duyệt.");
+      setMessage("�� x? l� giao d?ch ch? duy?t.");
       await load();
     } catch (value) {
       setError((value as Error).message);
@@ -62,7 +65,7 @@ export function PendingPage() {
 
     try {
       await api.post(`/api/admin/pending/${paymentId}/delete`);
-      setMessage("Đã xóa giao dịch chờ duyệt.");
+      setMessage("�� x�a giao d?ch ch? duy?t.");
       await load();
     } catch (value) {
       setError((value as Error).message);
@@ -75,7 +78,7 @@ export function PendingPage() {
 
     try {
       await api.post(`/api/admin/orders/${orderId}/confirm`);
-      setMessage("Đã xác nhận đơn thủ công và cấp VIP.");
+      setMessage("�� x�c nh?n don th? c�ng v� c?p VIP.");
       await load();
     } catch (value) {
       setError((value as Error).message);
@@ -86,9 +89,17 @@ export function PendingPage() {
     <section className="card">
       <div className="section-header">
         <div>
-          <h1>Chờ duyệt</h1>
-          <p>Quản lý giao dịch chờ duyệt và xác nhận đơn thủ công khi chưa dùng SePay.</p>
+          <h1>Ch? duy?t</h1>
+          <p>Qu?n l� giao d?ch ch? duy?t v� x�c nh?n don th? c�ng khi chua d�ng SePay.</p>
         </div>
+        <select
+          value={platform}
+          onChange={(event) => setPlatform(event.target.value as "discord" | "telegram" | "all")}
+        >
+          <option value="discord">Discord</option>
+          <option value="telegram">Telegram</option>
+          <option value="all">T?t c?</option>
+        </select>
       </div>
       {message ? <p className="success">{message}</p> : null}
       {error ? <p className="error">{error}</p> : null}
@@ -101,12 +112,18 @@ export function PendingPage() {
                 <strong>{currency(item.amount)}</strong>
                 <span>{item.orderCode}</span>
                 <span>{datetime(item.createdAt)}</span>
-                <span>{formatDiscordUser(item.discordUserId, item.discordDisplayName)}</span>
+                <span>
+                  {formatPlatformUser({
+                    platform: item.platform,
+                    platformUserId: item.platformUserId,
+                    discordDisplayName: item.discordDisplayName,
+                  })}
+                </span>
               </div>
               <p>{item.plan.name}</p>
-              <p>Hết hạn: {datetime(item.expiresAt)}</p>
+              <p>H?t h?n: {datetime(item.expiresAt)}</p>
               <button className="button" onClick={() => void confirmOrder(item.id)}>
-                Xác nhận thủ công
+                X�c nh?n th? c�ng
               </button>
             </div>
           ))}
@@ -121,12 +138,12 @@ export function PendingPage() {
                 <strong>{currency(item.amount)}</strong>
                 <span>{item.providerTransactionId}</span>
                 <span>{datetime(item.createdAt)}</span>
-                <span>{item.payerName ?? "Không rõ người gửi"}</span>
+                <span>{item.payerName ?? "Kh�ng r� ngu?i g?i"}</span>
               </div>
-              <p>{item.transferContent ?? "Không có nội dung chuyển khoản"}</p>
+              <p>{item.transferContent ?? "Kh�ng c� n?i dung chuy?n kho?n"}</p>
               <input
                 list={`orders-${item.id}`}
-                placeholder="Nhập mã đơn"
+                placeholder="Nh?p m� don"
                 value={orderCodes[item.id] ?? ""}
                 onChange={(event) => void searchOrders(item.id, event.target.value)}
               />
@@ -135,21 +152,22 @@ export function PendingPage() {
                   <option
                     key={order.id}
                     value={order.orderCode}
-                  >{`${order.orderCode} - ${formatDiscordUser(
-                    order.discordUserId,
-                    order.discordDisplayName,
-                  )} - ${order.plan.name}`}</option>
+                  >{`${order.orderCode} - ${formatPlatformUser({
+                    platform: order.platform,
+                    platformUserId: order.platformUserId,
+                    discordDisplayName: order.discordDisplayName,
+                  })} - ${order.plan.name}`}</option>
                 ))}
               </datalist>
               <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
                 <button className="button" onClick={() => void resolvePayment(item.id)}>
-                  Xử lý
+                  X? l�
                 </button>
                 <button
                   className="button secondary"
                   onClick={() => void deletePendingPayment(item.id)}
                 >
-                  Xóa
+                  X�a
                 </button>
               </div>
             </div>
@@ -159,4 +177,3 @@ export function PendingPage() {
     </section>
   );
 }
-

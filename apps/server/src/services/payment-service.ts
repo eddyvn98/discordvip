@@ -5,7 +5,8 @@ import { extractOrderCode } from "../lib/billing.js";
 import { logger } from "../lib/logger.js";
 import { normalizeSepayPayload, type NormalizedSepayPayload } from "../lib/sepay.js";
 import { prisma } from "../prisma.js";
-import { DiscordService } from "./discord-service.js";
+import { PlatformRegistry } from "./platform-registry.js";
+import { fromPrismaPlatform } from "./platform.js";
 import { MembershipService } from "./membership-service.js";
 import { OrderService } from "./order-service.js";
 
@@ -13,8 +14,25 @@ export class PaymentService {
   constructor(
     private readonly orderService: OrderService,
     private readonly membershipService: MembershipService,
-    private readonly discordService: DiscordService,
+    private readonly platformRegistry: PlatformRegistry,
   ) {}
+
+  private getOrderTarget(order: {
+    platform: unknown;
+    platformUserId: string | null;
+    platformChatId: string | null;
+    discordUserId: string;
+    guildId: string;
+  }) {
+    const platform = fromPrismaPlatform(String(order.platform ?? "DISCORD"));
+    return {
+      platform,
+      platformUserId:
+        order.platformUserId ??
+        (platform === "telegram" ? order.discordUserId.replace(/^tg_/u, "") : order.discordUserId),
+      platformChatId: order.platformChatId ?? order.guildId,
+    };
+  }
 
   async processWebhook(payload: unknown, signature: string | null) {
     const normalized = normalizeSepayPayload(payload);
@@ -87,9 +105,12 @@ export class PaymentService {
       return { duplicate: false, status: "pending_review" as const };
     }
 
+    const target = this.getOrderTarget(order);
     const applied = await this.membershipService.applyPaidOrder({
       orderId: order.id,
-      discordUserId: order.discordUserId,
+      platform: target.platform,
+      platformUserId: target.platformUserId,
+      platformChatId: target.platformChatId,
       amount: normalized.amount,
       durationDays: order.plan.durationDays,
       providerTransactionId: normalized.transactionId,
@@ -100,37 +121,38 @@ export class PaymentService {
     });
 
     if (!applied.duplicate) {
+      const adapter = this.platformRegistry.get(target.platform);
+
       try {
-        await this.discordService.addVipRole(order.discordUserId);
+        await adapter.grantAccess(target);
       } catch (error) {
         await prisma.membership.update({
           where: { id: applied.membership!.id },
           data: {
-            lastError: error instanceof Error ? error.message : "Grant role failed",
+            lastError: error instanceof Error ? error.message : "Grant access failed",
           },
         });
-        logger.error("Failed to grant VIP role after payment", {
-          discordUserId: order.discordUserId,
+        logger.error("Failed to grant VIP access after payment", {
+          platform: target.platform,
+          platformUserId: target.platformUserId,
           error,
         });
       }
 
       if (applied.membership) {
         try {
-          await this.discordService.sendVipActivatedNotice(
-            order.discordUserId,
-            applied.membership.expireAt,
-          );
+          await adapter.sendVipActivatedNotice(target, applied.membership.expireAt);
         } catch (error) {
-          logger.warn("Failed to send VIP activated DM", {
-            discordUserId: order.discordUserId,
+          logger.warn("Failed to send VIP activated notice", {
+            platform: target.platform,
+            platformUserId: target.platformUserId,
             error,
           });
         }
 
         try {
-          await this.discordService.sendAdminAutoPaymentConfirmedNotice({
-            discordUserId: order.discordUserId,
+          await adapter.sendAdminAutoPaymentConfirmedNotice({
+            target,
             orderCode: order.orderCode,
             amount: normalized.amount,
             expireAt: applied.membership.expireAt,
@@ -138,7 +160,7 @@ export class PaymentService {
           });
         } catch (error) {
           logger.warn("Failed to send admin auto payment confirmation", {
-            discordUserId: order.discordUserId,
+            platform: target.platform,
             orderCode: order.orderCode,
             transactionId: normalized.transactionId,
             error,
@@ -172,9 +194,12 @@ export class PaymentService {
       throw new Error("Order này không còn ở trạng thái pending.");
     }
 
+    const target = this.getOrderTarget(order);
     const applied = await this.membershipService.applyPaidOrder({
       orderId: order.id,
-      discordUserId: order.discordUserId,
+      platform: target.platform,
+      platformUserId: target.platformUserId,
+      platformChatId: target.platformChatId,
       amount: payment.amount,
       durationDays: order.plan.durationDays,
       providerTransactionId: payment.providerTransactionId,
@@ -184,7 +209,7 @@ export class PaymentService {
       raw: payment.raw as never,
     });
 
-    await this.discordService.addVipRole(order.discordUserId);
+    await this.platformRegistry.get(target.platform).grantAccess(target);
     return applied;
   }
 
@@ -206,9 +231,12 @@ export class PaymentService {
       throw new Error("Order đã hết hạn.");
     }
 
+    const target = this.getOrderTarget(order);
     const applied = await this.membershipService.applyPaidOrder({
       orderId: order.id,
-      discordUserId: order.discordUserId,
+      platform: target.platform,
+      platformUserId: target.platformUserId,
+      platformChatId: target.platformChatId,
       amount: order.amount,
       durationDays: order.plan.durationDays,
       providerTransactionId: `manual_${order.orderCode}`,
@@ -221,7 +249,7 @@ export class PaymentService {
       },
     });
 
-    await this.discordService.addVipRole(order.discordUserId);
+    await this.platformRegistry.get(target.platform).grantAccess(target);
     return applied;
   }
 
@@ -231,11 +259,11 @@ export class PaymentService {
     });
 
     if (!order) {
-      throw new Error("Order khÃ´ng tá»“n táº¡i.");
+      throw new Error("Order không tồn tại.");
     }
 
     if (order.status !== "PENDING") {
-      throw new Error("Order nÃ y khÃ´ng cÃ²n á»Ÿ tráº¡ng thÃ¡i pending.");
+      throw new Error("Order này không còn ở trạng thái pending.");
     }
 
     return prisma.order.update({
@@ -292,3 +320,4 @@ export class PaymentService {
     };
   }
 }
+

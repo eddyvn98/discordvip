@@ -23,6 +23,9 @@ export type TransactionItem = {
   order: null | {
     id: string;
     orderCode: string;
+    platform: "discord" | "telegram";
+    platformUserId: string;
+    platformChatId: string | null;
     discordUserId: string;
     discordDisplayName?: string | null;
     plan: {
@@ -36,6 +39,9 @@ export type TransactionItem = {
 
 export type MembershipItem = {
   id: string;
+  platform: "discord" | "telegram";
+  platformUserId: string;
+  platformChatId: string | null;
   discordUserId: string;
   discordDisplayName?: string | null;
   source: "PAID" | "TRIAL";
@@ -57,6 +63,9 @@ export type PendingItem = {
 
 export type PendingOrderItem = {
   id: string;
+  platform: "discord" | "telegram";
+  platformUserId: string;
+  platformChatId: string | null;
   orderCode: string;
   discordUserId: string;
   discordDisplayName?: string | null;
@@ -74,6 +83,9 @@ export type PendingOrderItem = {
 
 export type OrderSearchItem = {
   id: string;
+  platform: "discord" | "telegram";
+  platformUserId: string;
+  platformChatId: string | null;
   orderCode: string;
   discordUserId: string;
   discordDisplayName?: string | null;

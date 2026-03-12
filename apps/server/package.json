@@ -7,7 +7,7 @@
     "build": "npm run prisma:generate && tsc -p tsconfig.json",
     "start": "node dist/src/index.js",
     "prisma:generate": "prisma generate",
-    "prisma:push": "prisma db push",
+    "prisma:push": "prisma db push --accept-data-loss",
     "seed": "tsx prisma/seed.ts",
     "postinstall": "prisma generate",
     "test": "vitest run"

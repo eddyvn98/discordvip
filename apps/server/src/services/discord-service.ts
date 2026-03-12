@@ -152,9 +152,25 @@ export class DiscordService {
   }
 
   async removeVipRole(discordUserId: string) {
-    const member = await this.getGuildMember(discordUserId);
-    if (member.roles.cache.has(env.DISCORD_VIP_ROLE_ID)) {
-      await member.roles.remove(env.DISCORD_VIP_ROLE_ID);
+    try {
+      const member = await this.getGuildMember(discordUserId);
+      if (member.roles.cache.has(env.DISCORD_VIP_ROLE_ID)) {
+        await member.roles.remove(env.DISCORD_VIP_ROLE_ID);
+      }
+    } catch (error) {
+      if (
+        typeof error === "object" &&
+        error !== null &&
+        "code" in error &&
+        (error as { code?: unknown }).code === 10007
+      ) {
+        logger.warn("Skip VIP role removal because member is no longer in guild", {
+          discordUserId,
+        });
+        return;
+      }
+
+      throw error;
     }
   }
 
