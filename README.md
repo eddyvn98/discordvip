@@ -18,12 +18,16 @@ Monorepo gồm:
 ## Chạy local
 
 1. Copy `.env.example` thành `.env` và điền token/secrets.
-   Nếu chỉ muốn test local API/admin trước, có thể đặt:
+   Admin panel luôn đăng nhập qua Discord OAuth.
+   Nếu muốn bảo trì UI nhanh ở `dev/staging`, có thể bật debug login riêng:
 
    ```bash
-   DISCORD_BOT_ENABLED=false
-   DEV_BYPASS_ADMIN_AUTH=true
+   APP_ENV=development
+   ADMIN_DEBUG_LOGIN_ENABLED=true
+   ADMIN_DEBUG_LOGIN_SECRET=your-strong-debug-secret
+   VITE_ENABLE_DEBUG_LOGIN=true
    ```
+   Có thể bắt đầu từ mẫu [`.env.staging.example`](/D:/discordvip/.env.staging.example) cho staging.
 2. Cài dependency:
 
    ```bash
@@ -55,8 +59,17 @@ Monorepo gồm:
 docker compose up --build
 ```
 
+Production / VPS:
+
+```bash
+docker compose --env-file .env.production -f docker-compose.yml -f docker-compose.prod.yml up --build -d
+```
+
 Tai lieu van hanh:
 - `docs/vps-khuyen-nghi-va-database.md`: Cau hinh VPS khuyen nghi va noi luu/backup database.
+- `docs/database-access.md`: Cach truy cap PostgreSQL sau khi da khoa port public va cach dung SSH tunnel / docker exec.
+- `docs/deploy-vps-docker.md`: Cach dung `docker-compose.prod.yml` va `.env.production` khi len VPS.
+- `docs/go-live-checklist-vps.md`: Checklist ngan de di tu luc mua VPS den luc go-live.
 
 ### Sao luu database tu dong
 
@@ -143,3 +156,9 @@ Container `app-server` tự chạy:
 - Đăng nhập qua Discord OAuth
 - Chỉ user có trong `ADMIN_DISCORD_IDS` hoặc giữ `DISCORD_ADMIN_ROLE_ID` mới truy cập được
 - Màn hình: dashboard, transactions, memberships, pending
+- Cách vào sau khi cấu hình:
+  - Mở `ADMIN_APP_URL`
+  - Bấm `Đăng nhập với Discord`
+  - Discord sẽ gọi về `DISCORD_REDIRECT_URI`
+  - Sau khi xác thực xong, hệ thống chỉ redirect về cùng origin của `ADMIN_APP_URL`
+- Với `dev/staging`, có thể bật debug login riêng bằng secret; không dùng trên production

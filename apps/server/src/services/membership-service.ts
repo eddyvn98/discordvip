@@ -22,6 +22,21 @@ type MembershipIdentity = MembershipScope & {
   roleId: string;
 };
 
+export function calculateManualMembershipExpireAt(
+  currentExpireAt: Date | null,
+  durationDays: number,
+  now: Date,
+) {
+  if (durationDays < 0) {
+    if (!currentExpireAt) {
+      throw new Error("Không thể trừ ngày cho membership chưa tồn tại.");
+    }
+    return new Date(currentExpireAt.getTime() + durationDays * 24 * 60 * 60 * 1000);
+  }
+
+  return calculateExtendedExpiry(currentExpireAt, durationDays, now);
+}
+
 export class MembershipService {
   private resolveRoleId(platform: PlatformKey, platformChatId: string) {
     return platform === "telegram" ? platformChatId : env.DISCORD_VIP_ROLE_ID;
@@ -121,7 +136,7 @@ export class MembershipService {
         },
       });
 
-      const newExpireAt = calculateExtendedExpiry(
+      const newExpireAt = calculateManualMembershipExpireAt(
         currentMembership?.expireAt ?? null,
         input.durationDays,
         now,
@@ -319,6 +334,92 @@ export class MembershipService {
             },
           });
     });
+  }
+
+  async adjustManualMembership(input: {
+    platform: PlatformKey;
+    platformUserId: string;
+    platformChatId: string;
+    durationDays: number;
+  }) {
+    return prisma.$transaction(async (tx: Prisma.TransactionClient) =>
+      this.adjustManualMembershipInTransaction(tx, input),
+    );
+  }
+
+  async adjustManualMembershipInTransaction(
+    tx: Prisma.TransactionClient,
+    input: {
+      platform: PlatformKey;
+      platformUserId: string;
+      platformChatId: string;
+      durationDays: number;
+    },
+  ) {
+    const now = new Date();
+    const identity = this.toIdentity({
+      platform: input.platform,
+      platformUserId: input.platformUserId,
+      platformChatId: input.platformChatId,
+    });
+    const currentMembership = await tx.membership.findUnique({
+      where: {
+        discordUserId_guildId_roleId: {
+          discordUserId: identity.legacyUserId,
+          guildId: identity.platformChatId,
+          roleId: identity.roleId,
+        },
+      },
+    });
+
+    const newExpireAt = calculateManualMembershipExpireAt(
+      currentMembership?.expireAt ?? null,
+      input.durationDays,
+      now,
+    );
+
+    if (input.durationDays < 0 && !currentMembership) {
+      throw new Error("Người dùng này chưa có VIP để điều chỉnh.");
+    }
+
+    return currentMembership
+      ? tx.membership.update({
+          where: {
+            discordUserId_guildId_roleId: {
+              discordUserId: identity.legacyUserId,
+              guildId: identity.platformChatId,
+              roleId: identity.roleId,
+            },
+          },
+          data: {
+            platform: toPrismaPlatform(input.platform),
+            platformUserId: input.platformUserId,
+            platformChatId: input.platformChatId,
+            source: currentMembership.source,
+            status: newExpireAt > now ? MembershipStatus.ACTIVE : MembershipStatus.EXPIRED,
+            startAt:
+              input.durationDays > 0 && currentMembership.expireAt <= now
+                ? now
+                : currentMembership.startAt,
+            expireAt: newExpireAt,
+            removeRetries: 0,
+            lastError: null,
+          },
+        })
+      : tx.membership.create({
+          data: {
+            discordUserId: identity.legacyUserId,
+            guildId: identity.platformChatId,
+            roleId: identity.roleId,
+            platform: toPrismaPlatform(input.platform),
+            platformUserId: input.platformUserId,
+            platformChatId: input.platformChatId,
+            source: MembershipSource.MANUAL,
+            status: MembershipStatus.ACTIVE,
+            startAt: now,
+            expireAt: newExpireAt,
+          },
+        });
   }
 
   async expireDueMemberships(limit = 20) {

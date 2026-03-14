@@ -22,6 +22,7 @@ import { MembershipService } from "./services/membership-service.js";
 import { OrderService } from "./services/order-service.js";
 import { PaymentService } from "./services/payment-service.js";
 import { PlatformRegistry } from "./services/platform-registry.js";
+import { PromoCodeService } from "./services/promo-code-service.js";
 import { TelegramService } from "./services/telegram-service.js";
 
 const discordService = new DiscordService();
@@ -31,7 +32,8 @@ const platformRegistry = new PlatformRegistry([discordAdapter, telegramService])
 const orderService = new OrderService();
 const membershipService = new MembershipService();
 const paymentService = new PaymentService(orderService, membershipService, platformRegistry);
-const adminService = new AdminService(discordService, platformRegistry);
+const adminService = new AdminService(membershipService, discordService, platformRegistry);
+const promoCodeService = new PromoCodeService(membershipService, platformRegistry);
 const authService = new AuthService(discordService);
 
 async function buildOrderMessage(order: {
@@ -149,7 +151,8 @@ async function handleVipStatus(interaction: ChatInputCommandInteraction) {
     return;
   }
 
-  const sourceLabel = membership.source === "TRIAL" ? "Trial" : "Paid";
+  const sourceLabel =
+    membership.source === "TRIAL" ? "Trial" : membership.source === "MANUAL" ? "Manual" : "Paid";
   await interaction.reply({
     flags: MessageFlags.Ephemeral,
     content: [
@@ -157,6 +160,38 @@ async function handleVipStatus(interaction: ChatInputCommandInteraction) {
       `Hết hạn: <t:${Math.floor(membership.expireAt.getTime() / 1000)}:F>`,
     ].join("\n"),
   });
+}
+
+async function handleRedeemVip(interaction: ChatInputCommandInteraction) {
+  const code = interaction.options.getString("code", true);
+
+  try {
+    await discordService.getGuildMember(interaction.user.id);
+
+    const result = await promoCodeService.redeemPromoCode({
+      code,
+      platform: "discord",
+      platformUserId: interaction.user.id,
+      platformChatId: interaction.guildId ?? env.DISCORD_GUILD_ID,
+    });
+
+    await interaction.reply({
+      flags: MessageFlags.Ephemeral,
+      content: [
+        `Đã sử dụng mã ${result.promoCode.code} thành công.`,
+        `Cộng thêm ${result.promoCode.durationDays} ngày VIP.`,
+        `Hạn mới: <t:${Math.floor(result.membership.expireAt.getTime() / 1000)}:F>.`,
+      ].join("\n"),
+    });
+  } catch (error) {
+    await interaction.reply({
+      flags: MessageFlags.Ephemeral,
+      content:
+        error instanceof Error
+          ? error.message
+          : "Không thể sử dụng mã khuyến mãi, vui lòng thử lại.",
+    });
+  }
 }
 
 async function handleAdminStats(interaction: ChatInputCommandInteraction) {
@@ -181,6 +216,55 @@ async function handleAdminStats(interaction: ChatInputCommandInteraction) {
         ],
       },
     ],
+  });
+}
+
+async function handleGrantVip(interaction: ChatInputCommandInteraction) {
+  const canAccess = await discordAdapter.isAdmin(interaction.user.id);
+  if (!canAccess) {
+    await interaction.reply({
+      flags: MessageFlags.Ephemeral,
+      content: "Bạn không có quyền sử dụng lệnh này.",
+    });
+    return;
+  }
+
+  const targetUser = interaction.options.getUser("user", true);
+  const durationDays = interaction.options.getInteger("days", true);
+  const result = await adminService.adjustDiscordMembershipDuration({
+    discordUserId: targetUser.id,
+    durationDays,
+    grantedBy: interaction.user.id,
+    grantedFrom: "discord_command",
+  });
+
+  await interaction.reply({
+    flags: MessageFlags.Ephemeral,
+    content: [
+      durationDays > 0
+        ? `Đã cộng thêm ${durationDays} ngày VIP cho <@${targetUser.id}>.`
+        : `Đã trừ ${Math.abs(durationDays)} ngày VIP của <@${targetUser.id}>.`,
+      `Hạn mới: <t:${Math.floor(result.membership.expireAt.getTime() / 1000)}:F>.`,
+    ].join("\n"),
+  });
+}
+
+async function handleRevokeVip(interaction: ChatInputCommandInteraction) {
+  const canAccess = await discordAdapter.isAdmin(interaction.user.id);
+  if (!canAccess) {
+    await interaction.reply({
+      flags: MessageFlags.Ephemeral,
+      content: "Bạn không có quyền sử dụng lệnh này.",
+    });
+    return;
+  }
+
+  const targetUser = interaction.options.getUser("user", true);
+  await adminService.revokeDiscordMembershipByUserId(targetUser.id);
+
+  await interaction.reply({
+    flags: MessageFlags.Ephemeral,
+    content: `Đã thu hồi VIP của <@${targetUser.id}>.`,
   });
 }
 
@@ -259,10 +343,10 @@ async function bootstrapTelegramHandlers() {
       await telegramService.sendMessage(
         chatId,
         [
-          `Ung ho server - ${order.plan.name}`,
-          `So tien: ${formatCurrency(order.amount)}`,
-          `Noi dung CK: DONATE ${order.orderCode}`,
-          `Han thanh toan: ${order.expiresAt.toLocaleString("vi-VN")}`,
+          `Ủng hộ server - ${order.plan.name}`,
+          `Số tiền: ${formatCurrency(order.amount)}`,
+          `Nội dung CK: DONATE ${order.orderCode}`,
+          `Hạn thanh toán: ${order.expiresAt.toLocaleString("vi-VN")}`,
           paymentInstruction,
           qrImageUrl ? `QR: ${qrImageUrl}` : "",
         ]
@@ -285,12 +369,12 @@ async function bootstrapTelegramHandlers() {
         });
         await telegramService.sendMessage(
           chatId,
-          `Da kich hoat trial VIP toi ${membership.expireAt.toLocaleString("vi-VN")}.`,
+          `Đã kích hoạt trial VIP tới ${membership.expireAt.toLocaleString("vi-VN")}.`,
         );
       } catch (error) {
         await telegramService.sendMessage(
           chatId,
-          error instanceof Error ? error.message : "Khong the kich hoat trial.",
+          error instanceof Error ? error.message : "Không thể kích hoạt trial.",
         );
       }
     },
@@ -301,22 +385,27 @@ async function bootstrapTelegramHandlers() {
         platformChatId: env.TELEGRAM_VIP_CHAT_ID,
       });
       if (!membership || membership.expireAt.getTime() <= Date.now()) {
-        await telegramService.sendMessage(chatId, "Ban chua co VIP dang hoat dong.");
+        await telegramService.sendMessage(chatId, "Bạn chưa có VIP đang hoạt động.");
         return;
       }
-      const sourceLabel = membership.source === "TRIAL" ? "Trial" : "Paid";
+      const sourceLabel =
+        membership.source === "TRIAL"
+          ? "Trial"
+          : membership.source === "MANUAL"
+            ? "Manual"
+            : "Paid";
       await telegramService.sendMessage(
         chatId,
         [
-          `Nguon VIP: ${sourceLabel}`,
-          `Het han: ${membership.expireAt.toLocaleString("vi-VN")}`,
+          `Nguồn VIP: ${sourceLabel}`,
+          `Hết hạn: ${membership.expireAt.toLocaleString("vi-VN")}`,
         ].join("\n"),
       );
     },
     onAdminStats: async ({ userId, chatId }) => {
       const canAccess = await telegramService.isAdmin(userId);
       if (!canAccess) {
-        await telegramService.sendMessage(chatId, "Ban khong co quyen su dung lenh nay.");
+        await telegramService.sendMessage(chatId, "Bạn không có quyền sử dụng lệnh này.");
         return;
       }
 
@@ -324,10 +413,10 @@ async function bootstrapTelegramHandlers() {
       await telegramService.sendMessage(
         chatId,
         [
-          "Thong ke VIP (Discord):",
-          `VIP dang active: ${stats.activeVipCount}`,
-          `VIP het han hom nay: ${stats.expiringTodayCount}`,
-          `Doanh thu thang: ${formatCurrency(stats.monthlyRevenue)}`,
+          "Thống kê VIP (Discord):",
+          `VIP đang active: ${stats.activeVipCount}`,
+          `VIP hết hạn hôm nay: ${stats.expiringTodayCount}`,
+          `Doanh thu tháng: ${formatCurrency(stats.monthlyRevenue)}`,
         ].join("\n"),
       );
     },
@@ -375,8 +464,23 @@ async function bootstrap() {
         return;
       }
 
+      if (interaction.commandName === "redeemvip") {
+        await handleRedeemVip(interaction);
+        return;
+      }
+
       if (interaction.commandName === "adminstats") {
         await handleAdminStats(interaction);
+        return;
+      }
+
+      if (interaction.commandName === "grantvip") {
+        await handleGrantVip(interaction);
+        return;
+      }
+
+      if (interaction.commandName === "revokevip") {
+        await handleRevokeVip(interaction);
       }
     } catch (error) {
       logger.error("Interaction handling failed", { error });
@@ -400,6 +504,7 @@ async function bootstrap() {
     adminService,
     authService,
     paymentService,
+    promoCodeService,
   });
 
   app.listen(env.SERVER_PORT, () => {

@@ -16,6 +16,8 @@ body {
   min-height: 100vh;
   background: linear-gradient(180deg, #020617 0%, #111827 100%);
   overflow-x: hidden;
+  overflow-y: scroll;
+  scrollbar-gutter: stable;
 }
 
 a {
@@ -30,6 +32,11 @@ a {
 
 button,
 input {
+  font: inherit;
+}
+
+select,
+textarea {
   font: inherit;
 }
 
@@ -250,6 +257,105 @@ th {
   color: white;
 }
 
+.manual-grant-panel {
+  display: grid;
+  gap: 14px;
+  margin-bottom: 18px;
+  padding: 18px;
+  border-radius: 16px;
+  border: 1px solid rgba(37, 99, 235, 0.28);
+  background: rgba(30, 41, 59, 0.5);
+}
+
+.manual-grant-panel h2 {
+  margin: 0 0 6px;
+}
+
+.manual-grant-panel p {
+  margin: 0;
+  color: #cbd5e1;
+}
+
+.manual-grant-form {
+  display: grid;
+  grid-template-columns: minmax(220px, 1.5fr) minmax(140px, 0.7fr) auto auto;
+  gap: 10px;
+}
+
+.manual-grant-form input {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  background: #0f172a;
+  color: white;
+}
+
+.promo-form-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.promo-form-grid input {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  background: #0f172a;
+  color: white;
+}
+
+.promo-code-field {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  gap: 10px;
+  grid-column: span 2;
+}
+
+.promo-list-code {
+  display: grid;
+  gap: 8px;
+  min-width: 180px;
+}
+
+.promo-copy-button {
+  width: fit-content;
+}
+
+.checkbox-row {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+  color: #cbd5e1;
+}
+
+.promo-usage-cell {
+  display: grid;
+  gap: 8px;
+}
+
+.promo-usage-cell input,
+td input[type="datetime-local"],
+td input[type="text"],
+td input:not([type]) {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  background: #0f172a;
+  color: white;
+}
+
+.promo-usage-cell span {
+  color: #94a3b8;
+  font-size: 12px;
+}
+
+.manual-grant-result {
+  color: #bfdbfe;
+}
+
 .error {
   color: #fca5a5;
 }
@@ -336,6 +442,18 @@ th {
     white-space: nowrap;
   }
 
+  .manual-grant-form {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .promo-form-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .promo-code-field {
+    grid-column: span 2;
+  }
+
   .content {
     padding: 64px 16px 16px;
   }
@@ -367,6 +485,19 @@ th {
   .button,
   .button.secondary {
     width: 100%;
+  }
+
+  .manual-grant-form {
+    grid-template-columns: 1fr;
+  }
+
+  .promo-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .promo-code-field {
+    grid-template-columns: 1fr;
+    grid-column: auto;
   }
 
   .user-card p {

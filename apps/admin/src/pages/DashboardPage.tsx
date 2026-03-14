@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 
 import { api } from "../api";
 import { Table } from "../components/common/Table";
@@ -70,4 +70,3 @@ export function DashboardPage() {
     </div>
   );
 }
-

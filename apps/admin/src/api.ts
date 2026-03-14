@@ -49,4 +49,13 @@ export const api = {
   logout() {
     return request<void>("/api/auth/logout", { method: "POST" });
   },
+  debugLogin(secret: string) {
+    return request<{ redirectTo: string }>("/api/auth/debug-login", {
+      method: "POST",
+      body: JSON.stringify({
+        secret,
+        returnTo: window.location.origin,
+      }),
+    });
+  },
 };

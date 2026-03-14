@@ -8,6 +8,9 @@ export function startSchedulers(
   platformRegistry: PlatformRegistry,
   orderService: OrderService,
 ) {
+  let stopped = false;
+  let timer: NodeJS.Timeout | null = null;
+
   const run = async () => {
     await orderService.markExpiredOrders();
 
@@ -74,8 +77,38 @@ export function startSchedulers(
     }
   };
 
-  void run();
-  return setInterval(() => {
-    void run();
-  }, 60_000);
+  const scheduleNext = (delayMs: number) => {
+    if (stopped) {
+      return;
+    }
+
+    timer = setTimeout(() => {
+      void tick();
+    }, delayMs);
+  };
+
+  const tick = async () => {
+    const startedAt = Date.now();
+
+    try {
+      await run();
+    } catch (error) {
+      logger.error("Scheduler run failed", { error });
+    } finally {
+      const elapsedMs = Date.now() - startedAt;
+      const nextDelayMs = Math.max(60_000 - elapsedMs, 5_000);
+      scheduleNext(nextDelayMs);
+    }
+  };
+
+  void tick();
+
+  return {
+    stop() {
+      stopped = true;
+      if (timer) {
+        clearTimeout(timer);
+      }
+    },
+  };
 }

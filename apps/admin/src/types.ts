@@ -44,12 +44,21 @@ export type MembershipItem = {
   platformChatId: string | null;
   discordUserId: string;
   discordDisplayName?: string | null;
-  source: "PAID" | "TRIAL";
+  source: "PAID" | "TRIAL" | "MANUAL";
   status: "ACTIVE" | "EXPIRED";
   createdAt: string;
   expireAt: string;
   lastError: string | null;
   removeRetries: number;
+};
+
+export type DiscordLookupResult = {
+  id: string;
+  username: string;
+  globalName: string | null;
+  discriminator: string;
+  displayName: string;
+  inGuild: boolean;
 };
 
 export type PendingItem = {
@@ -100,4 +109,35 @@ export type VipStatsResponse = {
   activeVipCount: number;
   expiringTodayCount: number;
   monthlyRevenue: number;
+};
+
+export type PromoCodeItem = {
+  id: string;
+  code: string;
+  label: string;
+  durationDays: number;
+  maxUses: number;
+  usedCount: number;
+  expiresAt: string | null;
+  isActive: boolean;
+  createdBy: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type CreatePromoCodeInput = {
+  code: string;
+  label: string;
+  durationDays: number;
+  maxUses: number;
+  expiresAt?: string | null;
+  isActive: boolean;
+};
+
+export type UpdatePromoCodeInput = {
+  label: string;
+  durationDays: number;
+  maxUses: number;
+  expiresAt?: string | null;
+  isActive: boolean;
 };

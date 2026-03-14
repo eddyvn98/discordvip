@@ -112,10 +112,13 @@ Yêu cầu phía khách hàng cần xác nhận:
 
 Các biến dưới đây phải để đúng giá trị production:
 
+- `APP_ENV=production`
 - `DISCORD_BOT_ENABLED=true`
 - `DEV_BYPASS_ADMIN_AUTH=false`
+- `ADMIN_DEBUG_LOGIN_ENABLED=false`
+- `ADMIN_DEBUG_LOGIN_SECRET=` để trống
 
-Không dùng cấu hình local/dev khi triển khai thật.
+Không dùng cấu hình local/dev khi triển khai thật. Admin panel chỉ đăng nhập qua Discord OAuth, không còn hỗ trợ bypass.
 
 ## 4. Mẫu File `.env` Production
 
@@ -160,6 +163,7 @@ Khách hàng vui lòng xác nhận các mục sau:
 - Database PostgreSQL production đã sẵn sàng
 - SePay webhook đã cấu hình đúng URL production
 - Đã có ít nhất 1 tài khoản admin để đăng nhập admin panel
+- Admin sẽ truy cập `ADMIN_APP_URL`, bấm đăng nhập Discord, rồi được trả về đúng `ADMIN_APP_URL`
 
 ## 6. Thông Tin Nên Gửi Kèm
 

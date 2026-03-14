@@ -8,6 +8,7 @@ import { env } from "../config.js";
 import { AdminService } from "../services/admin-service.js";
 import { AuthService } from "../services/auth-service.js";
 import { PaymentService } from "../services/payment-service.js";
+import { PromoCodeService } from "../services/promo-code-service.js";
 import { registerAdminRoutes } from "./admin.js";
 import { registerAuthRoutes } from "./auth.js";
 import { registerWebhookRoutes } from "./webhooks.js";
@@ -39,12 +40,18 @@ export function createApp({
   adminService,
   authService,
   paymentService,
+  promoCodeService,
 }: {
   adminService: AdminService;
   authService: AuthService;
   paymentService: PaymentService;
+  promoCodeService: PromoCodeService;
 }) {
   const app = express();
+
+  if (env.TRUST_PROXY) {
+    app.set("trust proxy", 1);
+  }
 
   const pool = new Pool({
     connectionString: env.DATABASE_URL,
@@ -89,7 +96,7 @@ export function createApp({
       cookie: {
         httpOnly: true,
         sameSite: "lax",
-        secure: false,
+        secure: env.APP_ENV === "production",
         maxAge: 7 * 24 * 60 * 60 * 1000,
       },
     }),
@@ -100,7 +107,7 @@ export function createApp({
   });
 
   registerAuthRoutes(app, authService);
-  registerAdminRoutes(app, adminService, paymentService);
+  registerAdminRoutes(app, adminService, paymentService, promoCodeService);
   registerWebhookRoutes(app, paymentService);
 
   return app;

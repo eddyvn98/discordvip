@@ -3,6 +3,8 @@ WORKDIR /app
 
 ARG VITE_API_BASE_URL=http://localhost:3000
 ENV VITE_API_BASE_URL=${VITE_API_BASE_URL}
+ARG VITE_ENABLE_DEBUG_LOGIN=false
+ENV VITE_ENABLE_DEBUG_LOGIN=${VITE_ENABLE_DEBUG_LOGIN}
 
 COPY package.json package-lock.json ./
 COPY tsconfig.base.json ./

@@ -25,4 +25,4 @@ RUN npm install --workspace @discordvip/server --include-workspace-root=false --
 COPY --from=build /app/apps/server/dist /app/apps/server/dist
 WORKDIR /app/apps/server
 EXPOSE 3000
-CMD ["sh", "-c", "npm run prisma:generate && npm run prisma:push && npm run seed && npm run start"]
+CMD ["npm", "run", "start:container"]

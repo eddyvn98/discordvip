@@ -1,17 +1,18 @@
-﻿import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { api } from "../api";
 import { Table } from "../components/common/Table";
-import type { MembershipItem } from "../types";
+import type { DiscordLookupResult, MembershipItem } from "../types";
 import { datetime, formatPlatformUser } from "../utils/format";
 
-const MEMBERSHIP_DESC = "Quan tri thanh vien VIP: xem, tim kiem va thu hoi VIP.";
+const MEMBERSHIP_DESC = "Quản trị thành viên VIP: xem, tìm kiếm, điều chỉnh hạn và thu hồi VIP.";
 const SEARCH_PLACEHOLDER =
-  "Tim theo ID, ten Discord, trang thai ACTIVE/EXPIRED, nguon PAID/TRIAL";
-const MSG_REVOKED = "Da thu hoi VIP.";
-const MSG_LOADING = "Dang tai...";
-const MSG_SEARCH = "Tim kiem";
-const MSG_ERROR = "Loi";
+  "Tìm theo ID, tên Discord, trạng thái ACTIVE/EXPIRED, nguồn PAID/TRIAL/MANUAL";
+const MSG_REVOKED = "Đã thu hồi VIP.";
+const MSG_GRANTED = "Đã điều chỉnh hạn VIP.";
+const MSG_LOADING = "Đang tải...";
+const MSG_SEARCH = "Tìm kiếm";
+const MSG_ERROR = "Lỗi";
 const CACHE_PREFIX = "memberships-cache-v1";
 
 type MembershipsMeta = {
@@ -61,6 +62,11 @@ export function MembershipsPage() {
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(false);
   const [platform, setPlatform] = useState<"discord" | "telegram" | "all">("discord");
+  const [manualDiscordUserId, setManualDiscordUserId] = useState("");
+  const [manualDurationDays, setManualDurationDays] = useState("30");
+  const [lookupResult, setLookupResult] = useState<DiscordLookupResult | null>(null);
+  const [lookupLoading, setLookupLoading] = useState(false);
+  const [grantLoading, setGrantLoading] = useState(false);
   const requestRef = useRef(0);
 
   const load = async (query = "") => {
@@ -73,7 +79,6 @@ export function MembershipsPage() {
         : `/api/admin/memberships?platform=${platform}&names=${includeNames ? "1" : "0"}`;
 
     try {
-      // First pass: render quickly without waiting for Discord profile lookups.
       const fastData = await api.get<MembershipItem[]>(buildPath(false));
       if (requestRef.current !== requestId) {
         return;
@@ -81,7 +86,6 @@ export function MembershipsPage() {
       setItems(fastData);
       setLoading(false);
 
-      // Second pass: hydrate display names when available.
       const namedData = await api.get<MembershipItem[]>(buildPath(true));
       if (requestRef.current !== requestId) {
         return;
@@ -165,6 +169,44 @@ export function MembershipsPage() {
     return undefined;
   }, [search, platform]);
 
+  const lookupDiscordUser = async () => {
+    setError("");
+    setMessage("");
+    setLookupResult(null);
+    setLookupLoading(true);
+
+    try {
+      const result = await api.post<DiscordLookupResult>("/api/admin/memberships/lookup-discord-user", {
+        discordUserId: manualDiscordUserId.trim(),
+      });
+      setLookupResult(result);
+    } catch (value) {
+      setError((value as Error).message);
+    } finally {
+      setLookupLoading(false);
+    }
+  };
+
+  const grantManualMembership = async () => {
+    setError("");
+    setMessage("");
+    setGrantLoading(true);
+
+    try {
+      await api.post("/api/admin/memberships/manual-grant", {
+        discordUserId: manualDiscordUserId.trim(),
+        durationDays: Number(manualDurationDays),
+      });
+      setMessage(MSG_GRANTED);
+      await lookupDiscordUser();
+      await load(search);
+    } catch (value) {
+      setError((value as Error).message);
+    } finally {
+      setGrantLoading(false);
+    }
+  };
+
   const revokeMembership = async (membershipId: string) => {
     setError("");
     setMessage("");
@@ -182,7 +224,7 @@ export function MembershipsPage() {
     <section className="card">
       <div className="section-header">
         <div>
-          <h1>Thanh vien VIP</h1>
+          <h1>Thành viên VIP</h1>
           <p>{MEMBERSHIP_DESC}</p>
         </div>
         <select
@@ -191,8 +233,52 @@ export function MembershipsPage() {
         >
           <option value="discord">Discord</option>
           <option value="telegram">Telegram</option>
-          <option value="all">Tat ca</option>
+          <option value="all">Tất cả</option>
         </select>
+      </div>
+
+      <div className="manual-grant-panel">
+        <div>
+          <h2>Điều chỉnh hạn VIP</h2>
+          <p>Nhập Discord user ID, kiểm tra user trong guild, sau đó cộng hoặc trừ số ngày VIP.</p>
+        </div>
+        <div className="manual-grant-form">
+          <input
+            value={manualDiscordUserId}
+            onChange={(event) => {
+              setManualDiscordUserId(event.target.value);
+              setLookupResult(null);
+            }}
+            placeholder="Discord user ID"
+          />
+          <input
+            value={manualDurationDays}
+            onChange={(event) => setManualDurationDays(event.target.value)}
+            placeholder="Số ngày VIP, âm để trừ"
+            inputMode="numeric"
+          />
+          <button
+            className="button secondary"
+            type="button"
+            onClick={() => void lookupDiscordUser()}
+            disabled={lookupLoading || !manualDiscordUserId.trim()}
+          >
+            {lookupLoading ? MSG_LOADING : "Kiểm tra user"}
+          </button>
+          <button
+            className="button"
+            type="button"
+            onClick={() => void grantManualMembership()}
+            disabled={grantLoading || !manualDiscordUserId.trim() || !manualDurationDays.trim()}
+          >
+            {grantLoading ? MSG_LOADING : "Điều chỉnh"}
+          </button>
+        </div>
+        {lookupResult ? (
+          <p className="manual-grant-result">
+            User hợp lệ: <strong>{lookupResult.displayName}</strong> ({lookupResult.id})
+          </p>
+        ) : null}
       </div>
 
       <form
@@ -227,7 +313,7 @@ export function MembershipsPage() {
             void load("");
           }}
         >
-          Dat lai
+          Đặt lại
         </button>
       </form>
 
@@ -237,15 +323,15 @@ export function MembershipsPage() {
       ) : (
         <Table
           headers={[
-            "Nen tang",
-            "Nguoi dung",
-            "Nguon",
-            "Trang thai",
-            "Ngay dang ky",
-            "Het han",
-            "So lan thu go vai tro",
-            "Loi gan nhat (neu co)",
-            "Hanh dong",
+            "Nền tảng",
+            "Người dùng",
+            "Nguồn",
+            "Trạng thái",
+            "Ngày đăng ký",
+            "Hết hạn",
+            "Số lần thử gỡ vai trò",
+            "Lỗi gần nhất (nếu có)",
+            "Hành động",
           ]}
           rows={items.map((item) => [
             item.platform,
@@ -259,10 +345,10 @@ export function MembershipsPage() {
             datetime(item.createdAt),
             datetime(item.expireAt),
             String(item.removeRetries),
-            item.lastError ?? "Khong co",
+            item.lastError ?? "Không có",
             item.status === "ACTIVE" ? (
               <button className="button secondary" onClick={() => void revokeMembership(item.id)}>
-                {"Thu hoi VIP"}
+                {"Thu hồi VIP"}
               </button>
             ) : (
               "-"

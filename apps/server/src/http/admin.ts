@@ -1,11 +1,38 @@
 import type { Express, NextFunction, Request, Response } from "express";
+import { z } from "zod";
 
 import { AdminService } from "../services/admin-service.js";
 import { PaymentService } from "../services/payment-service.js";
+import { PromoCodeService } from "../services/promo-code-service.js";
+
+const manualGrantSchema = z.object({
+  discordUserId: z.string().trim().min(1, "Discord user ID là bắt buộc"),
+  durationDays: z.coerce
+    .number()
+    .int("durationDays phải là số nguyên")
+    .refine((value) => value !== 0, "durationDays không được bằng 0"),
+});
+
+const lookupDiscordUserSchema = z.object({
+  discordUserId: z.string().trim().min(1, "Discord user ID là bắt buộc"),
+});
+
+const promoCodeSchema = z.object({
+  code: z.string().trim().min(1, "Mã khuyến mãi là bắt buộc"),
+  label: z.string().trim().min(1, "Nhãn là bắt buộc"),
+  durationDays: z.coerce.number().int("durationDays phải là số nguyên").positive(),
+  maxUses: z.coerce.number().int("maxUses phải là số nguyên").positive(),
+  expiresAt: z
+    .union([z.string().datetime({ offset: true }), z.string().datetime(), z.null()])
+    .optional(),
+  isActive: z.coerce.boolean(),
+});
+
+const updatePromoCodeSchema = promoCodeSchema.omit({ code: true });
 
 function requireAdmin(req: Request, res: Response, next: NextFunction) {
   if (!req.session.adminUser) {
-    res.status(401).json({ error: "Unauthorized" });
+    res.status(401).json({ error: "Chưa đăng nhập." });
     return;
   }
 
@@ -16,6 +43,7 @@ export function registerAdminRoutes(
   app: Express,
   adminService: AdminService,
   paymentService: PaymentService,
+  promoCodeService: PromoCodeService,
 ) {
   app.get("/api/admin/me", requireAdmin, (req, res) => {
     res.json({ user: req.session.adminUser });
@@ -74,8 +102,78 @@ export function registerAdminRoutes(
     res.json(await adminService.searchMemberships(query, platform, includeNames));
   });
 
+  app.post("/api/admin/memberships/lookup-discord-user", requireAdmin, async (req, res) => {
+    try {
+      const body = lookupDiscordUserSchema.parse(req.body);
+      res.json(await adminService.lookupDiscordGuildMember(body.discordUserId));
+    } catch (error) {
+      res.status(400).json({
+        error: error instanceof Error ? error.message : "Không thể kiểm tra Discord user",
+      });
+    }
+  });
+
+  app.post("/api/admin/memberships/manual-grant", requireAdmin, async (req, res) => {
+    try {
+      const body = manualGrantSchema.parse(req.body);
+      const result = await adminService.adjustDiscordMembershipDuration({
+        discordUserId: body.discordUserId,
+        durationDays: body.durationDays,
+        grantedBy: req.session.adminUser?.id,
+        grantedFrom: "admin_web",
+      });
+      res.json(result);
+    } catch (error) {
+      res.status(400).json({
+        error: error instanceof Error ? error.message : "Không thể điều chỉnh VIP thủ công",
+      });
+    }
+  });
+
   app.get("/api/admin/pending", requireAdmin, async (_req, res) => {
     res.json(await adminService.listPendingPayments());
+  });
+
+  app.get("/api/admin/promo-codes", requireAdmin, async (_req, res) => {
+    res.json(await promoCodeService.listPromoCodes());
+  });
+
+  app.post("/api/admin/promo-codes", requireAdmin, async (req, res) => {
+    try {
+      const body = promoCodeSchema.parse(req.body);
+      const result = await promoCodeService.createPromoCode({
+        code: body.code,
+        label: body.label,
+        durationDays: body.durationDays,
+        maxUses: body.maxUses,
+        expiresAt: body.expiresAt ? new Date(body.expiresAt) : null,
+        isActive: body.isActive,
+        createdBy: req.session.adminUser?.id,
+      });
+      res.json(result);
+    } catch (error) {
+      res.status(400).json({
+        error: error instanceof Error ? error.message : "Không thể tạo mã khuyến mãi",
+      });
+    }
+  });
+
+  app.post("/api/admin/promo-codes/:id/update", requireAdmin, async (req, res) => {
+    try {
+      const body = updatePromoCodeSchema.parse(req.body);
+      const result = await promoCodeService.updatePromoCode(String(req.params.id ?? ""), {
+        label: body.label,
+        durationDays: body.durationDays,
+        maxUses: body.maxUses,
+        expiresAt: body.expiresAt ? new Date(body.expiresAt) : null,
+        isActive: body.isActive,
+      });
+      res.json(result);
+    } catch (error) {
+      res.status(400).json({
+        error: error instanceof Error ? error.message : "Không thể cập nhật mã khuyến mãi",
+      });
+    }
   });
 
   app.get("/api/admin/orders/pending", requireAdmin, async (req, res) => {
@@ -104,7 +202,7 @@ export function registerAdminRoutes(
       res.json(result);
     } catch (error) {
       res.status(400).json({
-        error: error instanceof Error ? error.message : "Resolve failed",
+        error: error instanceof Error ? error.message : "Không thể xử lý giao dịch chờ duyệt",
       });
     }
   });
@@ -115,7 +213,7 @@ export function registerAdminRoutes(
       res.status(204).send();
     } catch (error) {
       res.status(400).json({
-        error: error instanceof Error ? error.message : "Delete pending payment failed",
+        error: error instanceof Error ? error.message : "Không thể xóa giao dịch chờ duyệt",
       });
     }
   });
@@ -126,7 +224,7 @@ export function registerAdminRoutes(
       res.json(result);
     } catch (error) {
       res.status(400).json({
-        error: error instanceof Error ? error.message : "Manual confirm failed",
+        error: error instanceof Error ? error.message : "Không thể xác nhận đơn thủ công",
       });
     }
   });
@@ -137,7 +235,7 @@ export function registerAdminRoutes(
       res.json(result);
     } catch (error) {
       res.status(400).json({
-        error: error instanceof Error ? error.message : "Revoke membership failed",
+        error: error instanceof Error ? error.message : "Không thể thu hồi VIP",
       });
     }
   });

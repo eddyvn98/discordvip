@@ -6,8 +6,11 @@ import {
   Client,
   Events,
   GatewayIntentBits,
+  Guild,
   GuildMember,
   MessageFlags,
+  PermissionFlagsBits,
+  TextChannel,
 } from "discord.js";
 
 import { env } from "../config.js";
@@ -15,6 +18,8 @@ import { logger } from "../lib/logger.js";
 
 export class DiscordService {
   readonly client: Client;
+  private guildPromise: Promise<Guild> | null = null;
+  private adminChannelPromise: Promise<TextChannel | null> | null = null;
 
   constructor() {
     this.client = new Client({
@@ -41,7 +46,7 @@ export class DiscordService {
         user: this.client.user?.tag,
       });
 
-      const guild = await this.client.guilds.fetch(env.DISCORD_GUILD_ID);
+      const guild = await this.getGuild();
       await guild.commands.set([
         {
           name: "donate",
@@ -69,8 +74,53 @@ export class DiscordService {
           description: "Xem trạng thái VIP hiện tại",
         },
         {
+          name: "redeemvip",
+          description: "Nhập mã khuyến mãi để nhận thêm ngày VIP",
+          options: [
+            {
+              name: "code",
+              description: "Mã khuyến mãi",
+              type: 3,
+              required: true,
+            },
+          ],
+        },
+        {
           name: "adminstats",
           description: "Xem thống kê VIP và doanh thu tháng",
+          default_member_permissions: PermissionFlagsBits.Administrator.toString(),
+        },
+        {
+          name: "grantvip",
+          description: "Điều chỉnh hạn VIP của thành viên",
+          default_member_permissions: PermissionFlagsBits.Administrator.toString(),
+          options: [
+            {
+              name: "user",
+              description: "Thành viên cần điều chỉnh VIP",
+              type: 6,
+              required: true,
+            },
+            {
+              name: "days",
+              description: "Số ngày điều chỉnh, âm để trừ",
+              type: 4,
+              required: true,
+            },
+          ],
+        },
+        {
+          name: "revokevip",
+          description: "Thu hồi VIP của thành viên",
+          default_member_permissions: PermissionFlagsBits.Administrator.toString(),
+          options: [
+            {
+              name: "user",
+              description: "Thành viên cần thu hồi VIP",
+              type: 6,
+              required: true,
+            },
+          ],
         },
       ]);
     });
@@ -78,12 +128,40 @@ export class DiscordService {
     await this.client.login(env.DISCORD_BOT_TOKEN);
   }
 
+  private async getGuild() {
+    if (!this.guildPromise) {
+      this.guildPromise = this.client.guilds.fetch(env.DISCORD_GUILD_ID);
+    }
+
+    return this.guildPromise;
+  }
+
+  private async getAdminChannel() {
+    if (!env.DISCORD_ADMIN_CHANNEL_ID) {
+      return null;
+    }
+
+    if (!this.adminChannelPromise) {
+      this.adminChannelPromise = this.client.channels
+        .fetch(env.DISCORD_ADMIN_CHANNEL_ID)
+        .then((channel) => {
+          if (!channel || channel.type !== ChannelType.GuildText) {
+            throw new Error("DISCORD_ADMIN_CHANNEL_ID must point to a guild text channel.");
+          }
+
+          return channel;
+        });
+    }
+
+    return this.adminChannelPromise;
+  }
+
   async getGuildMember(discordUserId: string) {
     if (!env.DISCORD_BOT_ENABLED) {
       throw new Error("Discord bot is disabled in this environment.");
     }
 
-    const guild = await this.client.guilds.fetch(env.DISCORD_GUILD_ID);
+    const guild = await this.getGuild();
     return guild.members.fetch(discordUserId);
   }
 
@@ -114,13 +192,9 @@ export class DiscordService {
       durationDays: number;
     };
   }) {
-    if (!env.DISCORD_ADMIN_CHANNEL_ID) {
+    const channel = await this.getAdminChannel();
+    if (!channel) {
       return;
-    }
-
-    const channel = await this.client.channels.fetch(env.DISCORD_ADMIN_CHANNEL_ID);
-    if (!channel || channel.type !== ChannelType.GuildText) {
-      throw new Error("DISCORD_ADMIN_CHANNEL_ID must point to a guild text channel.");
     }
 
     const approveButton = new ButtonBuilder()
@@ -190,13 +264,9 @@ export class DiscordService {
     expireAt: Date,
     thresholdDays: number,
   ) {
-    if (!env.DISCORD_ADMIN_CHANNEL_ID) {
+    const channel = await this.getAdminChannel();
+    if (!channel) {
       return;
-    }
-
-    const channel = await this.client.channels.fetch(env.DISCORD_ADMIN_CHANNEL_ID);
-    if (!channel || channel.type !== ChannelType.GuildText) {
-      throw new Error("DISCORD_ADMIN_CHANNEL_ID must point to a guild text channel.");
     }
 
     let userLabel = `ID ${discordUserId}`;
@@ -231,23 +301,19 @@ export class DiscordService {
     expireAt: Date;
     providerTransactionId: string;
   }) {
-    if (!env.DISCORD_ADMIN_CHANNEL_ID) {
+    const channel = await this.getAdminChannel();
+    if (!channel) {
       return;
-    }
-
-    const channel = await this.client.channels.fetch(env.DISCORD_ADMIN_CHANNEL_ID);
-    if (!channel || channel.type !== ChannelType.GuildText) {
-      throw new Error("DISCORD_ADMIN_CHANNEL_ID must point to a guild text channel.");
     }
 
     await channel.send({
       content: [
-        "Da xac nhan thanh toan tu dong.",
+        "Đã xác nhận thanh toán tự động.",
         `User: <@${input.discordUserId}>`,
         `Order: ${input.orderCode}`,
-        `So tien: ${input.amount.toLocaleString("vi-VN")} VND`,
-        `Ma giao dich: ${input.providerTransactionId}`,
-        `VIP het han: <t:${Math.floor(input.expireAt.getTime() / 1000)}:F>`,
+        `Số tiền: ${input.amount.toLocaleString("vi-VN")} VND`,
+        `Mã giao dịch: ${input.providerTransactionId}`,
+        `VIP hết hạn: <t:${Math.floor(input.expireAt.getTime() / 1000)}:F>`,
       ].join("\n"),
       flags: MessageFlags.SuppressNotifications,
     });

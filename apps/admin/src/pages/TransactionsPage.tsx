@@ -1,15 +1,15 @@
-﻿import { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 
 import { api } from "../api";
 import { Table } from "../components/common/Table";
 import type { TransactionItem } from "../types";
 import { currency, datetime, formatPlatformUser } from "../utils/format";
 
-const PAGE_TITLE = "Giao dich";
-const PAGE_DESC = "Lich su thanh toan va trang thai khop don.";
-const MSG_LOADING = "Dang tai...";
-const MSG_SEARCH = "Tim kiem";
-const MSG_RESET = "Dat lai";
+const PAGE_TITLE = "Giao dịch";
+const PAGE_DESC = "Lịch sử thanh toán và trạng thái khớp đơn.";
+const MSG_LOADING = "Đang tải...";
+const MSG_SEARCH = "Tìm kiếm";
+const MSG_RESET = "Đặt lại";
 
 export function TransactionsPage() {
   const [items, setItems] = useState<TransactionItem[]>([]);
@@ -57,7 +57,7 @@ export function TransactionsPage() {
         >
           <option value="discord">Discord</option>
           <option value="telegram">Telegram</option>
-          <option value="all">Tat ca</option>
+          <option value="all">Tất cả</option>
         </select>
       </div>
 
@@ -71,7 +71,7 @@ export function TransactionsPage() {
         <input
           value={search}
           onChange={(event) => setSearch(event.target.value)}
-          placeholder="Tim theo ma giao dich, ma don, user ID/ten, goi mua"
+          placeholder="Tìm theo mã giao dịch, mã đơn, user ID/tên, gói mua"
           style={{
             minWidth: "320px",
             flex: 1,
@@ -98,19 +98,19 @@ export function TransactionsPage() {
       </form>
 
       {error ? (
-        <p>Loi: {error}</p>
+        <p>Lỗi: {error}</p>
       ) : (
         <Table
           headers={[
-            "Thoi gian",
-            "Ma GD",
-            "So tien",
-            "Nguoi gui",
-            "Noi dung CK",
-            "Ma don",
-            "Nguoi mua",
-            "Goi mua",
-            "Trang thai",
+            "Thời gian",
+            "Mã GD",
+            "Số tiền",
+            "Người gửi",
+            "Nội dung CK",
+            "Mã đơn",
+            "Người mua",
+            "Gói mua",
+            "Trạng thái",
           ]}
           rows={items.map((item) => [
             datetime(item.createdAt),

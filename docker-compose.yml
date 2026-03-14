@@ -3,11 +3,11 @@ services:
     image: postgres:16-alpine
     restart: unless-stopped
     environment:
-      POSTGRES_DB: discordvip
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: ${POSTGRES_DB:-discordvip}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
     ports:
-      - "5432:5432"
+      - "127.0.0.1:5432:5432"
     volumes:
       - postgres-data:/var/lib/postgresql/data
 
@@ -29,6 +29,8 @@ services:
       - ./scripts/db-backup:/scripts:ro
       - ./backups:/backups
     command: ["/bin/sh", "/scripts/entrypoint.sh"]
+    cpus: 0.25
+    mem_limit: 128m
 
   app-server:
     build:
@@ -41,6 +43,8 @@ services:
       - postgres
     expose:
       - "3000"
+    cpus: 1.5
+    mem_limit: 512m
 
   admin-web:
     build:
@@ -48,13 +52,16 @@ services:
       dockerfile: apps/admin/Dockerfile
       args:
         VITE_API_BASE_URL: ${VITE_API_BASE_URL:-}
+        VITE_ENABLE_DEBUG_LOGIN: ${VITE_ENABLE_DEBUG_LOGIN:-false}
     restart: unless-stopped
     depends_on:
       - app-server
     ports:
-      - "13001:4173"
+      - "127.0.0.1:${ADMIN_WEB_PORT:-13001}:4173"
     expose:
       - "4173"
+    cpus: 0.25
+    mem_limit: 128m
 
   web-gateway:
     image: nginx:1.27-alpine
@@ -63,9 +70,11 @@ services:
       - app-server
       - admin-web
     ports:
-      - "8080:8080"
+      - "127.0.0.1:${WEB_GATEWAY_PORT:-8080}:8080"
     volumes:
       - ./nginx/demo.conf:/etc/nginx/conf.d/default.conf:ro
+    cpus: 0.25
+    mem_limit: 128m
 
   cloudflared:
     image: cloudflare/cloudflared:latest
@@ -77,6 +86,20 @@ services:
       - C:/Users/eddyvn/.cloudflared/214e0dc2-0c10-427a-9060-74fe09b52486.json:/etc/cloudflared/credentials.json:ro
     depends_on:
       - web-gateway
+    cpus: 0.5
+    mem_limit: 128m
+
+  cloudflared-hatangmang:
+    image: cloudflare/cloudflared:latest
+    restart: unless-stopped
+    profiles: ["tunnel"]
+    command: tunnel --no-autoupdate --config /etc/cloudflared/config.yml run --token ${CLOUDFLARED_HATANGMANG_TOKEN}
+    volumes:
+      - ./cloudflared/config-hatangmang.yml:/etc/cloudflared/config.yml:ro
+    depends_on:
+      - web-gateway
+    cpus: 0.5
+    mem_limit: 128m
 
 volumes:
   postgres-data:

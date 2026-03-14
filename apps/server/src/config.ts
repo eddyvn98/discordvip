@@ -4,7 +4,23 @@ import { z } from "zod";
 loadEnv();
 
 const envSchema = z.object({
+  APP_ENV: z.enum(["development", "staging", "production"]).optional().default("development"),
   DATABASE_URL: z.string().min(1),
+  TRUST_PROXY: z
+    .enum(["true", "false"])
+    .optional()
+    .default("false")
+    .transform((value) => value === "true"),
+  RUN_DB_PUSH_ON_START: z
+    .enum(["true", "false"])
+    .optional()
+    .default("true")
+    .transform((value) => value === "true"),
+  RUN_DB_SEED_ON_START: z
+    .enum(["true", "false"])
+    .optional()
+    .default("true")
+    .transform((value) => value === "true"),
   DISCORD_BOT_ENABLED: z
     .enum(["true", "false"])
     .optional()
@@ -15,6 +31,12 @@ const envSchema = z.object({
     .optional()
     .default("false")
     .transform((value) => value === "true"),
+  ADMIN_DEBUG_LOGIN_ENABLED: z
+    .enum(["true", "false"])
+    .optional()
+    .default("false")
+    .transform((value) => value === "true"),
+  ADMIN_DEBUG_LOGIN_SECRET: z.string().optional().default(""),
   PAYMENT_MODE: z.enum(["manual", "sepay"]).optional().default("sepay"),
   DISCORD_BOT_TOKEN: z.string().optional().default(""),
   DISCORD_CLIENT_ID: z.string().optional().default(""),
@@ -37,6 +59,7 @@ const envSchema = z.object({
   ADMIN_APP_URL: z.string().url(),
   SESSION_SECRET: z.string().min(1),
   SEPAY_WEBHOOK_SECRET: z.string().optional().default(""),
+  SEPAY_WEBHOOK_API_KEY: z.string().optional().default(""),
   SEPAY_ACCOUNT_NO: z.string().optional().default(""),
   SEPAY_BANK_BIN: z.string().optional().default(""),
   SEPAY_ACCOUNT_NAME: z.string().optional().default(""),

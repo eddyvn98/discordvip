@@ -5,6 +5,7 @@ import type { AdminUser } from "../../types";
 import { DashboardPage } from "../../pages/DashboardPage";
 import { MembershipsPage } from "../../pages/MembershipsPage";
 import { PendingPage } from "../../pages/PendingPage";
+import { PromoCodesPage } from "../../pages/PromoCodesPage";
 import { TransactionsPage } from "../../pages/TransactionsPage";
 import { VipStatsPage } from "../../pages/VipStatsPage";
 
@@ -52,6 +53,9 @@ export function AdminLayout({ user, onLogout }: AdminLayoutProps) {
           <NavLink to="/memberships" onClick={() => setMobileSidebarOpen(false)}>
             Thành viên VIP
           </NavLink>
+          <NavLink to="/promo-codes" onClick={() => setMobileSidebarOpen(false)}>
+            Mã khuyến mãi
+          </NavLink>
           <NavLink to="/pending" onClick={() => setMobileSidebarOpen(false)}>
             Chờ xử lý
           </NavLink>
@@ -75,6 +79,7 @@ export function AdminLayout({ user, onLogout }: AdminLayoutProps) {
           <Route path="/vip-stats" element={<VipStatsPage />} />
           <Route path="/transactions" element={<TransactionsPage />} />
           <Route path="/memberships" element={<MembershipsPage />} />
+          <Route path="/promo-codes" element={<PromoCodesPage />} />
           <Route path="/pending" element={<PendingPage />} />
         </Routes>
       </main>

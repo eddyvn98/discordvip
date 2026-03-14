@@ -8,6 +8,19 @@ type RawBodyRequest = Request & {
   rawBody?: string;
 };
 
+function verifySepayApiKey(authorizationHeader: string | null, apiKey: string) {
+  if (!apiKey) {
+    return true;
+  }
+
+  if (!authorizationHeader) {
+    return false;
+  }
+
+  const expectedHeader = `Apikey ${apiKey}`;
+  return authorizationHeader.trim() === expectedHeader;
+}
+
 function parseWebhookPayload(body: unknown) {
   if (body && typeof body === "object") {
     return body;
@@ -46,6 +59,12 @@ export function registerWebhookRoutes(app: Express, paymentService: PaymentServi
   app.post("/api/webhooks/sepay", async (req: RawBodyRequest, res: Response) => {
     const signature =
       req.header("x-sepay-signature") ?? req.header("x-signature") ?? null;
+    const authorizationHeader = req.header("authorization") ?? null;
+
+    if (!verifySepayApiKey(authorizationHeader, env.SEPAY_WEBHOOK_API_KEY)) {
+      res.status(401).json({ error: "Invalid API key" });
+      return;
+    }
 
     if (
       env.SEPAY_WEBHOOK_SECRET &&

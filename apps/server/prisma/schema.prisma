@@ -23,6 +23,7 @@ enum PaymentStatus {
 enum MembershipSource {
   PAID
   TRIAL
+  MANUAL
 }
 
 enum MembershipStatus {
@@ -110,6 +111,35 @@ model Membership {
   updatedAt     DateTime         @updatedAt
 
   @@unique([discordUserId, guildId, roleId])
+}
+
+model PromoCode {
+  id          String                @id @default(cuid())
+  code        String                @unique
+  label       String
+  durationDays Int
+  maxUses     Int
+  usedCount   Int                   @default(0)
+  expiresAt   DateTime?
+  isActive    Boolean               @default(true)
+  createdBy   String?
+  createdAt   DateTime              @default(now())
+  updatedAt   DateTime              @updatedAt
+  redemptions PromoCodeRedemption[]
+}
+
+model PromoCodeRedemption {
+  id                 String     @id @default(cuid())
+  promoCodeId        String
+  platform           Platform   @default(DISCORD)
+  platformUserId     String
+  platformChatId     String?
+  discordUserId      String
+  durationDaysApplied Int
+  redeemedAt         DateTime   @default(now())
+  promoCode          PromoCode  @relation(fields: [promoCodeId], references: [id], onDelete: Cascade)
+
+  @@unique([promoCodeId, platform, platformUserId])
 }
 
 model TrialClaim {

@@ -3,6 +3,7 @@ import { MembershipStatus, PaymentStatus } from "@prisma/client";
 import { env } from "../config.js";
 import { prisma } from "../prisma.js";
 import { DiscordService } from "./discord-service.js";
+import { MembershipService } from "./membership-service.js";
 import { PlatformRegistry } from "./platform-registry.js";
 import { fromPrismaPlatform } from "./platform.js";
 
@@ -26,6 +27,7 @@ export class AdminService {
   private static readonly DISCORD_NAME_FETCH_CONCURRENCY = 8;
 
   constructor(
+    private readonly membershipService?: MembershipService,
     private readonly discordService?: DiscordService,
     private readonly platformRegistry?: PlatformRegistry,
   ) {}
@@ -106,6 +108,27 @@ export class AdminService {
     }
 
     return user.username;
+  }
+
+  private requireDiscordService() {
+    if (!this.discordService || !env.DISCORD_BOT_ENABLED) {
+      throw new Error("Discord bot chưa sẵn sàng.");
+    }
+    return this.discordService;
+  }
+
+  private requireMembershipService() {
+    if (!this.membershipService) {
+      throw new Error("Membership service chưa sẵn sàng.");
+    }
+    return this.membershipService;
+  }
+
+  private requirePlatformRegistry() {
+    if (!this.platformRegistry) {
+      throw new Error("Platform service chưa sẵn sàng.");
+    }
+    return this.platformRegistry;
   }
 
   private getCachedDiscordDisplayName(userId: string) {
@@ -436,7 +459,7 @@ export class AdminService {
   async searchMemberships(query: string, platformQuery?: string, includeNames = true) {
     const normalized = query.trim().toLowerCase();
     const knownStatus = new Set(["active", "expired"]);
-    const knownSource = new Set(["paid", "trial"]);
+    const knownSource = new Set(["paid", "trial", "manual"]);
     const platform = toPlatformFilter(platformQuery);
     const items = await prisma.membership.findMany({
       where: this.mapMembershipWhere(platform),
@@ -493,6 +516,76 @@ export class AdminService {
       .slice(0, 100);
   }
 
+  async lookupDiscordGuildMember(discordUserId: string) {
+    const discordService = this.requireDiscordService();
+    const member = await discordService.getGuildMember(discordUserId);
+
+    return {
+      id: member.id,
+      username: member.user.username,
+      globalName: member.user.globalName,
+      discriminator: member.user.discriminator,
+      displayName: this.formatDiscordDisplayName(member.user),
+      inGuild: true,
+    };
+  }
+
+  async adjustDiscordMembershipDuration(input: {
+    discordUserId: string;
+    durationDays: number;
+    grantedBy?: string;
+    grantedFrom?: "admin_web" | "discord_command";
+  }) {
+    const discordService = this.requireDiscordService();
+    const membershipService = this.requireMembershipService();
+    const platformRegistry = this.requirePlatformRegistry();
+
+    await discordService.getGuildMember(input.discordUserId);
+
+    const membership = await membershipService.adjustManualMembership({
+      platform: "discord",
+      platformUserId: input.discordUserId,
+      platformChatId: env.DISCORD_GUILD_ID,
+      durationDays: input.durationDays,
+    });
+
+    const target = membershipService.getMembershipTarget(membership);
+
+    try {
+      if (membership.status === MembershipStatus.ACTIVE && membership.expireAt > new Date()) {
+        await platformRegistry.get("discord").grantAccess(target);
+      } else {
+        await platformRegistry.get("discord").revokeAccess(target);
+      }
+    } catch (error) {
+      await prisma.membership.update({
+        where: { id: membership.id },
+        data: {
+          lastError: error instanceof Error ? error.message : "Adjust access failed",
+        },
+      });
+      throw new Error(
+        error instanceof Error ? error.message : "Không thể điều chỉnh thời hạn VIP.",
+      );
+    }
+
+    const profile = await this.lookupDiscordGuildMember(input.discordUserId);
+
+    return {
+      membership: {
+        ...membership,
+        platform: "discord" as const,
+        platformUserId: input.discordUserId,
+        platformChatId: env.DISCORD_GUILD_ID,
+        discordDisplayName: profile.displayName,
+      },
+      audit: {
+        grantedBy: input.grantedBy ?? null,
+        grantedFrom: input.grantedFrom ?? null,
+      },
+    };
+  }
+
   async revokeMembership(membershipId: string) {
     const membership = await prisma.membership.findUnique({
       where: { id: membershipId },
@@ -538,6 +631,29 @@ export class AdminService {
         lastError: null,
       },
     });
+  }
+
+  async revokeDiscordMembershipByUserId(discordUserId: string) {
+    const membership = await prisma.membership.findFirst({
+      where: {
+        platform: "DISCORD",
+        guildId: env.DISCORD_GUILD_ID,
+        discordUserId,
+        status: MembershipStatus.ACTIVE,
+        expireAt: {
+          gt: new Date(),
+        },
+      },
+      orderBy: {
+        expireAt: "desc",
+      },
+    });
+
+    if (!membership) {
+      throw new Error("Người dùng này không có VIP đang hoạt động.");
+    }
+
+    return this.revokeMembership(membership.id);
   }
 
   async listPendingPayments() {

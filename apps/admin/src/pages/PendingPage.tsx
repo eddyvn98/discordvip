@@ -52,7 +52,7 @@ export function PendingPage() {
       await api.post(`/api/admin/pending/${paymentId}/resolve`, {
         orderCode: orderCodes[paymentId],
       });
-      setMessage("�� x? l� giao d?ch ch? duy?t.");
+      setMessage("Đã xử lý giao dịch chờ duyệt.");
       await load();
     } catch (value) {
       setError((value as Error).message);
@@ -65,7 +65,7 @@ export function PendingPage() {
 
     try {
       await api.post(`/api/admin/pending/${paymentId}/delete`);
-      setMessage("�� x�a giao d?ch ch? duy?t.");
+      setMessage("Đã xóa giao dịch chờ duyệt.");
       await load();
     } catch (value) {
       setError((value as Error).message);
@@ -78,7 +78,7 @@ export function PendingPage() {
 
     try {
       await api.post(`/api/admin/orders/${orderId}/confirm`);
-      setMessage("�� x�c nh?n don th? c�ng v� c?p VIP.");
+      setMessage("Đã xác nhận đơn thủ công và cấp VIP.");
       await load();
     } catch (value) {
       setError((value as Error).message);
@@ -89,8 +89,8 @@ export function PendingPage() {
     <section className="card">
       <div className="section-header">
         <div>
-          <h1>Ch? duy?t</h1>
-          <p>Qu?n l� giao d?ch ch? duy?t v� x�c nh?n don th? c�ng khi chua d�ng SePay.</p>
+          <h1>Chờ duyệt</h1>
+          <p>Quản lý giao dịch chờ duyệt và xác nhận đơn thủ công khi chưa dùng SePay.</p>
         </div>
         <select
           value={platform}
@@ -98,7 +98,7 @@ export function PendingPage() {
         >
           <option value="discord">Discord</option>
           <option value="telegram">Telegram</option>
-          <option value="all">T?t c?</option>
+          <option value="all">Tất cả</option>
         </select>
       </div>
       {message ? <p className="success">{message}</p> : null}
@@ -121,9 +121,9 @@ export function PendingPage() {
                 </span>
               </div>
               <p>{item.plan.name}</p>
-              <p>H?t h?n: {datetime(item.expiresAt)}</p>
+              <p>Hết hạn: {datetime(item.expiresAt)}</p>
               <button className="button" onClick={() => void confirmOrder(item.id)}>
-                X�c nh?n th? c�ng
+                Xác nhận thủ công
               </button>
             </div>
           ))}
@@ -138,12 +138,12 @@ export function PendingPage() {
                 <strong>{currency(item.amount)}</strong>
                 <span>{item.providerTransactionId}</span>
                 <span>{datetime(item.createdAt)}</span>
-                <span>{item.payerName ?? "Kh�ng r� ngu?i g?i"}</span>
+                <span>{item.payerName ?? "Không rõ người gửi"}</span>
               </div>
-              <p>{item.transferContent ?? "Kh�ng c� n?i dung chuy?n kho?n"}</p>
+              <p>{item.transferContent ?? "Không có nội dung chuyển khoản"}</p>
               <input
                 list={`orders-${item.id}`}
-                placeholder="Nh?p m� don"
+                placeholder="Nhập mã đơn"
                 value={orderCodes[item.id] ?? ""}
                 onChange={(event) => void searchOrders(item.id, event.target.value)}
               />
@@ -161,13 +161,13 @@ export function PendingPage() {
               </datalist>
               <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
                 <button className="button" onClick={() => void resolvePayment(item.id)}>
-                  X? l�
+                  Xử lý
                 </button>
                 <button
                   className="button secondary"
                   onClick={() => void deletePendingPayment(item.id)}
                 >
-                  X�a
+                  Xóa
                 </button>
               </div>
             </div>

@@ -21,6 +21,22 @@ export function registerAuthRoutes(app: Express, authService: AuthService) {
     }
   });
 
+  app.post("/api/auth/debug-login", (req: Request, res: Response) => {
+    try {
+      const body = req.body as { secret?: string; returnTo?: string };
+      const result = authService.handleDebugLogin(
+        req.session,
+        String(body.secret ?? ""),
+        typeof body.returnTo === "string" ? body.returnTo : undefined,
+      );
+      res.json(result);
+    } catch (error) {
+      res.status(403).json({
+        error: error instanceof Error ? error.message : "Debug login failed",
+      });
+    }
+  });
+
   app.post("/api/auth/logout", (req: Request, res: Response) => {
     req.session.destroy(() => {
       res.status(204).end();
