@@ -34,6 +34,76 @@ export class PaymentService {
     };
   }
 
+  private async getAlignedPaidRevenueForGuild() {
+    const activePaidUsers = await prisma.membership.findMany({
+      where: {
+        platform: "DISCORD",
+        guildId: env.DISCORD_GUILD_ID,
+        status: "ACTIVE",
+        source: "PAID",
+        expireAt: {
+          gt: new Date(),
+        },
+      },
+      distinct: ["discordUserId"],
+      select: {
+        discordUserId: true,
+      },
+    });
+
+    const latestValidPayments = await Promise.all(
+      activePaidUsers.map(async ({ discordUserId }) => {
+        const payments = await prisma.payment.findMany({
+          where: {
+            status: PaymentStatus.MATCHED,
+            order: {
+              is: {
+                platform: "DISCORD",
+                guildId: env.DISCORD_GUILD_ID,
+                discordUserId,
+              },
+            },
+          },
+          orderBy: {
+            createdAt: "desc",
+          },
+          select: {
+            amount: true,
+            providerTransactionId: true,
+            transferContent: true,
+            order: {
+              select: {
+                amount: true,
+                orderCode: true,
+              },
+            },
+          },
+        });
+
+        return (
+          payments.find((payment) => {
+            if (!payment.order) {
+              return false;
+            }
+
+            const txId = payment.providerTransactionId.toLowerCase();
+            const content = payment.transferContent?.toLowerCase() ?? "";
+            const orderCode = payment.order.orderCode.toLowerCase();
+
+            return (
+              !txId.startsWith("manual_") &&
+              !txId.startsWith("tx-form-") &&
+              payment.amount === payment.order.amount &&
+              content.includes(orderCode)
+            );
+          }) ?? null
+        );
+      }),
+    );
+
+    return latestValidPayments.reduce((sum, payment) => sum + (payment?.amount ?? 0), 0);
+  }
+
   async processWebhook(payload: unknown, signature: string | null) {
     const normalized = normalizeSepayPayload(payload);
 
@@ -275,12 +345,19 @@ export class PaymentService {
   }
 
   async getDashboardSummary() {
+    const guildScopedOrderWhere = {
+      platform: "DISCORD" as const,
+      guildId: env.DISCORD_GUILD_ID,
+    };
+
+    const guildScopedMembershipWhere = {
+      platform: "DISCORD" as const,
+      guildId: env.DISCORD_GUILD_ID,
+    };
+
     const [matchedRevenue, pendingPayments, pendingOrders, activeMemberships, recentPayments] =
       await Promise.all([
-        prisma.payment.aggregate({
-          _sum: { amount: true },
-          where: { status: PaymentStatus.MATCHED },
-        }),
+        this.getAlignedPaidRevenueForGuild(),
         prisma.payment.count({
           where: { status: PaymentStatus.PENDING_REVIEW },
         }),
@@ -294,6 +371,7 @@ export class PaymentService {
         }),
         prisma.membership.count({
           where: {
+            ...guildScopedMembershipWhere,
             status: "ACTIVE",
             expireAt: {
               gt: new Date(),
@@ -301,6 +379,11 @@ export class PaymentService {
           },
         }),
         prisma.payment.findMany({
+          where: {
+            order: {
+              is: guildScopedOrderWhere,
+            },
+          },
           orderBy: { createdAt: "desc" },
           take: 5,
           include: {
@@ -312,7 +395,7 @@ export class PaymentService {
       ]);
 
     return {
-      revenue: matchedRevenue._sum.amount ?? 0,
+      revenue: matchedRevenue,
       pendingCount: env.PAYMENT_MODE === "manual" ? pendingOrders : pendingPayments,
       activeMemberships,
       recentPayments,
@@ -320,4 +403,3 @@ export class PaymentService {
     };
   }
 }
-

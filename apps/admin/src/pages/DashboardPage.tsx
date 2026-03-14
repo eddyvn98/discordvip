@@ -30,7 +30,7 @@ export function DashboardPage() {
         <h1>Tổng quan</h1>
         <div className="stats">
           <div className="stat-card">
-            <span>Doanh thu</span>
+            <span>Doanh thu khớp VIP paid</span>
             <strong>{currency(data.revenue)}</strong>
           </div>
           <div className="stat-card">

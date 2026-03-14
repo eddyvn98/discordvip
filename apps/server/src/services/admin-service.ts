@@ -1,4 +1,4 @@
-import { MembershipStatus, PaymentStatus } from "@prisma/client";
+import { MembershipSource, MembershipStatus, PaymentStatus } from "@prisma/client";
 
 import { env } from "../config.js";
 import { prisma } from "../prisma.js";
@@ -91,6 +91,14 @@ export class AdminService {
     return {
       start: new Date(startVietnam.getTime() - 7 * 60 * 60_000),
       end: new Date(endVietnam.getTime() - 7 * 60 * 60_000),
+    };
+  }
+
+  private getFutureRangeInDays(days: number) {
+    const now = new Date();
+    return {
+      start: now,
+      end: new Date(now.getTime() + days * 24 * 60 * 60 * 1000),
     };
   }
 
@@ -778,22 +786,254 @@ export class AdminService {
     });
   }
 
+  private async getAlignedPaidStats(input: {
+    platform: "DISCORD" | "TELEGRAM";
+    guildId?: string;
+  }) {
+    const activePaidUsers = await prisma.membership.findMany({
+      where: {
+        platform: input.platform,
+        ...(input.guildId ? { guildId: input.guildId } : {}),
+        status: MembershipStatus.ACTIVE,
+        source: MembershipSource.PAID,
+        expireAt: {
+          gt: new Date(),
+        },
+      },
+      distinct: ["discordUserId"],
+      select: {
+        discordUserId: true,
+      },
+    });
+
+    const latestValidPayments = await Promise.all(
+      activePaidUsers.map(async ({ discordUserId }) => {
+        const payments = await prisma.payment.findMany({
+          where: {
+            status: PaymentStatus.MATCHED,
+            order: {
+              is: {
+                platform: input.platform,
+                ...(input.guildId ? { guildId: input.guildId } : {}),
+                discordUserId,
+              },
+            },
+          },
+          orderBy: {
+            createdAt: "desc",
+          },
+          select: {
+            amount: true,
+            providerTransactionId: true,
+            transferContent: true,
+            order: {
+              select: {
+                amount: true,
+                orderCode: true,
+              },
+            },
+          },
+        });
+
+        return (
+          payments.find((payment) => {
+            if (!payment.order) {
+              return false;
+            }
+
+            const txId = payment.providerTransactionId.toLowerCase();
+            const content = payment.transferContent?.toLowerCase() ?? "";
+            const orderCode = payment.order.orderCode.toLowerCase();
+
+            return (
+              !txId.startsWith("manual_") &&
+              !txId.startsWith("tx-form-") &&
+              payment.amount === payment.order.amount &&
+              content.includes(orderCode)
+            );
+          }) ?? null
+        );
+      }),
+    );
+
+    const matchedPayments = latestValidPayments.filter((payment): payment is NonNullable<typeof payment> => !!payment);
+
+    return {
+      activePaidUserCount: activePaidUsers.length,
+      activePaidMatchedUserCount: matchedPayments.length,
+      activePaidAlignedRevenue: matchedPayments.reduce((sum, payment) => sum + payment.amount, 0),
+    };
+  }
+
   async getVipStats() {
     const todayRange = this.getTodayRangeInVietnam();
+    const expiringSoonRange = this.getFutureRangeInDays(3);
     const monthRange = this.getCurrentMonthRangeInVietnam();
-
-    const [activeVipCount, expiringTodayCount, monthlyRevenueAgg] = await Promise.all([
-      prisma.membership.count({
-        where: {
-          platform: "DISCORD",
+    const now = new Date();
+    const platforms = [
+      {
+        key: "discord" as const,
+        label: "Discord",
+        membershipWhere: {
+          platform: "DISCORD" as const,
           guildId: env.DISCORD_GUILD_ID,
+        },
+        orderWhere: {
+          platform: "DISCORD" as const,
+          guildId: env.DISCORD_GUILD_ID,
+        },
+      },
+      {
+        key: "telegram" as const,
+        label: "Telegram",
+        membershipWhere: {
+          platform: "TELEGRAM" as const,
+        },
+        orderWhere: {
+          platform: "TELEGRAM" as const,
+        },
+      },
+    ];
+
+    const items = await Promise.all(
+      platforms.map(async (platform) => {
+        const activeWhere = {
+          ...platform.membershipWhere,
           status: MembershipStatus.ACTIVE,
           expireAt: {
-            gt: new Date(),
+            gt: now,
           },
-        },
+        };
+        const expiringSoonWhere = {
+          ...platform.membershipWhere,
+          status: MembershipStatus.ACTIVE,
+          expireAt: {
+            gt: expiringSoonRange.start,
+            lte: expiringSoonRange.end,
+          },
+        };
+
+        const [
+          activeTotal,
+          trialActiveCount,
+          trialExpiringSoonCount,
+          paidActiveCount,
+          paidExpiringSoonCount,
+          manualActiveCount,
+          revenueReceivedTotalAgg,
+          revenueReceivedMonthAgg,
+          matchedPaymentCountTotal,
+          matchedPaymentCountMonth,
+          alignedPaidStats,
+        ] = await Promise.all([
+          prisma.membership.count({
+            where: activeWhere,
+          }),
+          prisma.membership.count({
+            where: {
+              ...activeWhere,
+              source: MembershipSource.TRIAL,
+            },
+          }),
+          prisma.membership.count({
+            where: {
+              ...expiringSoonWhere,
+              source: MembershipSource.TRIAL,
+            },
+          }),
+          prisma.membership.count({
+            where: {
+              ...activeWhere,
+              source: MembershipSource.PAID,
+            },
+          }),
+          prisma.membership.count({
+            where: {
+              ...expiringSoonWhere,
+              source: MembershipSource.PAID,
+            },
+          }),
+          prisma.membership.count({
+            where: {
+              ...activeWhere,
+              source: MembershipSource.MANUAL,
+            },
+          }),
+          prisma.payment.aggregate({
+            where: {
+              status: PaymentStatus.MATCHED,
+              order: {
+                is: platform.orderWhere,
+              },
+            },
+            _sum: {
+              amount: true,
+            },
+          }),
+          prisma.payment.aggregate({
+            where: {
+              status: PaymentStatus.MATCHED,
+              createdAt: {
+                gte: monthRange.start,
+                lt: monthRange.end,
+              },
+              order: {
+                is: platform.orderWhere,
+              },
+            },
+            _sum: {
+              amount: true,
+            },
+          }),
+          prisma.payment.count({
+            where: {
+              status: PaymentStatus.MATCHED,
+              order: {
+                is: platform.orderWhere,
+              },
+            },
+          }),
+          prisma.payment.count({
+            where: {
+              status: PaymentStatus.MATCHED,
+              createdAt: {
+                gte: monthRange.start,
+                lt: monthRange.end,
+              },
+              order: {
+                is: platform.orderWhere,
+              },
+            },
+          }),
+          this.getAlignedPaidStats({
+            platform: platform.key === "telegram" ? "TELEGRAM" : "DISCORD",
+            ...(platform.key === "discord" ? { guildId: env.DISCORD_GUILD_ID } : {}),
+          }),
+        ]);
+
+        return {
+          platform: platform.key,
+          label: platform.label,
+          activeTotal,
+          trialActiveCount,
+          trialExpiringSoonCount,
+          paidActiveCount,
+          paidExpiringSoonCount,
+          manualActiveCount,
+          revenueReceivedTotal: revenueReceivedTotalAgg._sum.amount ?? 0,
+          revenueReceivedMonth: revenueReceivedMonthAgg._sum.amount ?? 0,
+          matchedPaymentCountTotal,
+          matchedPaymentCountMonth,
+          activePaidUserCount: alignedPaidStats.activePaidUserCount,
+          activePaidMatchedUserCount: alignedPaidStats.activePaidMatchedUserCount,
+          activePaidAlignedRevenue: alignedPaidStats.activePaidAlignedRevenue,
+        };
       }),
-      prisma.membership.count({
+    );
+
+    const discordStats = items.find((item) => item.platform === "discord");
+    const expiringTodayCount =
+      (await prisma.membership.count({
         where: {
           platform: "DISCORD",
           guildId: env.DISCORD_GUILD_ID,
@@ -803,31 +1043,14 @@ export class AdminService {
             lt: todayRange.end,
           },
         },
-      }),
-      prisma.payment.aggregate({
-        where: {
-          status: PaymentStatus.MATCHED,
-          createdAt: {
-            gte: monthRange.start,
-            lt: monthRange.end,
-          },
-          order: {
-            is: {
-              platform: "DISCORD",
-              guildId: env.DISCORD_GUILD_ID,
-            },
-          },
-        },
-        _sum: {
-          amount: true,
-        },
-      }),
-    ]);
+      })) ?? 0;
 
     return {
-      activeVipCount,
+      expiringSoonDays: 3,
+      platforms: items,
+      activeVipCount: discordStats?.activeTotal ?? 0,
       expiringTodayCount,
-      monthlyRevenue: monthlyRevenueAgg._sum.amount ?? 0,
+      monthlyRevenue: discordStats?.revenueReceivedMonth ?? 0,
     };
   }
 }

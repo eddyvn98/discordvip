@@ -106,9 +106,24 @@ export type OrderSearchItem = {
 };
 
 export type VipStatsResponse = {
-  activeVipCount: number;
-  expiringTodayCount: number;
-  monthlyRevenue: number;
+  expiringSoonDays: number;
+  platforms: Array<{
+    platform: "discord" | "telegram";
+    label: string;
+    activeTotal: number;
+    trialActiveCount: number;
+    trialExpiringSoonCount: number;
+    paidActiveCount: number;
+    paidExpiringSoonCount: number;
+    manualActiveCount: number;
+    revenueReceivedTotal: number;
+    revenueReceivedMonth: number;
+    matchedPaymentCountTotal: number;
+    matchedPaymentCountMonth: number;
+    activePaidUserCount: number;
+    activePaidMatchedUserCount: number;
+    activePaidAlignedRevenue: number;
+  }>;
 };
 
 export type PromoCodeItem = {
