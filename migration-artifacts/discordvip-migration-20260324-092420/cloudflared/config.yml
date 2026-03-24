@@ -1,0 +1,13 @@
+tunnel: 214e0dc2-0c10-427a-9060-74fe09b52486
+credentials-file: /etc/cloudflared/credentials.json
+
+ingress:
+  - hostname: discordvip.hatangmang.vn
+    service: http://web-gateway:8080
+  - hostname: posweb.vivutrade.io.vn
+    service: http://host.docker.internal:13002
+  - hostname: vivutrade.io.vn
+    service: http://host.docker.internal:13000
+  - hostname: api.vivutrade.io.vn
+    service: http://host.docker.internal:18091
+  - service: http_status:404

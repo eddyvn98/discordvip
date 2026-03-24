@@ -95,6 +95,34 @@ Khoi phuc tu file backup:
 gzip -dc ./backups/<file>.sql.gz | docker exec -i discordvip-postgres-1 psql -U postgres -d discordvip
 ```
 
+### Migration 1-click (may cu -> may moi)
+
+Export tren may cu:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\migration-export.ps1 -Mode local
+```
+
+Hoac production:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\migration-export.ps1 -Mode production
+```
+
+Script se tao file zip trong thu muc `.\migration-artifacts`.
+
+Import tren may moi:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\migration-import.ps1 -ArchivePath .\migration-artifacts\<ten-file>.zip -DestinationPath D:\discordvip
+```
+
+Neu muon chay production tren may moi:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\migration-import.ps1 -ArchivePath .\migration-artifacts\<ten-file>.zip -DestinationPath D:\discordvip -Mode production
+```
+
 ### Chế độ xác nhận thủ công
 
 - Đặt `PAYMENT_MODE=manual` để bỏ qua SePay trước mắt.
