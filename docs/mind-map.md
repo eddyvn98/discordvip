@@ -39,9 +39,16 @@ mindmap
         Cap role VIP
         Thu hoi role VIP
         Gui thong bao
+        Dieu kien
+          Bot role phai cao hon VIP role
+          Bot can duoc cap quyen Manage Roles
       Telegram adapter
         Cap quyen kenh VIP
         Thu hoi quyen
+        Moi/add user vao kenh VIP theo plan
+        Dieu kien
+          Bot duoc add vao nhom/kenh VIP
+          Bot co quyen moi thanh vien
     Admin panel
       Auth
         Discord OAuth
@@ -61,6 +68,14 @@ mindmap
         Plan CRUD
         Promo code CRUD
     Van hanh
+      Cau hinh bot
+        Discord
+          Set DISCORD_GUILD_ID
+          Set DISCORD_VIP_ROLE_ID
+          Sap xep thu tu role bot > VIP role
+        Telegram
+          Cau hinh kenh VIP theo tung plan
+          Bot tham gia kenh va co quyen moi user
       Scheduler
         Nhac sap het han 3d/1d
         Het han thi revoke access

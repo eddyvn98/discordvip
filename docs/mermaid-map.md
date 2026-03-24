@@ -39,4 +39,13 @@ flowchart TD
     ADM --> D5[Promo code CRUD]
     ADM --> D6[Pending orders/payments]
     ADM --> D7[Cau hinh kenh Telegram VIP]
+
+    CFG[Cau hinh ban dau] --> CF1[Discord: dat role bot cao hon VIP role]
+    CFG --> CF2[Discord: set DISCORD_GUILD_ID + DISCORD_VIP_ROLE_ID]
+    CFG --> CF3[Telegram: add bot vao nhom/kenh VIP va cap quyen moi thanh vien]
+
+    A1 --> DIS1[Discord: bot gan VIP role cho member]
+    E3 --> DIS2[Discord: bot go VIP role khi het han]
+    A1 --> TG1[Telegram: bot moi/add user vao kenh VIP theo plan]
+    E3 --> TG2[Telegram: bot loai user khoi kenh VIP khi het han]
 ```
