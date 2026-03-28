@@ -407,6 +407,10 @@ async function bootstrapTelegramHandlers() {
           `Hết hạn: ${membership.expireAt.toLocaleString("vi-VN")}`,
         ].join("\n"),
       );
+      await telegramService.sendVipEntryLinks({
+        userId,
+        headerText: "Link vào kênh VIP (hiệu lực 24h):",
+      });
     },
     onRedeemVip: async ({ userId, chatId, code }) => {
       try {

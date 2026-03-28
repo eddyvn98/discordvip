@@ -563,18 +563,22 @@ export class TelegramService implements PlatformAdapter {
     });
     return result.invite_link;
   }
-
-  async grantAccess(target: AccessTarget) {
-    const chatIds = await this.getVipChatIdsForPlan(target.planCode);
+  async sendVipEntryLinks(input: { userId: string; planCode?: string; headerText?: string }) {
+    const chatIds = await this.getVipChatIdsForPlan(input.planCode);
     const inviteLinks = await Promise.all(chatIds.map((chatId) => this.createVipInviteLink(chatId)));
     const normalizedLinksText = inviteLinks.map((link, index) => `Kênh VIP ${index + 1}: ${link}`).join("\n");
     await this.sendMessage(
-      target.platformUserId,
+      input.userId,
       [
-        "Thanh toán đã được xác nhận. VIP của bạn đã kích hoạt.",
-        `Link vào kênh VIP (hiệu lực 24h):\n${normalizedLinksText}`,
+        input.headerText ?? "Link vào kênh VIP (hiệu lực 24h):",
+        normalizedLinksText,
       ].join("\n"),
     );
+  }
+
+  async grantAccess(target: AccessTarget) {
+    await this.sendMessage(target.platformUserId, "Thanh toán đã được xác nhận. VIP của bạn đã kích hoạt.");
+    await this.sendVipEntryLinks({ userId: target.platformUserId, planCode: target.planCode });
   }
 
   async revokeAccess(target: AccessTarget) {
@@ -691,3 +695,4 @@ export class TelegramService implements PlatformAdapter {
     return env.adminTelegramIds.includes(platformUserId);
   }
 }
+
