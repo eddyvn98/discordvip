@@ -41,5 +41,8 @@ export interface PlatformAdapter {
     providerTransactionId: string;
   }): Promise<void>;
   sendManualOrderReview?(order: ManualReviewOrder): Promise<void>;
+  clearPaymentPromptMessage?(input: { chatId: string; messageId: number }): Promise<void>;
+  checkHealth?(): Promise<void>;
+  sendOpsAlert?(message: string): Promise<void>;
   isAdmin(platformUserId: string): Promise<boolean>;
 }

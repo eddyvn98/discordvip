@@ -57,8 +57,15 @@ export class DiscordPlatformAdapter implements PlatformAdapter {
     });
   }
 
+  async checkHealth() {
+    await this.discordService.checkHealth();
+  }
+
+  async sendOpsAlert(message: string) {
+    await this.discordService.sendOpsAlert(message);
+  }
+
   async isAdmin(platformUserId: string) {
     return this.discordService.memberHasAdminAccess(platformUserId);
   }
 }
-

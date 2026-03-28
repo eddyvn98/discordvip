@@ -319,6 +319,30 @@ export class DiscordService {
     });
   }
 
+  async checkHealth() {
+    if (!env.DISCORD_BOT_ENABLED) {
+      return;
+    }
+
+    if (!this.client.isReady() || !this.client.user) {
+      throw new Error("Discord client is not ready.");
+    }
+
+    await this.getGuild();
+  }
+
+  async sendOpsAlert(message: string) {
+    const channel = await this.getAdminChannel();
+    if (!channel) {
+      return;
+    }
+
+    await channel.send({
+      content: `CANH BAO HE THONG: ${message}`,
+      flags: MessageFlags.SuppressNotifications,
+    });
+  }
+
   async memberHasAdminAccess(discordUserId: string) {
     if (env.adminDiscordIds.includes(discordUserId)) {
       return true;

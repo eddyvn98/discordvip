@@ -102,6 +102,8 @@ model Order {
   status        OrderStatus @default(PENDING)
   expiresAt     DateTime
   paidAt        DateTime?
+  paymentPromptChatId String?
+  paymentPromptMessageId Int?
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
   planId        String

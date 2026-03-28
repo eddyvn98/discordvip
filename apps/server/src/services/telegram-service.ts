@@ -4,6 +4,7 @@ import { prisma } from "../prisma.js";
 import { AccessTarget, PlatformAdapter } from "./platform-adapter.js";
 
 type TelegramMessage = {
+  message_id: number;
   chat: { id: number | string; type: string; title?: string };
   text?: string;
   from?: { id: number | string; username?: string; first_name?: string };
@@ -531,7 +532,7 @@ export class TelegramService implements PlatformAdapter {
       inline_keyboard: Array<Array<{ text: string; callback_data: string }>>;
     },
   ) {
-    await this.apiCall("sendMessage", {
+    return this.apiCall<TelegramMessage>("sendMessage", {
       chat_id: chatId,
       text,
       disable_web_page_preview: true,
@@ -540,10 +541,17 @@ export class TelegramService implements PlatformAdapter {
   }
 
   async sendPhoto(chatId: string, photoUrl: string, caption?: string) {
-    await this.apiCall("sendPhoto", {
+    return this.apiCall<TelegramMessage>("sendPhoto", {
       chat_id: chatId,
       photo: photoUrl,
       caption,
+    });
+  }
+
+  async clearPaymentPromptMessage(input: { chatId: string; messageId: number }) {
+    await this.apiCall("deleteMessage", {
+      chat_id: input.chatId,
+      message_id: input.messageId,
     });
   }
 
@@ -659,6 +667,23 @@ export class TelegramService implements PlatformAdapter {
       `VIP hết hạn: ${input.expireAt.toLocaleString("vi-VN")}`,
     ].join("\n");
 
+    await Promise.all(env.adminTelegramIds.map((adminId) => this.sendMessage(adminId, text)));
+  }
+
+  async checkHealth() {
+    if (!env.TELEGRAM_BOT_ENABLED) {
+      return;
+    }
+
+    await this.apiCall("getMe");
+  }
+
+  async sendOpsAlert(message: string) {
+    if (!env.adminTelegramIds.length) {
+      return;
+    }
+
+    const text = `CANH BAO HE THONG: ${message}`;
     await Promise.all(env.adminTelegramIds.map((adminId) => this.sendMessage(adminId, text)));
   }
 

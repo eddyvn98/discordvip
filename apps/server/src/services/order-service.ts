@@ -83,15 +83,75 @@ export class OrderService {
   }
 
   async markExpiredOrders() {
-    return prisma.order.updateMany({
+    const expiredOrders = await prisma.order.findMany({
       where: {
         status: OrderStatus.PENDING,
         expiresAt: {
           lt: new Date(),
         },
       },
+      select: {
+        id: true,
+        platform: true,
+        platformUserId: true,
+        platformChatId: true,
+        discordUserId: true,
+        guildId: true,
+        paymentPromptChatId: true,
+        paymentPromptMessageId: true,
+      },
+    });
+
+    if (!expiredOrders.length) {
+      return [];
+    }
+
+    await prisma.order.updateMany({
+      where: {
+        id: {
+          in: expiredOrders.map((order) => order.id),
+        },
+      },
       data: {
         status: OrderStatus.EXPIRED,
+      },
+    });
+
+    return expiredOrders;
+  }
+
+  async savePaymentPromptMessage(orderId: string, chatId: string, messageId: number) {
+    return prisma.order.update({
+      where: { id: orderId },
+      data: {
+        paymentPromptChatId: chatId,
+        paymentPromptMessageId: messageId,
+      },
+    });
+  }
+
+  async clearPaymentPromptMessage(orderId: string) {
+    return prisma.order.update({
+      where: { id: orderId },
+      data: {
+        paymentPromptChatId: null,
+        paymentPromptMessageId: null,
+      },
+    });
+  }
+
+  async getPaymentPromptMessage(orderId: string) {
+    return prisma.order.findUnique({
+      where: { id: orderId },
+      select: {
+        id: true,
+        platform: true,
+        platformUserId: true,
+        platformChatId: true,
+        discordUserId: true,
+        guildId: true,
+        paymentPromptChatId: true,
+        paymentPromptMessageId: true,
       },
     });
   }

@@ -17,6 +17,36 @@ export class PaymentService {
     private readonly platformRegistry: PlatformRegistry,
   ) {}
 
+  private async clearOrderPaymentPrompt(orderId: string) {
+    const prompt = await this.orderService.getPaymentPromptMessage(orderId);
+    if (!prompt?.paymentPromptChatId || !prompt.paymentPromptMessageId) {
+      return;
+    }
+
+    const target = this.getOrderTarget(prompt);
+    const adapter = this.platformRegistry.get(target.platform);
+    if (!adapter.clearPaymentPromptMessage) {
+      return;
+    }
+
+    try {
+      await adapter.clearPaymentPromptMessage({
+        chatId: prompt.paymentPromptChatId,
+        messageId: prompt.paymentPromptMessageId,
+      });
+    } catch (error) {
+      logger.warn("Failed to clear payment prompt message", {
+        orderId,
+        platform: target.platform,
+        chatId: prompt.paymentPromptChatId,
+        messageId: prompt.paymentPromptMessageId,
+        error,
+      });
+    } finally {
+      await this.orderService.clearPaymentPromptMessage(orderId);
+    }
+  }
+
   private getOrderTarget(order: {
     platform: unknown;
     platformUserId: string | null;
@@ -237,6 +267,8 @@ export class PaymentService {
           });
         }
       }
+
+      await this.clearOrderPaymentPrompt(order.id);
     }
 
     return { duplicate: false, status: "matched" as const };
@@ -283,6 +315,7 @@ export class PaymentService {
       ...target,
       planCode: order.plan.code,
     });
+    await this.clearOrderPaymentPrompt(order.id);
     return applied;
   }
 
@@ -326,6 +359,7 @@ export class PaymentService {
       ...target,
       planCode: order.plan.code,
     });
+    await this.clearOrderPaymentPrompt(order.id);
     return applied;
   }
 
@@ -342,12 +376,14 @@ export class PaymentService {
       throw new Error("Order này không còn ở trạng thái pending.");
     }
 
-    return prisma.order.update({
+    const updated = await prisma.order.update({
       where: { id: order.id },
       data: {
         status: "CANCELLED",
       },
     });
+    await this.clearOrderPaymentPrompt(order.id);
+    return updated;
   }
 
   async getDashboardSummary(platformQuery?: string) {

@@ -349,10 +349,15 @@ async function bootstrapTelegramHandlers() {
         paymentInstruction,
       ].join("\n");
 
+      let sentMessage: { message_id: number } | null = null;
       if (qrImageUrl) {
-        await telegramService.sendPhoto(chatId, qrImageUrl, donateText);
+        sentMessage = await telegramService.sendPhoto(chatId, qrImageUrl, donateText);
       } else {
-        await telegramService.sendMessage(chatId, donateText);
+        sentMessage = await telegramService.sendMessage(chatId, donateText);
+      }
+
+      if (sentMessage?.message_id) {
+        await orderService.savePaymentPromptMessage(order.id, chatId, sentMessage.message_id);
       }
     },
     onTrialVip: async ({ userId, chatId }) => {
