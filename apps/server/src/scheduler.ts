@@ -187,6 +187,18 @@ export function startSchedulers(
       try {
         await adapter.revokeAccess(target);
         await membershipService.markMembershipExpired(membership.id);
+        if (String(membership.source) === "TRIAL" && adapter.sendTrialExpiredNotice) {
+          try {
+            await adapter.sendTrialExpiredNotice(target);
+          } catch (error) {
+            logger.warn("Failed to send trial expiry notice", {
+              membershipId: membership.id,
+              platform: target.platform,
+              userId: target.platformUserId,
+              error,
+            });
+          }
+        }
         logger.info("Expired VIP membership removed", {
           membershipId: membership.id,
           platform: target.platform,

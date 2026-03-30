@@ -27,6 +27,7 @@ export interface PlatformAdapter {
   grantAccess(target: AccessTarget): Promise<void>;
   revokeAccess(target: AccessTarget): Promise<void>;
   sendVipActivatedNotice(target: AccessTarget, expireAt: Date): Promise<void>;
+  sendTrialExpiredNotice?(target: AccessTarget): Promise<void>;
   sendVipExpiryReminder(target: AccessTarget, expireAt: Date, thresholdDays: number): Promise<void>;
   sendAdminVipExpiryReminder(
     target: AccessTarget,

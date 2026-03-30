@@ -97,7 +97,11 @@ function buildDonateButtons(plans: TelegramDonatePlan[]) {
 }
 
 async function showHome(input: RouterInput, chatId: string) {
-  await input.sendMessage(chatId, "Chào mừng bạn. Chọn nhanh 1 nhóm thao tác:", buildHomeMenu());
+  await input.sendMessage(
+    chatId,
+    "Chào mừng bạn 👋\nĐây là BOT VIP tự động – bạn cần mình hỗ trợ gì hôm nay?",
+    buildHomeMenu(),
+  );
 }
 
 async function showDonateMenu(input: RouterInput, chatId: string) {
@@ -193,12 +197,6 @@ export async function routeTelegramUpdate(input: RouterInput) {
       await input.sendMessage(chatId, "Đã ghi nhận ref link. Bạn có thể tiếp tục tại Home:", buildHomeMenu());
       return;
     }
-    await showHome(input, chatId);
-    return;
-  }
-
-  if (command === "/menu") {
-    clearPendingInput(userId, chatId);
     await showHome(input, chatId);
     return;
   }

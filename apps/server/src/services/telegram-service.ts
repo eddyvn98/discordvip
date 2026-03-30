@@ -373,6 +373,17 @@ export class TelegramService implements PlatformAdapter {
     );
   }
 
+  async sendTrialExpiredNotice(target: AccessTarget) {
+    await this.sendMessage(
+      target.platformUserId,
+      [
+        "Bạn đã hết thời gian thử nghiệm VIP",
+        "Nếu thấy nội dung phù hợp với mình, bạn có thể donate để tiếp tục xem nhé ✨",
+        "👉 Dùng lệnh /donate",
+      ].join("\n"),
+    );
+  }
+
   async sendVipExpiryReminder(target: AccessTarget, expireAt: Date, thresholdDays: number) {
     await this.sendMessage(
       target.platformUserId,

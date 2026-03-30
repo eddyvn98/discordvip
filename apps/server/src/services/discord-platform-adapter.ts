@@ -22,6 +22,10 @@ export class DiscordPlatformAdapter implements PlatformAdapter {
     await this.discordService.sendVipActivatedNotice(target.platformUserId, expireAt);
   }
 
+  async sendTrialExpiredNotice(target: AccessTarget) {
+    await this.discordService.sendTrialExpiredNotice(target.platformUserId);
+  }
+
   async sendVipExpiryReminder(target: AccessTarget, expireAt: Date, thresholdDays: number) {
     await this.discordService.sendVipExpiryReminder(target.platformUserId, expireAt, thresholdDays);
   }

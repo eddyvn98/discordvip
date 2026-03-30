@@ -136,6 +136,17 @@ export class DiscordService {
     await sendDiscordVipActivatedNotice(this.client, discordUserId, expireAt);
   }
 
+  async sendTrialExpiredNotice(discordUserId: string) {
+    const user = await this.client.users.fetch(discordUserId);
+    await user.send({
+      content: [
+        "Bạn đã hết thời gian thử nghiệm VIP",
+        "Nếu thấy nội dung phù hợp với mình, bạn có thể donate để tiếp tục xem nhé ✨",
+        "👉 Dùng lệnh /donate",
+      ].join("\n"),
+    });
+  }
+
   private async ensureHomePanelMessage() {
     if (!env.DISCORD_MENU_CHANNEL_ID) {
       return;
@@ -161,7 +172,11 @@ export class DiscordService {
         message.author.id === this.client.user?.id &&
         message.content.includes("mở menu bot VIP") &&
         message.components.some((rowItem) =>
-          rowItem.components.some((component) => "customId" in component && component.customId === "home_menu"),
+          "components" in rowItem &&
+          Array.isArray(rowItem.components) &&
+          rowItem.components.some(
+            (component: { customId?: string | null }) => component.customId === "home_menu",
+          ),
         ),
     );
 

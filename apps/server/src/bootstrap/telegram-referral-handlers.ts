@@ -2,19 +2,15 @@ import { MembershipService } from "../services/membership-service.js";
 import { ReferralService } from "../services/referral-service.js";
 import { TelegramService } from "../services/telegram-service.js";
 
-export function buildTelegramReferralMenu(inviteLink?: string) {
+export function buildTelegramReferralMenu() {
   const inlineKeyboard: Array<Array<{ text: string; callback_data?: string; url?: string }>> = [
     [
       { text: "Tạo link mời", callback_data: "ref_create_link" },
       { text: "Điểm của tôi", callback_data: "ref_stats" },
     ],
-    [{ text: "Đổi điểm (>=10 ngày)", callback_data: "ref_redeem_custom" }],
+    [{ text: "Đổi điểm (>=10 điểm)", callback_data: "ref_redeem_custom" }],
     [{ text: "Nhập mã khuyến mãi", callback_data: "acc_redeem_help" }],
   ];
-
-  if (inviteLink) {
-    inlineKeyboard.push([{ text: "Copy link", url: inviteLink }]);
-  }
 
   inlineKeyboard.push([{ text: "Về Home", callback_data: "home_menu" }]);
   return { inline_keyboard: inlineKeyboard };
@@ -51,7 +47,7 @@ export function createTelegramReferralHandlers(input: {
         inviterChatId: chatId,
         inviteLink,
       });
-      await telegramService.sendMessage(chatId, `Link mời của bạn:\n${inviteLink}`, buildTelegramReferralMenu(inviteLink));
+      await telegramService.sendMessage(chatId, `Link mời của bạn:\n${inviteLink}`, buildTelegramReferralMenu());
     },
     onReferralStats: async ({ userId, chatId }: { userId: string; chatId: string; chatType: string }) => {
       const stats = await referralService.getInviteStats({

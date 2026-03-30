@@ -46,14 +46,14 @@ function homeRows() {
   ];
 }
 
-function referralRows(inviteLink?: string) {
-  const rows = [
+function referralRows() {
+  return [
     new ActionRowBuilder<ButtonBuilder>().addComponents(
       new ButtonBuilder().setCustomId("ref_create_link").setLabel("Tạo link mời").setStyle(ButtonStyle.Primary),
       new ButtonBuilder().setCustomId("ref_stats").setLabel("Điểm của tôi").setStyle(ButtonStyle.Secondary),
     ),
     new ActionRowBuilder<ButtonBuilder>().addComponents(
-      new ButtonBuilder().setCustomId("ref_redeem_custom").setLabel("Đổi điểm (>=10 ngày)").setStyle(ButtonStyle.Success),
+      new ButtonBuilder().setCustomId("ref_redeem_custom").setLabel("Đổi điểm (>=10 điểm)").setStyle(ButtonStyle.Success),
     ),
     new ActionRowBuilder<ButtonBuilder>().addComponents(
       new ButtonBuilder().setCustomId("acc_redeem_help").setLabel("Nhập mã khuyến mãi").setStyle(ButtonStyle.Secondary),
@@ -62,18 +62,6 @@ function referralRows(inviteLink?: string) {
       new ButtonBuilder().setCustomId("home_menu").setLabel("Về Home").setStyle(ButtonStyle.Secondary),
     ),
   ];
-
-  if (inviteLink) {
-    rows.splice(
-      3,
-      0,
-      new ActionRowBuilder<ButtonBuilder>().addComponents(
-        new ButtonBuilder().setLabel("Copy link").setStyle(ButtonStyle.Link).setURL(inviteLink),
-      ),
-    );
-  }
-
-  return rows;
 }
 
 function buyRows() {
@@ -95,7 +83,7 @@ export async function handleDiscordMenuCommand(interaction: ChatInputCommandInte
   }
   await interaction.reply({
     flags: MessageFlags.Ephemeral,
-    content: "Home menu: chọn nhanh 1 nhóm thao tác bằng nút.",
+    content: "Chào mừng bạn 👋\nĐây là BOT VIP tự động – bạn cần mình hỗ trợ gì hôm nay?",
     components: homeRows(),
   });
   return true;
@@ -149,7 +137,11 @@ export async function handleDiscordButton(input: {
   }
 
   if (interaction.customId === "home_menu") {
-    await interaction.reply({ flags: MessageFlags.Ephemeral, content: "Home menu:", components: homeRows() });
+    await interaction.reply({
+      flags: MessageFlags.Ephemeral,
+      content: "Chào mừng bạn 👋\nĐây là BOT VIP tự động – bạn cần mình hỗ trợ gì hôm nay?",
+      components: homeRows(),
+    });
     return true;
   }
   if (interaction.customId === "home_referral") {
@@ -324,7 +316,7 @@ export async function handleDiscordButton(input: {
     await interaction.reply({
       flags: MessageFlags.Ephemeral,
       content: `Link mời của bạn: ${inviteLink}`,
-      components: referralRows(inviteLink),
+      components: referralRows(),
     });
     return true;
   }

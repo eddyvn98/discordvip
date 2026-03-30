@@ -3,7 +3,6 @@ import { TelegramBotCommand } from "./telegram-types.js";
 export function getTelegramUserCommands(): TelegramBotCommand[] {
   return [
     { command: "start", description: "Mở Home menu bằng nút" },
-    { command: "menu", description: "Mở lại Home menu" },
   ];
 }
 
