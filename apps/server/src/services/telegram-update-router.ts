@@ -166,6 +166,9 @@ export async function routeTelegramUpdate(input: RouterInput) {
       await input.handlers.onReferralMenu({ userId, chatId, chatType });
       return;
     }
+
+    await showHome(input, chatId);
+    return;
   }
 
   if (isAdminUser && !input.adminCommandsSynced.has(userId)) {

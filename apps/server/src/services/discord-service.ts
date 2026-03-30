@@ -67,6 +67,7 @@ export class DiscordService {
       const guild = await this.getGuild();
       await guild.commands.set(getDiscordGuildCommands());
       await this.referralRuntime.onReady(guild);
+      await this.ensureHomePanelMessage();
     });
 
     this.client.on(Events.MessageCreate, async (message) => {
@@ -133,6 +134,43 @@ export class DiscordService {
 
   async sendVipActivatedNotice(discordUserId: string, expireAt: Date) {
     await sendDiscordVipActivatedNotice(this.client, discordUserId, expireAt);
+  }
+
+  private async ensureHomePanelMessage() {
+    if (!env.DISCORD_MENU_CHANNEL_ID) {
+      return;
+    }
+
+    const channel = await this.client.channels.fetch(env.DISCORD_MENU_CHANNEL_ID);
+    if (!channel || channel.type !== ChannelType.GuildText) {
+      logger.warn("DISCORD_MENU_CHANNEL_ID is not a valid guild text channel", {
+        channelId: env.DISCORD_MENU_CHANNEL_ID,
+      });
+      return;
+    }
+
+    const textChannel = channel as TextChannel;
+    const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
+      new ButtonBuilder().setCustomId("home_menu").setLabel("Mở Menu VIP").setStyle(ButtonStyle.Primary),
+    );
+    const content = "Bấm nút bên dưới để mở menu bot VIP.";
+
+    const recentMessages = await textChannel.messages.fetch({ limit: 30 });
+    const existing = recentMessages.find(
+      (message) =>
+        message.author.id === this.client.user?.id &&
+        message.content.includes("mở menu bot VIP") &&
+        message.components.some((rowItem) =>
+          rowItem.components.some((component) => "customId" in component && component.customId === "home_menu"),
+        ),
+    );
+
+    if (existing) {
+      await existing.edit({ content, components: [row] });
+      return;
+    }
+
+    await textChannel.send({ content, components: [row] });
   }
 
   async sendManualOrderReview(order: {
