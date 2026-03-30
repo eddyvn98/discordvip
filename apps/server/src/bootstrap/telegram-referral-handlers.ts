@@ -143,7 +143,13 @@ export function createTelegramReferralHandlers(input: {
         await telegramService.sendMessage(chatId, "Không thể verify referral. Vui lòng thử lại.");
         return;
       }
-      await telegramService.sendMessage(chatId, "Verify thành công.");
+      await telegramService.sendMessage(
+        chatId,
+        "Verify thành công. Mời bạn vào kênh chính @rapphim18 tại đây:",
+        {
+          inline_keyboard: [[{ text: "Vào kênh chính @rapphim18", url: "https://t.me/rapphim18" }]],
+        },
+      );
       if (!result.alreadyRewarded && result.inviterUserId) {
         await telegramService.sendMessage(
           result.inviterUserId,
