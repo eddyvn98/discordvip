@@ -68,7 +68,7 @@ export async function registerJoinByToken(input: {
     return { ok: false as const, reason: "self_invite" };
   }
 
-  const event = await prisma.referralInviteEvent.upsert({
+  const existing = await prisma.referralInviteEvent.findUnique({
     where: {
       platform_inviterUserId_inviteeUserId: {
         platform: inviteToken.platform,
@@ -76,21 +76,32 @@ export async function registerJoinByToken(input: {
         inviteeUserId: input.inviteeUserId,
       },
     },
-    update: {
-      inviteeChatId: input.inviteeChatId ?? null,
-      status: ReferralEventStatus.JOINED,
-      failedReason: null,
-    },
-    create: {
-      platform: inviteToken.platform,
-      inviterUserId: inviteToken.inviterUserId,
-      inviteeUserId: input.inviteeUserId,
-      inviterChatId: inviteToken.inviterChatId,
-      inviteeChatId: input.inviteeChatId,
-      inviteTokenId: inviteToken.id,
-      status: ReferralEventStatus.JOINED,
-    },
   });
+
+  if (existing?.status === ReferralEventStatus.SUCCESS) {
+    return { ok: true as const, event: existing, inviterUserId: inviteToken.inviterUserId };
+  }
+
+  const event = existing
+    ? await prisma.referralInviteEvent.update({
+        where: { id: existing.id },
+        data: {
+          inviteeChatId: input.inviteeChatId ?? null,
+          status: ReferralEventStatus.JOINED,
+          failedReason: null,
+        },
+      })
+    : await prisma.referralInviteEvent.create({
+        data: {
+          platform: inviteToken.platform,
+          inviterUserId: inviteToken.inviterUserId,
+          inviteeUserId: input.inviteeUserId,
+          inviterChatId: inviteToken.inviterChatId,
+          inviteeChatId: input.inviteeChatId,
+          inviteTokenId: inviteToken.id,
+          status: ReferralEventStatus.JOINED,
+        },
+      });
 
   return { ok: true as const, event, inviterUserId: inviteToken.inviterUserId };
 }
@@ -115,9 +126,13 @@ export async function verifyAndReward(input: { platform: PlatformKey; inviteeUse
   const settings = await getReferralSettings();
   const points = settings.pointsPerSuccess;
 
+  let awarded = false;
   await prisma.$transaction(async (tx) => {
-    await tx.referralInviteEvent.update({
-      where: { id: latestJoined.id },
+    const updated = await tx.referralInviteEvent.updateMany({
+      where: {
+        id: latestJoined.id,
+        status: { not: ReferralEventStatus.SUCCESS },
+      },
       data: {
         status: ReferralEventStatus.SUCCESS,
         verifiedAt: new Date(),
@@ -125,6 +140,23 @@ export async function verifyAndReward(input: { platform: PlatformKey; inviteeUse
         pointsAwarded: points,
       },
     });
+
+    if (updated.count === 0) {
+      return;
+    }
+
+    const existingAward = await tx.referralPointLedger.findFirst({
+      where: {
+        eventId: latestJoined.id,
+        source: ReferralPointSource.INVITE_SUCCESS,
+      },
+      select: { id: true },
+    });
+
+    if (existingAward) {
+      return;
+    }
+
     await tx.referralPointLedger.create({
       data: {
         platform,
@@ -135,7 +167,12 @@ export async function verifyAndReward(input: { platform: PlatformKey; inviteeUse
         note: `Invite success: ${latestJoined.inviteeUserId}`,
       },
     });
+    awarded = true;
   });
+
+  if (!awarded) {
+    return { ok: true as const, alreadyRewarded: true, inviterUserId: latestJoined.inviterUserId };
+  }
 
   return {
     ok: true as const,

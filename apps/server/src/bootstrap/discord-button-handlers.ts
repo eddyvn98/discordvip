@@ -46,7 +46,6 @@ function referralRows() {
       new ButtonBuilder().setCustomId("ref_stats").setLabel("Điểm của tôi").setStyle(ButtonStyle.Secondary),
     ),
     new ActionRowBuilder<ButtonBuilder>().addComponents(
-      new ButtonBuilder().setCustomId("ref_redeem_1").setLabel("Đổi 1 ngày").setStyle(ButtonStyle.Success),
       new ButtonBuilder().setCustomId("ref_redeem_10").setLabel("Đổi 10 ngày").setStyle(ButtonStyle.Success),
       new ButtonBuilder().setCustomId("ref_redeem_30").setLabel("Đổi 30 ngày").setStyle(ButtonStyle.Success),
       new ButtonBuilder().setCustomId("ref_redeem_90").setLabel("Đổi 90 ngày").setStyle(ButtonStyle.Success),
@@ -324,7 +323,7 @@ export async function handleDiscordButton(input: {
 
   if (interaction.customId.startsWith("ref_redeem_")) {
     const days = Number(interaction.customId.replace("ref_redeem_", ""));
-    if (![1, 10, 30, 90].includes(days)) {
+    if (![10, 30, 90].includes(days)) {
       await interaction.reply({
         flags: MessageFlags.Ephemeral,
         content: "Lựa chọn đổi VIP không hợp lệ.",

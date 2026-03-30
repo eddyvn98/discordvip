@@ -10,12 +10,10 @@ export function buildTelegramReferralMenu() {
         { text: "Điểm của tôi", callback_data: "ref_stats" },
       ],
       [
-        { text: "Đổi 1 ngày VIP", callback_data: "ref_redeem_1" },
         { text: "Đổi 10 ngày VIP", callback_data: "ref_redeem_10" },
         { text: "Đổi 30 ngày VIP", callback_data: "ref_redeem_30" },
         { text: "Đổi 90 ngày VIP", callback_data: "ref_redeem_90" },
       ],
-      [{ text: "Verify", callback_data: "ref_verify" }],
       [{ text: "Về Home", callback_data: "home_menu" }],
     ],
   };
