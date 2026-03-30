@@ -256,7 +256,7 @@ export class TelegramService implements PlatformAdapter {
     chatId: string,
     text: string,
     replyMarkup?: {
-      inline_keyboard: Array<Array<{ text: string; callback_data: string }>>;
+      inline_keyboard: Array<Array<{ text: string; callback_data?: string; url?: string }>>;
     },
     parseMode?: "HTML" | "MarkdownV2",
   ) {

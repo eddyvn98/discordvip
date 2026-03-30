@@ -46,8 +46,8 @@ function homeRows() {
   ];
 }
 
-function referralRows() {
-  return [
+function referralRows(inviteLink?: string) {
+  const rows = [
     new ActionRowBuilder<ButtonBuilder>().addComponents(
       new ButtonBuilder().setCustomId("ref_create_link").setLabel("Tạo link mời").setStyle(ButtonStyle.Primary),
       new ButtonBuilder().setCustomId("ref_stats").setLabel("Điểm của tôi").setStyle(ButtonStyle.Secondary),
@@ -62,6 +62,18 @@ function referralRows() {
       new ButtonBuilder().setCustomId("home_menu").setLabel("Về Home").setStyle(ButtonStyle.Secondary),
     ),
   ];
+
+  if (inviteLink) {
+    rows.splice(
+      3,
+      0,
+      new ActionRowBuilder<ButtonBuilder>().addComponents(
+        new ButtonBuilder().setLabel("Copy link").setStyle(ButtonStyle.Link).setURL(inviteLink),
+      ),
+    );
+  }
+
+  return rows;
 }
 
 function buyRows() {
@@ -143,7 +155,8 @@ export async function handleDiscordButton(input: {
   if (interaction.customId === "home_referral") {
     await interaction.reply({
       flags: MessageFlags.Ephemeral,
-      content: "Menu Kiếm VIP: mời thành công +1 điểm (tương đương +1 ngày VIP). Cần tối thiểu 10 điểm để bắt đầu đổi VIP.",
+      content:
+        "Hướng dẫn kiếm VIP:\n1. Mỗi lượt mời thành công mang về cho bạn +1 điểm (tương đương 1 ngày VIP).\nTích lũy tối thiểu 10 điểm, bạn có thể đổi VIP bất cứ lúc nào ✨",
       components: referralRows(),
     });
     return true;
@@ -308,7 +321,11 @@ export async function handleDiscordButton(input: {
       inviterChatId: interaction.guildId ?? env.DISCORD_GUILD_ID,
       inviteLink,
     });
-    await interaction.reply({ flags: MessageFlags.Ephemeral, content: `Link mời của bạn: ${inviteLink}`, components: referralRows() });
+    await interaction.reply({
+      flags: MessageFlags.Ephemeral,
+      content: `Link mời của bạn: ${inviteLink}`,
+      components: referralRows(inviteLink),
+    });
     return true;
   }
 
