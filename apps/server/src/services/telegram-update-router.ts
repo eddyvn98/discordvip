@@ -31,36 +31,38 @@ type RouterInput = {
   answerCallbackQuery: (callbackQueryId: string) => Promise<void>;
 };
 
-const REDEEM_PROMPT_TTL_MS = 3 * 60 * 1000;
-const pendingRedeemByChat = new Map<string, { userId: string; expiresAt: number }>();
+const PROMPT_TTL_MS = 3 * 60 * 1000;
+type PendingInputAction = "promo_code" | "referral_days";
+const pendingInputByChat = new Map<string, { userId: string; expiresAt: number; action: PendingInputAction }>();
 
 function redeemPromptKey(userId: string, chatId: string) {
   return `${userId}:${chatId}`;
 }
 
-function setRedeemPending(userId: string, chatId: string) {
-  pendingRedeemByChat.set(redeemPromptKey(userId, chatId), {
+function setPendingInput(userId: string, chatId: string, action: PendingInputAction) {
+  pendingInputByChat.set(redeemPromptKey(userId, chatId), {
     userId,
-    expiresAt: Date.now() + REDEEM_PROMPT_TTL_MS,
+    action,
+    expiresAt: Date.now() + PROMPT_TTL_MS,
   });
 }
 
-function consumeRedeemPending(userId: string, chatId: string) {
+function consumePendingInput(userId: string, chatId: string): PendingInputAction | null {
   const key = redeemPromptKey(userId, chatId);
-  const pending = pendingRedeemByChat.get(key);
+  const pending = pendingInputByChat.get(key);
   if (!pending) {
-    return false;
+    return null;
   }
   if (pending.expiresAt < Date.now()) {
-    pendingRedeemByChat.delete(key);
-    return false;
+    pendingInputByChat.delete(key);
+    return null;
   }
-  pendingRedeemByChat.delete(key);
-  return true;
+  pendingInputByChat.delete(key);
+  return pending.action;
 }
 
-function clearRedeemPending(userId: string, chatId: string) {
-  pendingRedeemByChat.delete(redeemPromptKey(userId, chatId));
+function clearPendingInput(userId: string, chatId: string) {
+  pendingInputByChat.delete(redeemPromptKey(userId, chatId));
 }
 
 function buildHomeMenu() {
@@ -68,18 +70,8 @@ function buildHomeMenu() {
     inline_keyboard: [
       [{ text: "Kiếm VIP", callback_data: "home_referral" }],
       [{ text: "Mua VIP", callback_data: "home_buy" }],
-      [{ text: "Tài khoản", callback_data: "home_account" }],
-    ],
-  };
-}
-
-function buildAccountMenu() {
-  return {
-    inline_keyboard: [
-      [{ text: "VIP của tôi", callback_data: "acc_vipstatus" }],
       [{ text: "Dùng thử VIP", callback_data: "acc_trialvip" }],
-      [{ text: "Dùng mã khuyến mãi", callback_data: "acc_redeem_help" }],
-      [{ text: "Về Home", callback_data: "home_menu" }],
+      [{ text: "VIP của tôi", callback_data: "acc_vipstatus" }],
     ],
   };
 }
@@ -127,10 +119,6 @@ async function showDonateMenu(input: RouterInput, chatId: string) {
   await input.sendMessage(chatId, donateLines.join("\n"), { inline_keyboard: buildDonateButtons(plans) }, "HTML");
 }
 
-async function showAccountMenu(input: RouterInput, chatId: string) {
-  await input.sendMessage(chatId, "Menu Tài khoản:", buildAccountMenu());
-}
-
 export async function routeTelegramUpdate(input: RouterInput) {
   const callbackQuery = input.update.callback_query;
   if (callbackQuery) {
@@ -153,16 +141,31 @@ export async function routeTelegramUpdate(input: RouterInput) {
   const isAdminUser = input.adminTelegramIds.includes(userId);
 
   const isCommand = text.startsWith("/");
-  if (!isCommand && consumeRedeemPending(userId, chatId)) {
-    const code = text.trim();
-    if (!code) {
-      await input.sendMessage(chatId, "Mã không hợp lệ. Vui lòng nhập lại mã khuyến mãi.", buildAccountMenu());
-      setRedeemPending(userId, chatId);
+  if (!isCommand) {
+    const pendingAction = consumePendingInput(userId, chatId);
+    if (pendingAction === "promo_code") {
+      const code = text.trim();
+      if (!code) {
+        await input.sendMessage(chatId, "Mã không hợp lệ. Vui lòng nhập lại mã khuyến mãi.", buildHomeMenu());
+        setPendingInput(userId, chatId, "promo_code");
+        return;
+      }
+      await input.handlers.onRedeemVip({ userId, chatId, chatType, code });
+      await input.handlers.onReferralMenu({ userId, chatId, chatType });
       return;
     }
-    await input.handlers.onRedeemVip({ userId, chatId, chatType, code });
-    await showAccountMenu(input, chatId);
-    return;
+
+    if (pendingAction === "referral_days") {
+      const days = Number(text.trim());
+      if (!Number.isInteger(days) || days < 10) {
+        await input.sendMessage(chatId, "Số ngày không hợp lệ. Vui lòng nhập số nguyên từ 10 trở lên.", buildHomeMenu());
+        setPendingInput(userId, chatId, "referral_days");
+        return;
+      }
+      await input.handlers.onReferralRedeem({ userId, chatId, chatType, days });
+      await input.handlers.onReferralMenu({ userId, chatId, chatType });
+      return;
+    }
   }
 
   if (isAdminUser && !input.adminCommandsSynced.has(userId)) {
@@ -192,60 +195,60 @@ export async function routeTelegramUpdate(input: RouterInput) {
   }
 
   if (command === "/menu") {
-    clearRedeemPending(userId, chatId);
+    clearPendingInput(userId, chatId);
     await showHome(input, chatId);
     return;
   }
 
   if (command === "/invite") {
-    clearRedeemPending(userId, chatId);
+    clearPendingInput(userId, chatId);
     await input.sendMessage(chatId, "Lệnh cũ đã được chuyển sang thao tác bằng nút.", buildHomeMenu());
     await input.handlers.onReferralMenu({ userId, chatId, chatType });
     return;
   }
 
   if (command === "/donate") {
-    clearRedeemPending(userId, chatId);
+    clearPendingInput(userId, chatId);
     await input.sendMessage(chatId, "Lệnh cũ đã được chuyển sang thao tác bằng nút.", buildHomeMenu());
     await showDonateMenu(input, chatId);
     return;
   }
 
   if (command === "/vip30" || command === "/vip90" || command === "/vip365") {
-    clearRedeemPending(userId, chatId);
+    clearPendingInput(userId, chatId);
     await input.sendMessage(chatId, "Lệnh này đã ngưng sử dụng. Vui lòng dùng menu Mua VIP.", buildHomeMenu());
     await showDonateMenu(input, chatId);
     return;
   }
 
   if (command === "/trialvip") {
-    clearRedeemPending(userId, chatId);
+    clearPendingInput(userId, chatId);
     await input.handlers.onTrialVip({ userId, chatId, chatType });
-    await showAccountMenu(input, chatId);
+    await showHome(input, chatId);
     return;
   }
 
   if (command === "/vipstatus") {
-    clearRedeemPending(userId, chatId);
+    clearPendingInput(userId, chatId);
     await input.handlers.onVipStatus({ userId, chatId, chatType });
-    await showAccountMenu(input, chatId);
+    await showHome(input, chatId);
     return;
   }
 
   if (command === "/redeemvip") {
-    clearRedeemPending(userId, chatId);
+    clearPendingInput(userId, chatId);
     const code = parts[1]?.trim() ?? "";
     if (!code) {
-      await input.sendMessage(chatId, "Vui lòng nhập mã: /redeemvip <ma_khuyen_mai>", buildAccountMenu());
+      await input.sendMessage(chatId, "Vui lòng nhập mã: /redeemvip <ma_khuyen_mai>", buildHomeMenu());
       return;
     }
     await input.handlers.onRedeemVip({ userId, chatId, chatType, code });
-    await showAccountMenu(input, chatId);
+    await input.handlers.onReferralMenu({ userId, chatId, chatType });
     return;
   }
 
   if (command === "/adminstats") {
-    clearRedeemPending(userId, chatId);
+    clearPendingInput(userId, chatId);
     if (!(await input.isAdmin(userId))) {
       await input.sendMessage(chatId, "Bạn không có quyền sử dụng lệnh này.");
       return;
@@ -254,7 +257,7 @@ export async function routeTelegramUpdate(input: RouterInput) {
   }
 
   if (command === "/admingrant") {
-    clearRedeemPending(userId, chatId);
+    clearPendingInput(userId, chatId);
     if (!(await input.isAdmin(userId))) {
       await input.sendMessage(chatId, "Bạn không có quyền sử dụng lệnh này.");
       return;
@@ -269,7 +272,7 @@ export async function routeTelegramUpdate(input: RouterInput) {
   }
 
   if (command === "/adminrevoke") {
-    clearRedeemPending(userId, chatId);
+    clearPendingInput(userId, chatId);
     if (!(await input.isAdmin(userId))) {
       await input.sendMessage(chatId, "Bạn không có quyền sử dụng lệnh này.");
       return;
@@ -299,42 +302,42 @@ async function handleCallbackQuery(input: RouterInput, callbackQuery: NonNullabl
   if (data === "home_menu") await showHome(input, chatId);
   if (data === "home_referral") await input.handlers.onReferralMenu({ userId, chatId, chatType });
   if (data === "home_buy") await showDonateMenu(input, chatId);
-  if (data === "home_account") await showAccountMenu(input, chatId);
 
   if (data === "acc_vipstatus") {
     await input.handlers.onVipStatus({ userId, chatId, chatType });
-    await showAccountMenu(input, chatId);
+    await showHome(input, chatId);
   }
   if (data === "acc_trialvip") {
     await input.handlers.onTrialVip({ userId, chatId, chatType });
-    await showAccountMenu(input, chatId);
+    await showHome(input, chatId);
   }
   if (data === "acc_redeem_help") {
-    setRedeemPending(userId, chatId);
+    setPendingInput(userId, chatId, "promo_code");
     await input.sendMessage(
       chatId,
       "Gửi mã khuyến mãi ngay trong tin nhắn tiếp theo (không cần gõ /redeemvip).",
-      buildAccountMenu(),
+      buildHomeMenu(),
     );
+  }
+  if (data === "ref_redeem_custom") {
+    setPendingInput(userId, chatId, "referral_days");
+    await input.sendMessage(chatId, "Nhập số ngày VIP muốn đổi (số nguyên, tối thiểu 10).", buildHomeMenu());
   }
 
   if (data.startsWith("donate:")) {
     const planCode = data.replace("donate:", "").trim().toUpperCase();
     if (planCode) {
       await input.handlers.onDonate({ userId, chatId, chatType, planCode });
-      await input.sendMessage(chatId, "Nếu đã thanh toán, bạn có thể bấm VIP của tôi để kiểm tra.", buildAccountMenu());
+      await input.sendMessage(chatId, "Nếu đã thanh toán, bạn có thể bấm VIP của tôi để kiểm tra.", buildHomeMenu());
     }
   }
   if (data === "ref_menu") await input.handlers.onReferralMenu({ userId, chatId, chatType });
   if (data === "ref_create_link") await input.handlers.onReferralCreateLink({ userId, chatId, chatType });
   if (data === "ref_stats") await input.handlers.onReferralStats({ userId, chatId, chatType });
   if (data === "ref_verify") await input.handlers.onReferralVerify({ userId, chatId, chatType });
-  if (data === "ref_redeem_10") await input.handlers.onReferralRedeem({ userId, chatId, chatType, days: 10 });
-  if (data === "ref_redeem_30") await input.handlers.onReferralRedeem({ userId, chatId, chatType, days: 30 });
-  if (data === "ref_redeem_90") await input.handlers.onReferralRedeem({ userId, chatId, chatType, days: 90 });
   if (
     data.startsWith("ref_redeem_") &&
-    !["ref_redeem_10", "ref_redeem_30", "ref_redeem_90"].includes(data)
+    !["ref_redeem_custom"].includes(data)
   ) {
     await input.sendMessage(chatId, "Lựa chọn đổi VIP không hợp lệ. Vui lòng thử lại.");
   }

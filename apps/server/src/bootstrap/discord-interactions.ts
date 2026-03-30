@@ -53,6 +53,7 @@ export function registerDiscordInteractions(input: {
         await handleDiscordModal({
           interaction,
           promoCodeService: input.promoCodeService,
+          referralService: input.referralService,
         });
         return;
       }
