@@ -5,6 +5,8 @@ import { MembershipService } from "../membership-service.js";
 import { PlatformKey, toPrismaPlatform } from "../platform.js";
 import { getReferralSettings } from "./settings.js";
 
+const MIN_POINTS_TO_REDEEM = 10;
+
 export async function redeemVipDays(
   membershipService: MembershipService,
   input: {
@@ -15,7 +17,7 @@ export async function redeemVipDays(
   },
 ) {
   if (!Number.isInteger(input.vipDays) || input.vipDays <= 0) {
-    throw new Error("Số ngày VIP phải là số nguyên dương.");
+    throw new Error("So ngay VIP phai la so nguyen duong.");
   }
 
   const settings = await getReferralSettings();
@@ -27,8 +29,11 @@ export async function redeemVipDays(
     _sum: { deltaPoints: true },
   });
   const balance = balanceAgg._sum.deltaPoints ?? 0;
+  if (balance < MIN_POINTS_TO_REDEEM) {
+    throw new Error(`Ban can tich luy it nhat ${MIN_POINTS_TO_REDEEM} diem moi duoc doi VIP.`);
+  }
   if (balance < pointsRequired) {
-    throw new Error(`Bạn không đủ điểm để đổi ${input.vipDays} ngày VIP.`);
+    throw new Error(`Ban khong du diem de doi ${input.vipDays} ngay VIP.`);
   }
 
   const membership = await prisma.$transaction(async (tx) => {

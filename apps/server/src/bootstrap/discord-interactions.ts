@@ -9,7 +9,7 @@ import { OrderService } from "../services/order-service.js";
 import { PaymentService } from "../services/payment-service.js";
 import { PromoCodeService } from "../services/promo-code-service.js";
 import { ReferralService } from "../services/referral-service.js";
-import { handleDiscordButton, handleDiscordMenuCommand } from "./discord-button-handlers.js";
+import { handleDiscordButton, handleDiscordMenuCommand, handleDiscordModal } from "./discord-button-handlers.js";
 import { handleDiscordChatCommand } from "./discord-command-handlers.js";
 
 type BuildOrderMessageFn = (order: {
@@ -41,6 +41,18 @@ export function registerDiscordInteractions(input: {
           discordAdapter: input.discordAdapter,
           paymentService: input.paymentService,
           referralService: input.referralService,
+          orderService: input.orderService,
+          membershipService: input.membershipService,
+          buildOrderMessage: input.buildOrderMessage,
+          buildVipAccessTitle: input.buildVipAccessTitle,
+        });
+        return;
+      }
+
+      if (interaction.isModalSubmit()) {
+        await handleDiscordModal({
+          interaction,
+          promoCodeService: input.promoCodeService,
         });
         return;
       }

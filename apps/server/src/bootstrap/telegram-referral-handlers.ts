@@ -10,11 +10,13 @@ export function buildTelegramReferralMenu() {
         { text: "Điểm của tôi", callback_data: "ref_stats" },
       ],
       [
+        { text: "Đổi 1 ngày VIP", callback_data: "ref_redeem_1" },
         { text: "Đổi 10 ngày VIP", callback_data: "ref_redeem_10" },
         { text: "Đổi 30 ngày VIP", callback_data: "ref_redeem_30" },
         { text: "Đổi 90 ngày VIP", callback_data: "ref_redeem_90" },
       ],
       [{ text: "Verify", callback_data: "ref_verify" }],
+      [{ text: "Về Home", callback_data: "home_menu" }],
     ],
   };
 }
@@ -29,7 +31,7 @@ export function createTelegramReferralHandlers(input: {
     onReferralMenu: async ({ chatId }: { userId: string; chatId: string; chatType: string }) => {
       await telegramService.sendMessage(
         chatId,
-        "Menu Referral: tạo link mời, theo dõi điểm, đổi VIP bằng nút.",
+        "Menu Referral: mời thành công +1 điểm (tương đương +1 ngày VIP). Cần tối thiểu 10 điểm để bắt đầu đổi VIP.",
         buildTelegramReferralMenu(),
       );
     },

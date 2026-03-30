@@ -235,7 +235,7 @@ model Session {
 
 model ReferralSetting {
   id                    String   @id @default(cuid())
-  pointsPerSuccess      Int      @default(10)
+  pointsPerSuccess      Int      @default(1)
   daysPerPoint          Int      @default(1)
   verifyRequired        Boolean  @default(true)
   createdAt             DateTime @default(now())

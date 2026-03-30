@@ -5,16 +5,33 @@ import { PlatformKey, toPrismaPlatform } from "../platform.js";
 import { TxClient } from "./types.js";
 
 const generateReferralToken = customAlphabet("ABCDEFGHJKLMNPQRSTUVWXYZ23456789", 12);
+const REFERRAL_POINTS_PER_SUCCESS = 1;
+const REFERRAL_DAYS_PER_POINT = 1;
 
 export async function getReferralSettings(tx: TxClient = prisma) {
   const existing = await tx.referralSetting.findFirst({
     orderBy: { createdAt: "asc" },
   });
   if (existing) {
+    if (
+      existing.pointsPerSuccess !== REFERRAL_POINTS_PER_SUCCESS ||
+      existing.daysPerPoint !== REFERRAL_DAYS_PER_POINT
+    ) {
+      return tx.referralSetting.update({
+        where: { id: existing.id },
+        data: {
+          pointsPerSuccess: REFERRAL_POINTS_PER_SUCCESS,
+          daysPerPoint: REFERRAL_DAYS_PER_POINT,
+        },
+      });
+    }
     return existing;
   }
   return tx.referralSetting.create({
-    data: {},
+    data: {
+      pointsPerSuccess: REFERRAL_POINTS_PER_SUCCESS,
+      daysPerPoint: REFERRAL_DAYS_PER_POINT,
+    },
   });
 }
 
