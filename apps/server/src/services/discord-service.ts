@@ -23,7 +23,7 @@ export class DiscordService {
 
   constructor() {
     this.client = new Client({
-      intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMembers],
+      intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMembers, GatewayIntentBits.GuildMessages],
     });
   }
 
@@ -123,6 +123,29 @@ export class DiscordService {
           ],
         },
       ]);
+    });
+
+    this.client.on(Events.MessageCreate, async (message) => {
+      if (message.author.bot) {
+        return;
+      }
+      if (message.channel.type !== ChannelType.GuildText) {
+        return;
+      }
+      if (!message.channel.name.toLowerCase().endsWith("donate_vip")) {
+        return;
+      }
+
+      try {
+        await message.delete();
+      } catch (error) {
+        logger.warn("Failed to delete non-command message in donate_vip channel", {
+          messageId: message.id,
+          channelId: message.channelId,
+          authorId: message.author.id,
+          error,
+        });
+      }
     });
 
     await this.client.login(env.DISCORD_BOT_TOKEN);

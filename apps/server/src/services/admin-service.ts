@@ -902,11 +902,14 @@ export class AdminService {
   async adjustTelegramMembershipDuration(input: { telegramUserId: string; durationDays: number }) {
     const membershipService = this.requireMembershipService();
     const platformRegistry = this.requirePlatformRegistry();
+    const platformChatId = await membershipService.resolveTelegramPlatformChatId({
+      platformUserId: input.telegramUserId,
+    });
 
     const membership = await membershipService.adjustManualMembership({
       platform: "telegram",
       platformUserId: input.telegramUserId,
-      platformChatId: env.TELEGRAM_VIP_CHAT_ID,
+      platformChatId,
       durationDays: input.durationDays,
       sourceOverride: input.durationDays > 0 ? MembershipSource.PAID : undefined,
     });
@@ -1235,9 +1238,18 @@ export class AdminService {
             lte: expiringSoonRange.end,
           },
         };
+        const expiringTodayWhere = {
+          ...platform.membershipWhere,
+          status: MembershipStatus.ACTIVE,
+          expireAt: {
+            gte: todayRange.start,
+            lt: todayRange.end,
+          },
+        };
 
         const [
           activeTotal,
+          expiringTodayCount,
           trialActiveCount,
           trialExpiringSoonCount,
           paidActiveCount,
@@ -1252,6 +1264,9 @@ export class AdminService {
         ] = await Promise.all([
           prisma.membership.count({
             where: activeWhere,
+          }),
+          prisma.membership.count({
+            where: expiringTodayWhere,
           }),
           prisma.membership.count({
             where: {
@@ -1343,6 +1358,7 @@ export class AdminService {
           platform: platform.key,
           label: platform.label,
           activeTotal,
+          expiringTodayCount,
           trialActiveCount,
           trialExpiringSoonCount,
           paidActiveCount,
@@ -1363,26 +1379,31 @@ export class AdminService {
     );
 
     const discordStats = items.find((item) => item.platform === "discord");
-    const expiringTodayCount =
-      (await prisma.membership.count({
-        where: {
-          platform: "DISCORD",
-          guildId: env.DISCORD_GUILD_ID,
-          status: MembershipStatus.ACTIVE,
-          expireAt: {
-            gte: todayRange.start,
-            lt: todayRange.end,
-          },
-        },
-      })) ?? 0;
 
     return {
       expiringSoonDays: 3,
       platforms: items,
       activeVipCount: discordStats?.activeTotal ?? 0,
-      expiringTodayCount,
+      expiringTodayCount: discordStats?.expiringTodayCount ?? 0,
       monthlyRevenue: discordStats?.revenueReceivedMonth ?? 0,
       alignedRevenue: discordStats?.activePaidAlignedRevenue ?? 0,
+    };
+  }
+
+  async getVipStatsByPlatform(platform: "discord" | "telegram") {
+    const stats = await this.getVipStats();
+    const platformStats = stats.platforms.find((item) => item.platform === platform);
+    if (!platformStats) {
+      throw new Error(`Khong tim thay thong ke cho nen tang ${platform}.`);
+    }
+
+    return {
+      platform: platformStats.platform,
+      label: platformStats.label,
+      activeVipCount: platformStats.activeTotal,
+      expiringTodayCount: platformStats.expiringTodayCount,
+      alignedRevenue: platformStats.activePaidAlignedRevenue,
+      monthlyRevenue: platformStats.revenueReceivedMonth,
     };
   }
 

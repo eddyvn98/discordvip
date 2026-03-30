@@ -1,4 +1,4 @@
-import { env } from "../config.js";
+﻿import { env } from "../config.js";
 import { logger } from "../lib/logger.js";
 import { prisma } from "../prisma.js";
 import { AccessTarget, PlatformAdapter } from "./platform-adapter.js";
@@ -46,6 +46,19 @@ type TelegramDonatePlan = {
   amount: number;
 };
 
+type TelegramBotCommand = {
+  command: string;
+  description: string;
+};
+
+type ErrorWithCause = Error & {
+  cause?: {
+    code?: string;
+    errno?: string | number;
+    message?: string;
+  };
+};
+
 type TelegramHandlers = {
   onDonate: (input: { userId: string; chatId: string; chatType: string; planCode: string }) => Promise<void>;
   onTrialVip: (input: { userId: string; chatId: string; chatType: string }) => Promise<void>;
@@ -71,6 +84,8 @@ export class TelegramService implements PlatformAdapter {
   readonly platform = "telegram" as const;
   private offset = 0;
   private polling = false;
+  private readonly adminCommandsSynced = new Set<string>();
+  private readonly userCommandsSynced = new Set<string>();
   private handlers: TelegramHandlers | null = null;
   private channelVerificationHandler:
     | ((input: {
@@ -114,30 +129,87 @@ export class TelegramService implements PlatformAdapter {
       return;
     }
 
-    await this.syncCommands();
+    try {
+      await this.syncCommands();
+    } catch (error) {
+      logger.warn("Telegram command sync failed on startup", { error });
+    }
     this.polling = true;
     logger.info("Telegram bot polling started");
     void this.pollLoop();
   }
 
   private async syncCommands() {
+    const userCommands = this.getUserCommands();
+    const adminCommands = this.getAdminCommands();
+
     await this.apiCall("setMyCommands", {
-      commands: [
-        { command: "start", description: "Bắt đầu và xem hướng dẫn sử dụng" },
-        { command: "vip30", description: "Tạo đơn gói VIP 30 ngày" },
-        { command: "vip90", description: "Tạo đơn gói VIP 90 ngày" },
-        { command: "vip365", description: "Tạo đơn gói VIP 365 ngày" },
-        { command: "donate", description: "Mở menu chọn gói VIP bằng nút bấm" },
-        { command: "trialvip", description: "Kích hoạt VIP trial (1 lần/30 ngày)" },
-        { command: "vipstatus", description: "Xem trạng thái VIP hiện tại" },
-        { command: "redeemvip", description: "Nhập mã khuyến mãi. Ví dụ: /redeemvip VIP-XXXX" },
-        { command: "adminstats", description: "Thống kê VIP (chỉ admin)" },
-        { command: "admingrant", description: "Admin cộng/trừ VIP. Ví dụ: /admingrant 123456 30" },
-        { command: "adminrevoke", description: "Admin thu hồi VIP. Ví dụ: /adminrevoke 123456" },
-      ],
+      commands: userCommands,
     });
+    await this.apiCall("setMyCommands", {
+      commands: userCommands,
+      scope: {
+        type: "all_private_chats",
+      },
+    });
+
+    for (const adminId of env.adminTelegramIds) {
+      await this.syncAdminCommandsForUser(adminId, userCommands, adminCommands);
+    }
   }
 
+  private getUserCommands(): TelegramBotCommand[] {
+    return [
+      { command: "start", description: "Bat dau va xem huong dan su dung" },
+      { command: "donate", description: "Chon goi VIP 39k / 99k / 199k" },
+      { command: "trialvip", description: "Kich hoat VIP trial (1 lan/30 ngay)" },
+      { command: "vipstatus", description: "Xem trang thai VIP hien tai" },
+    ];
+  }
+
+  private getAdminCommands(): TelegramBotCommand[] {
+    return [
+      { command: "adminstats", description: "Thong ke VIP (chi admin)" },
+      { command: "admingrant", description: "Admin cong/tru VIP. Vi du: /admingrant 123456 30" },
+      { command: "adminrevoke", description: "Admin thu hoi VIP. Vi du: /adminrevoke 123456" },
+    ];
+  }
+
+  private async syncAdminCommandsForUser(
+    userId: string,
+    userCommands: TelegramBotCommand[],
+    adminCommands: TelegramBotCommand[],
+  ) {
+    const id = Number(userId);
+    if (!Number.isFinite(id)) {
+      return;
+    }
+
+    await this.apiCall("setMyCommands", {
+      commands: [...userCommands, ...adminCommands],
+      scope: {
+        type: "chat",
+        chat_id: id,
+      },
+    });
+    this.adminCommandsSynced.add(String(id));
+  }
+
+  private async syncUserCommandsForUser(userId: string, userCommands: TelegramBotCommand[]) {
+    const id = Number(userId);
+    if (!Number.isFinite(id)) {
+      return;
+    }
+
+    await this.apiCall("setMyCommands", {
+      commands: userCommands,
+      scope: {
+        type: "chat",
+        chat_id: id,
+      },
+    });
+    this.userCommandsSynced.add(String(id));
+  }
   private async pollLoop() {
     while (this.polling) {
       try {
@@ -189,19 +261,48 @@ export class TelegramService implements PlatformAdapter {
     const chatType = message.chat.type;
     const parts = text.split(/\s+/).filter(Boolean);
     const command = parts[0];
+    const isAdminUser = env.adminTelegramIds.includes(userId);
+
+    if (isAdminUser && !this.adminCommandsSynced.has(userId)) {
+      try {
+        await this.syncAdminCommandsForUser(userId, this.getUserCommands(), this.getAdminCommands());
+      } catch (error) {
+        logger.warn("Failed to sync admin Telegram commands for user scope", { userId, error });
+      }
+    }
+    if (!isAdminUser && !this.userCommandsSynced.has(userId)) {
+      try {
+        await this.syncUserCommandsForUser(userId, this.getUserCommands());
+      } catch (error) {
+        logger.warn("Failed to sync regular Telegram commands for user scope", { userId, error });
+      }
+    }
 
     if (command === "/start") {
       await this.sendMessage(
         chatId,
         [
-          "Chào mừng bạn đến với bot VIP.",
-          "Lệnh hỗ trợ:",
-          "/vip30 | /vip90 | /vip365",
-          "/donate (chon goi bang nut)",
-          "/trialvip",
-          "/vipstatus",
-          "/redeemvip <ma>",
+          "<b>HƯỚNG DẪN DONATE THAM GIA NHÓM VIP TỰ ĐỘNG</b>",
+          "• Gõ lệnh /donate trong kênh này và chọn gói VIP",
+          "• Bot sẽ gửi thông tin chuyển khoản",
+          "• Thanh toán xong → hệ thống xác nhận → nhận link tham gia nhóm VIP",
+          "",
+          "<b>MỘT SỐ LỆNH KHÁC</b>",
+          "• Lệnh /trialvip",
+          "Dùng thử VIP 24h (mỗi người được 1 lần / 1 tháng)",
+          "",
+          "• Lệnh /vipstatus",
+          "Xem thời hạn VIP hiện tại",
+          "",
+          "<b>QUYỀN LỢI KHI VÀO NHÓM VIP</b>",
+          "• Xem video trực tiếp, không cần vượt link, không có quảng cáo",
+          "• Xem video sớm hơn nhóm thường",
+          "• Được tải bất kì video nào yêu thích",
+          "",
+          "Bạn cần hỗ trợ liên hệ admin @socsuc18",
         ].join("\n"),
+        undefined,
+        "HTML",
       );
       return;
     }
@@ -213,41 +314,50 @@ export class TelegramService implements PlatformAdapter {
         return;
       }
 
-      const planLines = plans.map(
-        (plan, index) => `${index + 1}. ${plan.name} - ${plan.amount.toLocaleString("vi-VN")} VND`,
-      );
-      const inlineKeyboard: Array<Array<{ text: string; callback_data: string }>> = [];
-      for (let i = 0; i < plans.length; i += 2) {
-        inlineKeyboard.push(
-          plans.slice(i, i + 2).map((plan) => ({
-            text: `${plan.amount.toLocaleString("vi-VN")}d`,
-            callback_data: `donate:${plan.code}`,
-          })),
-        );
-      }
+      const planByCode = new Map(plans.map((plan) => [plan.code.toUpperCase(), plan]));
+      const pickPlan = (codes: string[], amount: number) =>
+        codes.map((code) => planByCode.get(code)).find(Boolean) ?? plans.find((plan) => plan.amount === amount);
+      const vip30 = pickPlan(["VIP_30_DAYS", "VIP30"], 39_000);
+      const vip90 = pickPlan(["VIP_90_DAYS", "VIP90"], 99_000);
+      const vip365 = pickPlan(["VIP_365_DAYS", "VIP365"], 199_000);
+      const orderedPlans = [vip30, vip90, vip365].filter((plan): plan is TelegramDonatePlan => !!plan);
+      const buttonPlans = orderedPlans.length > 0 ? orderedPlans : plans;
+
+      const inlineKeyboard: Array<Array<{ text: string; callback_data: string }>> = buttonPlans.map((plan) => [
+        {
+          text:
+            plan.amount === 39_000
+              ? "VIP 30 ngày"
+              : plan.amount === 99_000
+                ? "VIP 90 ngày"
+                : "VIP 365 ngày",
+          callback_data: `donate:${plan.code}`,
+        },
+      ]);
+
+        const donateLines = [
+          "<b>Chọn gói VIP phù hợp với bạn</b>",
+          "• <b>39.000đ</b> - quyền truy cập nhóm VIP trong 30 ngày",
+          "• <b>99.000đ</b> - quyền truy cập nhóm VIP trong 90 ngày",
+          "• <b>199.000đ</b> - quyền truy cập nhóm VIP trong 365 ngày",
+          "",
+          "Nhấn nút bên dưới để tiếp tục thanh toán.",
+          "Cần hỗ trợ hoặc báo lỗi, liên hệ admin @socsuc18",
+        ];
 
       await this.sendMessage(
         chatId,
-        ["Vui lòng chọn gói:", ...planLines].join("\n"),
+        donateLines.join("\n"),
         {
           inline_keyboard: inlineKeyboard,
         },
+        "HTML",
       );
       return;
     }
 
-    if (command === "/vip30") {
-      await this.handlers.onDonate({ userId, chatId, chatType, planCode: "VIP_30_DAYS" });
-      return;
-    }
-
-    if (command === "/vip90") {
-      await this.handlers.onDonate({ userId, chatId, chatType, planCode: "VIP_90_DAYS" });
-      return;
-    }
-
-    if (command === "/vip365") {
-      await this.handlers.onDonate({ userId, chatId, chatType, planCode: "VIP_365_DAYS" });
+    if (command === "/vip30" || command === "/vip90" || command === "/vip365") {
+      await this.sendMessage(chatId, "Lenh nay da ngung su dung. Vui long dung /donate de chon goi VIP.");
       return;
     }
 
@@ -264,7 +374,7 @@ export class TelegramService implements PlatformAdapter {
     if (command === "/redeemvip") {
       const code = parts[1]?.trim() ?? "";
       if (!code) {
-        await this.sendMessage(chatId, "Vui lòng nhập mã: /redeemvip <mã_khuyến_mãi>");
+        await this.sendMessage(chatId, "Vui long nhap ma: /redeemvip <ma_khuyen_mai>");
         return;
       }
       await this.handlers.onRedeemVip({ userId, chatId, chatType, code });
@@ -272,15 +382,23 @@ export class TelegramService implements PlatformAdapter {
     }
 
     if (command === "/adminstats") {
+      if (!(await this.isAdmin(userId))) {
+        await this.sendMessage(chatId, "Bạn không có quyền sử dụng lệnh này.");
+        return;
+      }
       await this.handlers.onAdminStats({ userId, chatId, chatType });
       return;
     }
 
     if (command === "/admingrant") {
+      if (!(await this.isAdmin(userId))) {
+        await this.sendMessage(chatId, "Bạn không có quyền sử dụng lệnh này.");
+        return;
+      }
       const targetUserId = parts[1]?.trim() ?? "";
       const days = Number(parts[2] ?? "");
       if (!targetUserId || !Number.isInteger(days) || days === 0) {
-        await this.sendMessage(chatId, "Dùng: /admingrant <telegram_user_id> <số_ngày, âm để trừ>");
+        await this.sendMessage(chatId, "Dung: /admingrant <telegram_user_id> <so_ngay, am de tru>");
         return;
       }
       await this.handlers.onAdminGrantVip({ userId, chatId, chatType, targetUserId, days });
@@ -288,9 +406,13 @@ export class TelegramService implements PlatformAdapter {
     }
 
     if (command === "/adminrevoke") {
+      if (!(await this.isAdmin(userId))) {
+        await this.sendMessage(chatId, "Bạn không có quyền sử dụng lệnh này.");
+        return;
+      }
       const targetUserId = parts[1]?.trim() ?? "";
       if (!targetUserId) {
-        await this.sendMessage(chatId, "Dùng: /adminrevoke <telegram_user_id>");
+        await this.sendMessage(chatId, "Dung: /adminrevoke <telegram_user_id>");
         return;
       }
       await this.handlers.onAdminRevokeVip({ userId, chatId, chatType, targetUserId });
@@ -360,7 +482,7 @@ export class TelegramService implements PlatformAdapter {
       });
       await this.sendMessage(
         userId,
-        "Yêu cầu vào kênh VIP bị từ chối vì tài khoản chưa có VIP hợp lệ. Vui lòng thanh toán bằng /donate.",
+        "Yeu cau vao kenh VIP bi tu choi vi tai khoan chua co VIP hop le. Vui long thanh toan bang /donate.",
       );
       return;
     }
@@ -369,7 +491,7 @@ export class TelegramService implements PlatformAdapter {
       chat_id: chatId,
       user_id: Number(userId),
     });
-    await this.sendMessage(userId, "Yêu cầu vào kênh VIP đã được duyệt.");
+    await this.sendMessage(userId, "Yeu cau vao kenh VIP da duoc duyet.");
   }
 
   private async handleChannelPost(message: TelegramMessage) {
@@ -400,7 +522,7 @@ export class TelegramService implements PlatformAdapter {
       if (result.ok) {
         await this.sendMessage(
           telegramUserId,
-          `Đã xác thực kênh ${chatId} thành công. Bạn có thể vào web admin để gán plan.`,
+          `Da xac thuc kenh ${chatId} thanh cong. Ban co the vao web admin de gan plan.`,
         );
       }
     } catch (error) {
@@ -409,11 +531,16 @@ export class TelegramService implements PlatformAdapter {
   }
 
   private async apiCall<T>(method: string, body?: Record<string, unknown>) {
-    const response = await fetch(`https://api.telegram.org/bot${env.TELEGRAM_BOT_TOKEN}/${method}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body ?? {}),
-    });
+    let response: Response;
+    try {
+      response = await fetch(`https://api.telegram.org/bot${env.TELEGRAM_BOT_TOKEN}/${method}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body ?? {}),
+      });
+    } catch (error) {
+      throw new Error(`Telegram API ${method} network error: ${this.describeErrorCause(error)}`);
+    }
 
     if (!response.ok) {
       const payload = (await response.json().catch(() => null)) as TelegramErrorResponse | null;
@@ -482,22 +609,33 @@ export class TelegramService implements PlatformAdapter {
     }));
   }
 
-  private getFallbackVipChatIds() {
-    return [env.TELEGRAM_VIP_CHAT_ID].filter(Boolean);
-  }
-
   private async getAllConfiguredVipChatIds() {
     const channels = await prisma.telegramVipChannel.findMany({
       where: { isActive: true },
       select: { chatId: true },
     });
-    return Array.from(new Set([...this.getFallbackVipChatIds(), ...channels.map((channel) => channel.chatId)]));
+    return Array.from(new Set([env.TELEGRAM_VIP_CHAT_ID, ...channels.map((channel) => channel.chatId)].filter(Boolean)));
+  }
+
+  private describeErrorCause(error: unknown) {
+    if (error instanceof Error) {
+      const withCause = error as ErrorWithCause;
+      const parts = [
+        withCause.message,
+        withCause.cause?.code,
+        withCause.cause?.errno ? String(withCause.cause.errno) : undefined,
+        withCause.cause?.message,
+      ].filter(Boolean);
+      return parts.join(" | ");
+    }
+
+    return String(error);
   }
 
   private async getVipChatIdsForPlan(planCode?: string) {
     const normalizedPlanCode = planCode?.toUpperCase().trim();
     if (!normalizedPlanCode) {
-      return this.getFallbackVipChatIds();
+      return this.getAllConfiguredVipChatIds();
     }
 
     const channels = await prisma.telegramPlanChannel.findMany({
@@ -522,7 +660,7 @@ export class TelegramService implements PlatformAdapter {
       return fromPlan;
     }
 
-    return this.getFallbackVipChatIds();
+    return this.getAllConfiguredVipChatIds();
   }
 
   async sendMessage(
@@ -531,20 +669,28 @@ export class TelegramService implements PlatformAdapter {
     replyMarkup?: {
       inline_keyboard: Array<Array<{ text: string; callback_data: string }>>;
     },
+    parseMode?: "HTML" | "MarkdownV2",
   ) {
     return this.apiCall<TelegramMessage>("sendMessage", {
       chat_id: chatId,
       text,
       disable_web_page_preview: true,
       reply_markup: replyMarkup,
+      parse_mode: parseMode,
     });
   }
 
-  async sendPhoto(chatId: string, photoUrl: string, caption?: string) {
+  async sendPhoto(
+    chatId: string,
+    photoUrl: string,
+    caption?: string,
+    parseMode?: "HTML" | "MarkdownV2",
+  ) {
     return this.apiCall<TelegramMessage>("sendPhoto", {
       chat_id: chatId,
       photo: photoUrl,
       caption,
+      parse_mode: parseMode,
     });
   }
 
@@ -566,7 +712,7 @@ export class TelegramService implements PlatformAdapter {
   async sendVipEntryLinks(input: { userId: string; planCode?: string; headerText?: string }) {
     const chatIds = await this.getVipChatIdsForPlan(input.planCode);
     const inviteLinks = await Promise.all(chatIds.map((chatId) => this.createVipInviteLink(chatId)));
-    const normalizedLinksText = inviteLinks.map((link, index) => `Kênh VIP ${index + 1}: ${link}`).join("\n");
+    const normalizedLinksText = inviteLinks.join("\n");
     await this.sendMessage(
       input.userId,
       [
@@ -577,7 +723,6 @@ export class TelegramService implements PlatformAdapter {
   }
 
   async grantAccess(target: AccessTarget) {
-    await this.sendMessage(target.platformUserId, "Thanh toán đã được xác nhận. VIP của bạn đã kích hoạt.");
     await this.sendVipEntryLinks({ userId: target.platformUserId, planCode: target.planCode });
   }
 
@@ -585,7 +730,11 @@ export class TelegramService implements PlatformAdapter {
     const chatIds = await this.getAllConfiguredVipChatIds();
     const userId = Number(target.platformUserId);
     if (!Number.isFinite(userId)) {
-      throw new Error(`Telegram revoke failed: invalid user id ${target.platformUserId}`);
+      logger.warn("Telegram revoke skipped due to invalid user id", {
+        platformUserId: target.platformUserId,
+        platformChatId: target.platformChatId,
+      });
+      return;
     }
 
     const failures: Array<{ chatId: string; error: unknown }> = [];
@@ -633,23 +782,26 @@ export class TelegramService implements PlatformAdapter {
   async sendVipActivatedNotice(target: AccessTarget, expireAt: Date) {
     await this.sendMessage(
       target.platformUserId,
-      `VIP của bạn đã kích hoạt đến ${expireAt.toLocaleString("vi-VN")}.`,
+      `Thanh toan da duoc xac nhan. VIP cua ban da kich hoat den ${expireAt.toLocaleString("vi-VN")}.`,
     );
   }
 
   async sendVipExpiryReminder(target: AccessTarget, expireAt: Date, thresholdDays: number) {
     await this.sendMessage(
       target.platformUserId,
-      `VIP của bạn sẽ hết hạn vào ${expireAt.toLocaleString("vi-VN")} (còn khoảng ${thresholdDays} ngày).`,
+      [
+        `VIP cua ban se het han vao ${expireAt.toLocaleString("vi-VN")} (con khoang ${thresholdDays} ngay).`,
+        "Gia han ngay bang /donate de khong bi ngat quyen truy cap nhom VIP.",
+      ].join("\n"),
     );
   }
 
   async sendAdminVipExpiryReminder(target: AccessTarget, expireAt: Date, thresholdDays: number) {
     const text = [
-      "Nhắc hết hạn VIP (Telegram)",
+      "Nhac het han VIP (Telegram)",
       `User: ${target.platformUserId}`,
-      `Hết hạn: ${expireAt.toLocaleString("vi-VN")}`,
-      `Mốc nhắc: ${thresholdDays} ngày`,
+      `Het han: ${expireAt.toLocaleString("vi-VN")}`,
+      `Moc nhac: ${thresholdDays} ngay`,
     ].join("\n");
 
     await Promise.all(env.adminTelegramIds.map((adminId) => this.sendMessage(adminId, text)));
@@ -663,12 +815,12 @@ export class TelegramService implements PlatformAdapter {
     providerTransactionId: string;
   }) {
     const text = [
-      "Đã xác nhận thanh toán tự động (Telegram).",
+      "Da xac nhan thanh toan tu dong (Telegram).",
       `User: ${input.target.platformUserId}`,
       `Order: ${input.orderCode}`,
-      `Số tiền: ${input.amount.toLocaleString("vi-VN")} VND`,
-      `Mã giao dịch: ${input.providerTransactionId}`,
-      `VIP hết hạn: ${input.expireAt.toLocaleString("vi-VN")}`,
+      `So tien: ${input.amount.toLocaleString("vi-VN")} VND`,
+      `Ma giao dich: ${input.providerTransactionId}`,
+      `VIP het han: ${input.expireAt.toLocaleString("vi-VN")}`,
     ].join("\n");
 
     await Promise.all(env.adminTelegramIds.map((adminId) => this.sendMessage(adminId, text)));
@@ -695,4 +847,5 @@ export class TelegramService implements PlatformAdapter {
     return env.adminTelegramIds.includes(platformUserId);
   }
 }
+
 

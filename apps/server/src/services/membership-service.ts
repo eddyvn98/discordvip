@@ -75,6 +75,46 @@ export class MembershipService {
     });
   }
 
+  async getLatestActiveMembershipForPlatformUser(input: {
+    platform: PlatformKey;
+    platformUserId: string;
+  }) {
+    return prisma.membership.findFirst({
+      where: {
+        platform: toPrismaPlatform(input.platform),
+        platformUserId: input.platformUserId,
+        status: MembershipStatus.ACTIVE,
+        expireAt: {
+          gt: new Date(),
+        },
+      },
+      orderBy: [
+        { expireAt: "desc" },
+        { updatedAt: "desc" },
+      ],
+    });
+  }
+
+  async resolveTelegramPlatformChatId(input?: { platformUserId?: string }) {
+    if (input?.platformUserId) {
+      const membership = await this.getLatestActiveMembershipForPlatformUser({
+        platform: "telegram",
+        platformUserId: input.platformUserId,
+      });
+      if (membership?.platformChatId) {
+        return membership.platformChatId;
+      }
+    }
+
+    const latestActiveChannel = await prisma.telegramVipChannel.findFirst({
+      where: { isActive: true },
+      orderBy: [{ updatedAt: "desc" }, { createdAt: "desc" }],
+      select: { chatId: true },
+    });
+
+    return latestActiveChannel?.chatId ?? env.TELEGRAM_VIP_CHAT_ID;
+  }
+
   async applyPaidOrder(input: {
     orderId: string;
     platform: PlatformKey;

@@ -40,7 +40,7 @@ async function buildOrderMessage(order: {
   amount: number;
   orderCode: string;
   expiresAt: Date;
-  plan: { name: string };
+  plan: { name: string; durationDays: number };
 }) {
   const qrImageUrl = buildVietQrImageUrl({
     bankBin: env.SEPAY_BANK_BIN,
@@ -53,12 +53,17 @@ async function buildOrderMessage(order: {
   const paymentInstruction =
     env.PAYMENT_MODE === "manual"
       ? "Admin sẽ xác nhận khoản ủng hộ thủ công và cấp VIP sau khi kiểm tra."
-      : "Bot sẽ tự cấp VIP sau khi hệ thống xác nhận chuyển khoản.";
+      : "Bot sẽ tự động gửi link mời vào nhóm sau khi hệ thống xác nhận chuyển khoản.\nCần hỗ trợ hoặc báo lỗi, liên hệ admin @socsuc18";
 
   return {
     qrImageUrl,
     paymentInstruction,
   };
+}
+
+function buildVipAccessTitle(order: { amount: number; plan: { durationDays: number } }) {
+  const displayDurationDays = order.amount === 39_000 ? 30 : order.plan.durationDays;
+  return `Ủng hộ server ${formatCurrency(order.amount)} - Nhận quyền truy cập nhóm VIP ${displayDurationDays} ngày`;
 }
 
 async function handleDonate(interaction: ChatInputCommandInteraction) {
@@ -75,10 +80,10 @@ async function handleDonate(interaction: ChatInputCommandInteraction) {
   await interaction.reply({
     flags: MessageFlags.Ephemeral,
     embeds: [
-      {
-        title: `Ủng hộ server - ${order.plan.name}`,
-        description: [
-          `Số tiền: **${formatCurrency(order.amount)}**`,
+        {
+          title: buildVipAccessTitle(order),
+          description: [
+            `Số tiền: **${formatCurrency(order.amount)}**`,
           `Nội dung CK: \`DONATE ${order.orderCode}\``,
           `Quét QR hoặc chuyển khoản trước: <t:${Math.floor(order.expiresAt.getTime() / 1000)}:R>`,
           paymentInstruction,
@@ -204,12 +209,12 @@ async function handleAdminStats(interaction: ChatInputCommandInteraction) {
     return;
   }
 
-  const stats = await adminService.getVipStats();
+  const stats = await adminService.getVipStatsByPlatform("discord");
   await interaction.reply({
     flags: MessageFlags.Ephemeral,
     embeds: [
       {
-        title: "Thống kê VIP",
+        title: `Thống kê VIP (${stats.label})`,
         fields: [
           { name: "VIP đang active", value: String(stats.activeVipCount), inline: true },
           { name: "VIP hết hạn hôm nay", value: String(stats.expiringTodayCount), inline: true },
@@ -333,27 +338,30 @@ async function handleManualReviewAction(customId: string, adminDiscordUserId: st
 async function bootstrapTelegramHandlers() {
   telegramService.setHandlers({
     onDonate: async ({ userId, chatId, planCode }) => {
+      const platformChatId = await membershipService.resolveTelegramPlatformChatId({
+        platformUserId: userId,
+      });
       const order = await orderService.createOrder({
         platform: "telegram",
         platformUserId: userId,
-        platformChatId: env.TELEGRAM_VIP_CHAT_ID,
+        platformChatId,
         planCode,
       });
 
       const { qrImageUrl, paymentInstruction } = await buildOrderMessage(order);
       const donateText = [
-        `Ủng hộ server - ${order.plan.name}`,
-        `Số tiền: ${formatCurrency(order.amount)}`,
-        `Nội dung CK: DONATE ${order.orderCode}`,
-        `Hạn thanh toán: ${order.expiresAt.toLocaleString("vi-VN")}`,
+        `<b>${buildVipAccessTitle(order)}</b>`,
+        `<b>Số tiền:</b> ${formatCurrency(order.amount)}`,
+        `<b>Nội dung CK:</b> <code>DONATE ${order.orderCode}</code>`,
+        `<b>Hạn thanh toán:</b> ${order.expiresAt.toLocaleString("vi-VN")}`,
         paymentInstruction,
       ].join("\n");
 
       let sentMessage: { message_id: number } | null = null;
       if (qrImageUrl) {
-        sentMessage = await telegramService.sendPhoto(chatId, qrImageUrl, donateText);
+        sentMessage = await telegramService.sendPhoto(chatId, qrImageUrl, donateText, "HTML");
       } else {
-        sentMessage = await telegramService.sendMessage(chatId, donateText);
+        sentMessage = await telegramService.sendMessage(chatId, donateText, undefined, "HTML");
       }
 
       if (sentMessage?.message_id) {
@@ -362,16 +370,19 @@ async function bootstrapTelegramHandlers() {
     },
     onTrialVip: async ({ userId, chatId }) => {
       try {
+        const platformChatId = await membershipService.resolveTelegramPlatformChatId({
+          platformUserId: userId,
+        });
         const membership = await membershipService.grantTrial({
           platform: "telegram",
           platformUserId: userId,
-          platformChatId: env.TELEGRAM_VIP_CHAT_ID,
+          platformChatId,
         });
 
         await telegramService.grantAccess({
           platform: "telegram",
           platformUserId: userId,
-          platformChatId: env.TELEGRAM_VIP_CHAT_ID,
+          platformChatId,
         });
         await telegramService.sendMessage(
           chatId,
@@ -385,11 +396,19 @@ async function bootstrapTelegramHandlers() {
       }
     },
     onVipStatus: async ({ userId, chatId }) => {
-      const membership = await membershipService.getActiveMembership({
-        platform: "telegram",
+      const defaultPlatformChatId = await membershipService.resolveTelegramPlatformChatId({
         platformUserId: userId,
-        platformChatId: env.TELEGRAM_VIP_CHAT_ID,
       });
+      const membership =
+        (await membershipService.getActiveMembership({
+          platform: "telegram",
+          platformUserId: userId,
+          platformChatId: defaultPlatformChatId,
+        })) ??
+        (await membershipService.getLatestActiveMembershipForPlatformUser({
+          platform: "telegram",
+          platformUserId: userId,
+        }));
       if (!membership || membership.expireAt.getTime() <= Date.now()) {
         await telegramService.sendMessage(chatId, "Bạn chưa có VIP đang hoạt động.");
         return;
@@ -414,11 +433,14 @@ async function bootstrapTelegramHandlers() {
     },
     onRedeemVip: async ({ userId, chatId, code }) => {
       try {
+        const platformChatId = await membershipService.resolveTelegramPlatformChatId({
+          platformUserId: userId,
+        });
         const result = await promoCodeService.redeemPromoCode({
           code,
           platform: "telegram",
           platformUserId: userId,
-          platformChatId: env.TELEGRAM_VIP_CHAT_ID,
+          platformChatId,
         });
         await telegramService.sendMessage(
           chatId,
@@ -450,11 +472,11 @@ async function bootstrapTelegramHandlers() {
         return;
       }
 
-      const stats = await adminService.getVipStats();
+      const stats = await adminService.getVipStatsByPlatform("telegram");
       await telegramService.sendMessage(
         chatId,
         [
-          "Thống kê VIP (Discord):",
+          `Thong ke VIP (${stats.label}):`,
           `VIP đang active: ${stats.activeVipCount}`,
           `VIP hết hạn hôm nay: ${stats.expiringTodayCount}`,
           `Doanh thu khớp VIP paid: ${formatCurrency(stats.alignedRevenue)}`,
