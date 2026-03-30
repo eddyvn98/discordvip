@@ -2,17 +2,21 @@ import { logger } from "./lib/logger.js";
 import { MembershipService } from "./services/membership-service.js";
 import { OrderService } from "./services/order-service.js";
 import { PlatformRegistry } from "./services/platform-registry.js";
+import { ReferralService } from "./services/referral-service.js";
 
 export function startSchedulers(
   membershipService: MembershipService,
   platformRegistry: PlatformRegistry,
   orderService: OrderService,
+  referralService?: ReferralService,
 ) {
   const HEALTHCHECK_INTERVAL_MS = 5 * 60 * 1000;
   const HEALTHCHECK_FAIL_THRESHOLD = 2;
   let stopped = false;
   let timer: NodeJS.Timeout | null = null;
   let lastHealthcheckAt = 0;
+  let lastReferralReconcileAt = 0;
+  const REFERRAL_RECONCILE_INTERVAL_MS = 60 * 60 * 1000;
   const healthState = new Map<
     string,
     {
@@ -98,6 +102,14 @@ export function startSchedulers(
     if (Date.now() - lastHealthcheckAt >= HEALTHCHECK_INTERVAL_MS) {
       await runPlatformHealthchecks();
       lastHealthcheckAt = Date.now();
+    }
+    if (referralService && Date.now() - lastReferralReconcileAt >= REFERRAL_RECONCILE_INTERVAL_MS) {
+      try {
+        await referralService.reconcileIntegrity();
+      } catch (error) {
+        logger.warn("Referral reconcile failed", { error });
+      }
+      lastReferralReconcileAt = Date.now();
     }
 
     const expiredOrders = await orderService.markExpiredOrders();

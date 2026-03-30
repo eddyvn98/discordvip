@@ -215,3 +215,38 @@ export type PlanItem = {
   createdAt: string;
   updatedAt: string;
 };
+
+export type ReferralSummaryResponse = {
+  statusCounts: Record<string, number>;
+  totalPoints: number;
+  leaderboard: Array<{
+    platform: "discord" | "telegram";
+    userId: string;
+    points: number;
+  }>;
+  redemptions: ReferralRedemptionItem[];
+};
+
+export type ReferralEventItem = {
+  id: string;
+  platform: "discord" | "telegram";
+  inviterUserId: string;
+  inviteeUserId: string;
+  status: "JOINED" | "SUCCESS" | "FAILED";
+  verifiedAt: string | null;
+  failedReason: string | null;
+  pointsAwarded: number;
+  token: string;
+  inviteLink: string | null;
+  createdAt: string;
+};
+
+export type ReferralRedemptionItem = {
+  id: string;
+  platform: "discord" | "telegram";
+  userId: string;
+  pointsSpent: number;
+  vipDaysGranted: number;
+  membershipId: string | null;
+  createdAt: string;
+};

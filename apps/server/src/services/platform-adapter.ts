@@ -45,4 +45,13 @@ export interface PlatformAdapter {
   checkHealth?(): Promise<void>;
   sendOpsAlert?(message: string): Promise<void>;
   isAdmin(platformUserId: string): Promise<boolean>;
+  createReferralInviteLink?(input: {
+    inviterUserId: string;
+    inviterChatId?: string;
+    referralToken: string;
+  }): Promise<string>;
+  checkUserInCommunity?(input: {
+    userId: string;
+    chatId?: string;
+  }): Promise<boolean>;
 }

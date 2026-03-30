@@ -1,4 +1,9 @@
-import { MembershipSource, MembershipStatus, PaymentStatus } from "@prisma/client";
+import {
+  MembershipSource,
+  MembershipStatus,
+  PaymentStatus,
+  ReferralPointSource,
+} from "@prisma/client";
 
 import { env } from "../config.js";
 import { prisma } from "../prisma.js";
@@ -1743,5 +1748,109 @@ export class AdminService {
     });
 
     return this.getTelegramVipConfig();
+  }
+
+  async getReferralSummary() {
+    const [eventsByStatus, pointsByUser, totalPoints, recentRedemptions] = await Promise.all([
+      prisma.referralInviteEvent.groupBy({
+        by: ["status"],
+        _count: {
+          _all: true,
+        },
+      }),
+      prisma.referralPointLedger.groupBy({
+        by: ["platform", "userId"],
+        _sum: {
+          deltaPoints: true,
+        },
+        orderBy: {
+          _sum: {
+            deltaPoints: "desc",
+          },
+        },
+        take: 50,
+      }),
+      prisma.referralPointLedger.aggregate({
+        _sum: {
+          deltaPoints: true,
+        },
+      }),
+      prisma.referralRedemption.findMany({
+        orderBy: {
+          createdAt: "desc",
+        },
+        take: 100,
+      }),
+    ]);
+
+    return {
+      statusCounts: Object.fromEntries(eventsByStatus.map((item) => [item.status, item._count._all])),
+      totalPoints: totalPoints._sum.deltaPoints ?? 0,
+      leaderboard: pointsByUser.map((item) => ({
+        platform: fromPrismaPlatform(item.platform),
+        userId: item.userId,
+        points: item._sum.deltaPoints ?? 0,
+      })),
+      redemptions: recentRedemptions,
+    };
+  }
+
+  async listReferralEvents() {
+    const items = await prisma.referralInviteEvent.findMany({
+      orderBy: {
+        createdAt: "desc",
+      },
+      take: 200,
+      include: {
+        inviteToken: {
+          select: {
+            token: true,
+            inviteLink: true,
+          },
+        },
+      },
+    });
+
+    return items.map((item) => ({
+      ...item,
+      platform: fromPrismaPlatform(item.platform),
+      token: item.inviteToken.token,
+      inviteLink: item.inviteToken.inviteLink,
+    }));
+  }
+
+  async listReferralRedemptions() {
+    const items = await prisma.referralRedemption.findMany({
+      orderBy: {
+        createdAt: "desc",
+      },
+      take: 200,
+    });
+    return items.map((item) => ({
+      ...item,
+      platform: fromPrismaPlatform(item.platform),
+    }));
+  }
+
+  async adjustReferralPoints(input: {
+    platform: "discord" | "telegram";
+    userId: string;
+    deltaPoints: number;
+    note?: string;
+  }) {
+    if (!Number.isInteger(input.deltaPoints) || input.deltaPoints === 0) {
+      throw new Error("deltaPoints phải là số nguyên khác 0.");
+    }
+    await prisma.referralPointLedger.create({
+      data: {
+        platform: input.platform === "telegram" ? "TELEGRAM" : "DISCORD",
+        userId: input.userId.trim(),
+        source: ReferralPointSource.ADMIN_ADJUST,
+        deltaPoints: input.deltaPoints,
+        note: input.note?.trim() || "Admin adjust",
+      },
+    });
+
+    return this.getReferralSummary();
   }
 }

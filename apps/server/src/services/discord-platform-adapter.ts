@@ -68,4 +68,16 @@ export class DiscordPlatformAdapter implements PlatformAdapter {
   async isAdmin(platformUserId: string) {
     return this.discordService.memberHasAdminAccess(platformUserId);
   }
+
+  async createReferralInviteLink(input: {
+    inviterUserId: string;
+    inviterChatId?: string;
+    referralToken: string;
+  }) {
+    return this.discordService.createReferralInviteLink(input.referralToken);
+  }
+
+  async checkUserInCommunity(input: { userId: string; chatId?: string }) {
+    return this.discordService.hasGuildMember(input.userId);
+  }
 }

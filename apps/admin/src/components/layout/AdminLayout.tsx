@@ -7,6 +7,7 @@ import { MembershipsPage } from "../../pages/MembershipsPage";
 import { PendingPage } from "../../pages/PendingPage";
 import { PlansPage } from "../../pages/PlansPage";
 import { PromoCodesPage } from "../../pages/PromoCodesPage";
+import { ReferralsPage } from "../../pages/ReferralsPage";
 import { TelegramChannelsPage } from "../../pages/TelegramChannelsPage";
 import { TransactionsPage } from "../../pages/TransactionsPage";
 import { VipStatsPage } from "../../pages/VipStatsPage";
@@ -67,6 +68,9 @@ export function AdminLayout({ user, onLogout }: AdminLayoutProps) {
           <NavLink to="/telegram-channels" onClick={() => setMobileSidebarOpen(false)}>
             Kênh Telegram VIP
           </NavLink>
+          <NavLink to="/referrals" onClick={() => setMobileSidebarOpen(false)}>
+            Referral
+          </NavLink>
         </nav>
         <div className="sidebar-footer">
           <div className="user-card">
@@ -91,6 +95,7 @@ export function AdminLayout({ user, onLogout }: AdminLayoutProps) {
           <Route path="/plans" element={<PlansPage />} />
           <Route path="/pending" element={<PendingPage />} />
           <Route path="/telegram-channels" element={<TelegramChannelsPage />} />
+          <Route path="/referrals" element={<ReferralsPage />} />
         </Routes>
       </main>
     </div>

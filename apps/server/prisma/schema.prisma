@@ -43,6 +43,18 @@ enum WebhookProcessStatus {
   FAILED
 }
 
+enum ReferralEventStatus {
+  JOINED
+  SUCCESS
+  FAILED
+}
+
+enum ReferralPointSource {
+  INVITE_SUCCESS
+  REDEEM_VIP
+  ADMIN_ADJUST
+}
+
 model Plan {
   id           String   @id @default(cuid())
   code         String   @unique
@@ -219,4 +231,71 @@ model Session {
 
   @@index([expire], map: "IDX_session_expire")
   @@map("session")
+}
+
+model ReferralSetting {
+  id                    String   @id @default(cuid())
+  pointsPerSuccess      Int      @default(10)
+  daysPerPoint          Int      @default(1)
+  verifyRequired        Boolean  @default(true)
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+}
+
+model ReferralInviteToken {
+  id             String   @id @default(cuid())
+  token          String   @unique
+  platform       Platform
+  inviterUserId  String
+  inviterChatId  String?
+  inviteLink     String?
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  events         ReferralInviteEvent[]
+}
+
+model ReferralInviteEvent {
+  id               String              @id @default(cuid())
+  platform         Platform
+  inviterUserId    String
+  inviteeUserId    String
+  inviterChatId    String?
+  inviteeChatId    String?
+  inviteTokenId    String
+  status           ReferralEventStatus @default(JOINED)
+  verifiedAt       DateTime?
+  failedReason     String?
+  pointsAwarded    Int                 @default(0)
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
+  inviteToken      ReferralInviteToken @relation(fields: [inviteTokenId], references: [id], onDelete: Cascade)
+  redemptions      ReferralRedemption[]
+  pointLedgers     ReferralPointLedger[]
+
+  @@unique([platform, inviterUserId, inviteeUserId])
+}
+
+model ReferralPointLedger {
+  id               String              @id @default(cuid())
+  platform         Platform
+  userId           String
+  eventId          String?
+  source           ReferralPointSource
+  deltaPoints      Int
+  note             String?
+  createdAt        DateTime            @default(now())
+  event            ReferralInviteEvent? @relation(fields: [eventId], references: [id], onDelete: SetNull)
+}
+
+model ReferralRedemption {
+  id               String              @id @default(cuid())
+  platform         Platform
+  userId           String
+  inviteEventId    String?
+  pointsSpent      Int
+  vipDaysGranted   Int
+  membershipId     String?
+  createdAt        DateTime            @default(now())
+  event            ReferralInviteEvent? @relation(fields: [inviteEventId], references: [id], onDelete: SetNull)
 }
