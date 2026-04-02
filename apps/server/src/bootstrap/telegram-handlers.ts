@@ -20,6 +20,10 @@ type BuildOrderMessageFn = (order: {
 
 type BuildVipAccessTitleFn = (order: { amount: number; plan: { durationDays: number } }) => string;
 
+function escapeTelegramHtml(input: string) {
+  return input.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
 export async function registerTelegramHandlers(input: {
   telegramService: TelegramService;
   membershipService: MembershipService;
@@ -64,11 +68,11 @@ export async function registerTelegramHandlers(input: {
 
       const { qrImageUrl, paymentInstruction } = await buildOrderMessage(order);
       const donateText = [
-        `<b>${buildVipAccessTitle(order)}</b>`,
+        `<b>${escapeTelegramHtml(buildVipAccessTitle(order))}</b>`,
         `<b>Số tiền:</b> ${formatCurrency(order.amount)}`,
         `<b>Nội dung CK:</b> <code>DONATE ${order.orderCode}</code>`,
         `<b>Hạn thanh toán:</b> ${order.expiresAt.toLocaleString("vi-VN")}`,
-        paymentInstruction,
+        escapeTelegramHtml(paymentInstruction),
       ].join("\n");
 
       let sentMessage: { message_id: number } | null = null;
@@ -184,3 +188,4 @@ export async function registerTelegramHandlers(input: {
     }),
   );
 }
+

@@ -1,4 +1,5 @@
 ﻿import { MembershipService } from "../services/membership-service.js";
+import { prisma } from "../prisma.js";
 import { ReferralService } from "../services/referral-service.js";
 import { TelegramService } from "../services/telegram-service.js";
 
@@ -21,6 +22,24 @@ export function createTelegramReferralHandlers(input: {
   referralService: ReferralService;
 }) {
   const { telegramService, membershipService, referralService } = input;
+  const autoVerifyJoinedInvites = async (inviterUserId: string) => {
+    const joinedEvents = await prisma.referralInviteEvent.findMany({
+      where: {
+        platform: "TELEGRAM",
+        inviterUserId,
+        status: "JOINED",
+      },
+      select: { inviteeUserId: true },
+      take: 100,
+    });
+
+    for (const event of joinedEvents) {
+      await referralService.verifyAndReward({
+        platform: "telegram",
+        inviteeUserId: event.inviteeUserId,
+      });
+    }
+  };
   const buildJoinByTokenFailMessage = (reason: string) => {
     switch (reason) {
       case "self_invite":
@@ -61,6 +80,7 @@ export function createTelegramReferralHandlers(input: {
       await telegramService.sendMessage(chatId, `Link mời của bạn:\n${inviteLink}`, buildTelegramReferralMenu());
     },
     onReferralStats: async ({ userId, chatId }: { userId: string; chatId: string; chatType: string }) => {
+      await autoVerifyJoinedInvites(userId);
       const stats = await referralService.getInviteStats({
         platform: "telegram",
         inviterUserId: userId,

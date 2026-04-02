@@ -48,7 +48,7 @@ async function buildOrderMessage(order: {
   const paymentInstruction =
     env.PAYMENT_MODE === "manual"
       ? "Admin sẽ xác nhận khoản ủng hộ thủ công và cấp VIP sau khi kiểm tra."
-      : "Bot sẽ tự động cấp role VIP cho bạn sau khi hệ thống xác nhận chuyển khoản.\nCần hỗ trợ hoặc báo lỗi, liên hệ admin <@1133916215375568967>.";
+      : "Bot sẽ tự động cấp role VIP cho bạn sau khi hệ thống xác nhận chuyển khoản.\nCần hỗ trợ hoặc báo lỗi, liên hệ admin Discord ID: 1133916215375568967.";
 
   return { qrImageUrl, paymentInstruction };
 }
@@ -111,3 +111,4 @@ bootstrap().catch(async (error) => {
   await prisma.$disconnect();
   process.exit(1);
 });
+

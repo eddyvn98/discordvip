@@ -283,6 +283,19 @@ export async function routeTelegramUpdate(input: RouterInput) {
 
   const isCommand = text.startsWith("/");
   if (!isCommand) {
+    const normalizedText = text.trim();
+    // Allow users to escape pending-input mode via menu buttons (especially "Về Home").
+    if (
+      getHomeButtonAction(normalizedText) ||
+      getReferralButtonAction(normalizedText) ||
+      getBuyButtonPlanCode(normalizedText) ||
+      normalizedText === ADMIN_BUTTONS.panel ||
+      normalizedText === ADMIN_BUTTONS.home ||
+      getAdminAdjustPreset(normalizedText)
+    ) {
+      clearPendingInput(userId, chatId);
+    }
+
     const pendingAction = consumePendingInput(userId, chatId);
     if (pendingAction?.action === "promo_code") {
       const code = text.trim();
