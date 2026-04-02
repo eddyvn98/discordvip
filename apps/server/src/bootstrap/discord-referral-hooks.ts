@@ -25,14 +25,26 @@ export function registerDiscordReferralHooks(input: {
         orderBy: { updatedAt: "desc" },
       });
       if (!tokenRecord) {
+        logger.info("Discord referral join ignored because invite code is not mapped to token", {
+          inviteeUserId,
+          inviteLink,
+        });
         return;
       }
-      await referralService.registerJoinByToken({
+      const joinResult = await referralService.registerJoinByToken({
         platform: "discord",
         token: tokenRecord.token,
         inviteeUserId,
         inviteeChatId: guildId,
       });
+      if (!joinResult.ok) {
+        logger.warn("Discord referral join registration failed", {
+          inviteeUserId,
+          inviteLink,
+          reason: joinResult.reason,
+        });
+        return;
+      }
       logger.info("Referral join registered from Discord invite", { inviteeUserId, inviteLink });
     },
     onVerify: async ({ inviteeUserId }) => {
@@ -40,6 +52,13 @@ export function registerDiscordReferralHooks(input: {
         platform: "discord",
         inviteeUserId,
       });
+      if (!result.ok) {
+        logger.warn("Discord referral verify failed", {
+          inviteeUserId,
+          reason: result.reason,
+        });
+        return;
+      }
       if (result.ok && !result.alreadyRewarded && result.inviterUserId) {
         const user = await discordService.client.users.fetch(result.inviterUserId);
         await user.send(`Bạn vừa nhận ${result.pointsAwarded ?? 0} điểm từ một lượt mời thành công.`);

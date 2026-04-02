@@ -1,19 +1,18 @@
-import { MembershipService } from "../services/membership-service.js";
+﻿import { MembershipService } from "../services/membership-service.js";
 import { ReferralService } from "../services/referral-service.js";
 import { TelegramService } from "../services/telegram-service.js";
 
 export function buildTelegramReferralMenu() {
-  const inlineKeyboard: Array<Array<{ text: string; callback_data?: string; url?: string }>> = [
-    [
-      { text: "Tạo link mời", callback_data: "ref_create_link" },
-      { text: "Điểm của tôi", callback_data: "ref_stats" },
+  return {
+    keyboard: [
+      [{ text: "🔗 Tạo link mời" }, { text: "📊 Điểm của tôi" }],
+      [{ text: "💎 Đổi VIP (1 điểm = 1 ngày VIP)" }, { text: "🎟 Nhập mã khuyến mãi" }],
+      [{ text: "🏠 Về Home" }],
     ],
-    [{ text: "Đổi điểm (>=10 điểm)", callback_data: "ref_redeem_custom" }],
-    [{ text: "Nhập mã khuyến mãi", callback_data: "acc_redeem_help" }],
-  ];
-
-  inlineKeyboard.push([{ text: "Về Home", callback_data: "home_menu" }]);
-  return { inline_keyboard: inlineKeyboard };
+    is_persistent: true,
+    resize_keyboard: true,
+    input_field_placeholder: "Chọn chức năng kiếm VIP",
+  };
 }
 
 export function createTelegramReferralHandlers(input: {
@@ -22,11 +21,23 @@ export function createTelegramReferralHandlers(input: {
   referralService: ReferralService;
 }) {
   const { telegramService, membershipService, referralService } = input;
+  const buildJoinByTokenFailMessage = (reason: string) => {
+    switch (reason) {
+      case "self_invite":
+        return "Bạn vừa tự mở link mời của chính mình nên không được tính điểm.\n👉 Hãy gửi link này cho bạn bè chưa vào bot để nhận điểm referral.";
+      case "token_not_found":
+        return "Link mời không hợp lệ hoặc đã hết hiệu lực. Vui lòng tạo link mới và thử lại.";
+      case "join_not_found":
+        return "Chưa ghi nhận lượt vào từ link mời. Vui lòng thử lại sau ít phút.";
+      default:
+        return "Link mời không hợp lệ hoặc không thể ghi nhận.";
+    }
+  };
   return {
     onReferralMenu: async ({ chatId }: { userId: string; chatId: string; chatType: string }) => {
       await telegramService.sendMessage(
         chatId,
-        "Hướng dẫn kiếm VIP:\n1. Mỗi lượt mời thành công mang về cho bạn +1 điểm (tương đương 1 ngày VIP).\nTích lũy tối thiểu 10 điểm, bạn có thể đổi VIP bất cứ lúc nào ✨",
+        "🎁 Cách kiếm VIP miễn phí\n\n• Mỗi lượt mời bạn bè vào nhóm thành công = +1 điểm\n• 1 điểm = 1 ngày VIP\n\n📌 Cần tối thiểu 10 điểm để đổi VIP\n👉 Nhấn nút bên dưới để lấy link mời nhé!",
         buildTelegramReferralMenu(),
       );
     },
@@ -119,8 +130,8 @@ export function createTelegramReferralHandlers(input: {
         inviteeChatId: chatId,
       });
       if (!result.ok) {
-        await telegramService.sendMessage(chatId, "Link mời không hợp lệ hoặc không thể ghi nhận.");
-        return;
+        await telegramService.sendMessage(chatId, buildJoinByTokenFailMessage(result.reason), buildTelegramReferralMenu());
+        return { ok: false, reason: result.reason };
       }
       await telegramService.sendMessage(
         chatId,
@@ -129,6 +140,7 @@ export function createTelegramReferralHandlers(input: {
           inline_keyboard: [[{ text: "Verify", callback_data: "ref_verify" }]],
         },
       );
+      return { ok: true };
     },
     onReferralVerify: async ({ userId, chatId }: { userId: string; chatId: string; chatType: string }) => {
       const result = await referralService.verifyAndReward({
@@ -156,3 +168,4 @@ export function createTelegramReferralHandlers(input: {
     },
   };
 }
+

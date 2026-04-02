@@ -54,6 +54,8 @@ export function registerDiscordInteractions(input: {
           interaction,
           promoCodeService: input.promoCodeService,
           referralService: input.referralService,
+          adminService: input.adminService,
+          discordAdapter: input.discordAdapter,
         });
         return;
       }

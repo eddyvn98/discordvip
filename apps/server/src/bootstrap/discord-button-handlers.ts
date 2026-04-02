@@ -1,4 +1,4 @@
-import {
+﻿import {
   ActionRowBuilder,
   ButtonBuilder,
   ButtonStyle,
@@ -13,6 +13,7 @@ import {
 
 import { env } from "../config.js";
 import { formatCurrency } from "../lib/billing.js";
+import { AdminService } from "../services/admin-service.js";
 import { DiscordPlatformAdapter } from "../services/discord-platform-adapter.js";
 import { DiscordService } from "../services/discord-service.js";
 import { MembershipService } from "../services/membership-service.js";
@@ -29,19 +30,24 @@ type BuildOrderMessageFn = (order: {
 }) => Promise<{ qrImageUrl: string | null; paymentInstruction: string }>;
 type BuildVipAccessTitleFn = (order: { amount: number; plan: { durationDays: number } }) => string;
 
+const QR_PANEL_TTL_MS = 10 * 60 * 1000;
+
 function homeRows() {
   return [
     new ActionRowBuilder<ButtonBuilder>().addComponents(
-      new ButtonBuilder().setCustomId("home_referral").setLabel("Kiếm VIP").setStyle(ButtonStyle.Primary),
+      new ButtonBuilder().setCustomId("home_referral").setLabel("🎁 Kiếm VIP").setStyle(ButtonStyle.Primary),
     ),
     new ActionRowBuilder<ButtonBuilder>().addComponents(
-      new ButtonBuilder().setCustomId("home_buy").setLabel("Mua VIP").setStyle(ButtonStyle.Success),
+      new ButtonBuilder().setCustomId("home_buy").setLabel("💸 Donate VIP").setStyle(ButtonStyle.Success),
     ),
     new ActionRowBuilder<ButtonBuilder>().addComponents(
-      new ButtonBuilder().setCustomId("acc_trialvip").setLabel("Dùng thử VIP").setStyle(ButtonStyle.Secondary),
+      new ButtonBuilder().setCustomId("acc_trialvip").setLabel("✨ Dùng thử VIP").setStyle(ButtonStyle.Secondary),
     ),
     new ActionRowBuilder<ButtonBuilder>().addComponents(
-      new ButtonBuilder().setCustomId("acc_vipstatus").setLabel("VIP của tôi").setStyle(ButtonStyle.Secondary),
+      new ButtonBuilder().setCustomId("acc_vipstatus").setLabel("📅 VIP của tôi").setStyle(ButtonStyle.Secondary),
+    ),
+    new ActionRowBuilder<ButtonBuilder>().addComponents(
+      new ButtonBuilder().setCustomId("acc_redeem_help").setLabel("🎟️ Nhập mã khuyến mãi").setStyle(ButtonStyle.Secondary),
     ),
   ];
 }
@@ -49,17 +55,14 @@ function homeRows() {
 function referralRows() {
   return [
     new ActionRowBuilder<ButtonBuilder>().addComponents(
-      new ButtonBuilder().setCustomId("ref_create_link").setLabel("Tạo link mời").setStyle(ButtonStyle.Primary),
-      new ButtonBuilder().setCustomId("ref_stats").setLabel("Điểm của tôi").setStyle(ButtonStyle.Secondary),
+      new ButtonBuilder().setCustomId("ref_create_link").setLabel("🔗 Tạo link mời").setStyle(ButtonStyle.Primary),
+      new ButtonBuilder().setCustomId("ref_stats").setLabel("📊 Điểm của tôi").setStyle(ButtonStyle.Secondary),
     ),
     new ActionRowBuilder<ButtonBuilder>().addComponents(
-      new ButtonBuilder().setCustomId("ref_redeem_custom").setLabel("Đổi điểm (>=10 điểm)").setStyle(ButtonStyle.Success),
+      new ButtonBuilder().setCustomId("ref_redeem_custom").setLabel("💎 Đổi VIP (1 điểm = 1 ngày VIP)").setStyle(ButtonStyle.Success),
     ),
     new ActionRowBuilder<ButtonBuilder>().addComponents(
-      new ButtonBuilder().setCustomId("acc_redeem_help").setLabel("Nhập mã khuyến mãi").setStyle(ButtonStyle.Secondary),
-    ),
-    new ActionRowBuilder<ButtonBuilder>().addComponents(
-      new ButtonBuilder().setCustomId("home_menu").setLabel("Về Home").setStyle(ButtonStyle.Secondary),
+      new ButtonBuilder().setCustomId("nav_back_home").setLabel("↩️ Quay lại").setStyle(ButtonStyle.Secondary),
     ),
   ];
 }
@@ -67,14 +70,51 @@ function referralRows() {
 function buyRows() {
   return [
     new ActionRowBuilder<ButtonBuilder>().addComponents(
-      new ButtonBuilder().setCustomId("buy_vip30").setLabel("VIP 30 ngày").setStyle(ButtonStyle.Primary),
-      new ButtonBuilder().setCustomId("buy_vip90").setLabel("VIP 90 ngày").setStyle(ButtonStyle.Primary),
-      new ButtonBuilder().setCustomId("buy_vip365").setLabel("VIP 365 ngày").setStyle(ButtonStyle.Primary),
+      new ButtonBuilder().setCustomId("buy_vip30").setLabel("💎 VIP 30 ngày").setStyle(ButtonStyle.Primary),
+      new ButtonBuilder().setCustomId("buy_vip90").setLabel("💎 VIP 90 ngày").setStyle(ButtonStyle.Primary),
+      new ButtonBuilder().setCustomId("buy_vip365").setLabel("💎 VIP 365 ngày").setStyle(ButtonStyle.Primary),
     ),
     new ActionRowBuilder<ButtonBuilder>().addComponents(
-      new ButtonBuilder().setCustomId("home_menu").setLabel("Về Home").setStyle(ButtonStyle.Secondary),
+      new ButtonBuilder().setCustomId("nav_back_home").setLabel("↩️ Quay lại").setStyle(ButtonStyle.Secondary),
     ),
   ];
+}
+
+function qrRows() {
+  return [
+    new ActionRowBuilder<ButtonBuilder>().addComponents(
+      new ButtonBuilder().setCustomId("nav_back_buy").setLabel("↩️ Quay lại").setStyle(ButtonStyle.Secondary),
+    ),
+  ];
+}
+
+function welcomeContent() {
+  return "🔥 Chào mừng bạn đến với BOT VIP\n\nTại đây bạn có thể:\n• Kiếm điểm để đổi VIP 🎁\n• Donate nhanh để nhận VIP ⚡\n• Dùng thử trước khi quyết định 👀\n• Kích hoạt mã khuyến mãi siêu tiện 🎟️\n\n👉 Chọn một tùy chọn bên dưới để bắt đầu ngay!";
+}
+
+function isEphemeralContext(interaction: ButtonInteraction) {
+  return interaction.message.flags.has(MessageFlags.Ephemeral);
+}
+
+async function respondPanel(
+  interaction: ButtonInteraction,
+  payload: { content?: string; components?: ActionRowBuilder<ButtonBuilder>[]; embeds?: Array<Record<string, unknown>> },
+) {
+  if (isEphemeralContext(interaction)) {
+    await interaction.update(payload);
+    return;
+  }
+  await interaction.reply({ flags: MessageFlags.Ephemeral, ...payload });
+}
+
+function scheduleEphemeralCleanup(interaction: ButtonInteraction, timeoutMs = QR_PANEL_TTL_MS) {
+  setTimeout(async () => {
+    try {
+      await interaction.deleteReply();
+    } catch {
+      // ignore
+    }
+  }, timeoutMs);
 }
 
 export async function handleDiscordMenuCommand(interaction: ChatInputCommandInteraction) {
@@ -83,7 +123,7 @@ export async function handleDiscordMenuCommand(interaction: ChatInputCommandInte
   }
   await interaction.reply({
     flags: MessageFlags.Ephemeral,
-    content: "Chào mừng bạn 👋\nĐây là BOT VIP tự động – bạn cần mình hỗ trợ gì hôm nay?",
+    content: welcomeContent(),
     components: homeRows(),
   });
   return true;
@@ -136,31 +176,67 @@ export async function handleDiscordButton(input: {
     return true;
   }
 
-  if (interaction.customId === "home_menu") {
-    await interaction.reply({
-      flags: MessageFlags.Ephemeral,
-      content: "Chào mừng bạn 👋\nĐây là BOT VIP tự động – bạn cần mình hỗ trợ gì hôm nay?",
-      components: homeRows(),
+  if (interaction.customId.startsWith("admin_refpts:")) {
+    const canAccess = await discordAdapter.isAdmin(interaction.user.id);
+    if (!canAccess) {
+      await interaction.reply({ flags: MessageFlags.Ephemeral, content: "Bạn không có quyền dùng chức năng này." });
+      return true;
+    }
+    const [, platform, deltaRaw] = interaction.customId.split(":");
+    if (!platform || !deltaRaw || !["telegram", "discord"].includes(platform)) {
+      await interaction.reply({ flags: MessageFlags.Ephemeral, content: "Preset admin không hợp lệ." });
+      return true;
+    }
+    const delta = Number(deltaRaw);
+    if (!Number.isInteger(delta) || delta === 0) {
+      await interaction.reply({ flags: MessageFlags.Ephemeral, content: "Preset admin không hợp lệ." });
+      return true;
+    }
+    const modal = new ModalBuilder()
+      .setCustomId(`admin_refpts_modal:${platform}:${delta}`)
+      .setTitle(`Điều chỉnh điểm (${platform.toUpperCase()} ${delta > 0 ? `+${delta}` : delta})`);
+    const inputText = new TextInputBuilder()
+      .setCustomId("target_and_note")
+      .setLabel("Nhập userId/username | ghi chú (tùy chọn)")
+      .setStyle(TextInputStyle.Short)
+      .setRequired(true)
+      .setMaxLength(180)
+      .setPlaceholder("123456789 | Bù điểm khiếu nại");
+    modal.addComponents(new ActionRowBuilder<TextInputBuilder>().addComponents(inputText));
+    await interaction.showModal(modal);
+    return true;
+  }
+
+  if (interaction.customId === "home_menu" || interaction.customId === "nav_back_home") {
+    await respondPanel(interaction, { content: welcomeContent(), components: homeRows(), embeds: [] });
+    return true;
+  }
+  if (interaction.customId === "nav_back_buy") {
+    await respondPanel(interaction, {
+      content: "💎 Chọn gói VIP phù hợp với bạn\n\n• 30 ngày – 39.000đ\n• 90 ngày – 99.000đ (tiết kiệm hơn)\n• 365 ngày – 199.000đ (rẻ nhất 🔥)",
+      components: buyRows(),
+      embeds: [],
     });
     return true;
   }
+
   if (interaction.customId === "home_referral") {
-    await interaction.reply({
-      flags: MessageFlags.Ephemeral,
+    await respondPanel(interaction, {
       content:
-        "Hướng dẫn kiếm VIP:\n1. Mỗi lượt mời thành công mang về cho bạn +1 điểm (tương đương 1 ngày VIP).\nTích lũy tối thiểu 10 điểm, bạn có thể đổi VIP bất cứ lúc nào ✨",
+        "🎁 Cách kiếm VIP miễn phí\n\n• Mỗi lượt mời bạn bè vào nhóm thành công = +1 điểm\n• 1 điểm = 1 ngày VIP\n\n📌 Cần tối thiểu 10 điểm để đổi VIP\n👉 Nhấn nút bên dưới để lấy link mời nhé!",
       components: referralRows(),
     });
     return true;
   }
+
   if (interaction.customId === "home_buy") {
-    await interaction.reply({
-      flags: MessageFlags.Ephemeral,
-      content: "Chọn gói VIP:\n- 39.000đ (30 ngày)\n- 99.000đ (90 ngày)\n- 199.000đ (365 ngày)",
+    await respondPanel(interaction, {
+      content: "💎 Chọn gói VIP phù hợp với bạn\n\n• 30 ngày – 39.000đ\n• 90 ngày – 99.000đ (tiết kiệm hơn)\n• 365 ngày – 199.000đ (rẻ nhất 🔥)",
       components: buyRows(),
     });
     return true;
   }
+
   if (interaction.customId === "buy_vip30" || interaction.customId === "buy_vip90" || interaction.customId === "buy_vip365") {
     const planCode =
       interaction.customId === "buy_vip30"
@@ -175,8 +251,8 @@ export async function handleDiscordButton(input: {
       planCode,
     });
     const { qrImageUrl, paymentInstruction } = await buildOrderMessage(order);
-    await interaction.reply({
-      flags: MessageFlags.Ephemeral,
+    await respondPanel(interaction, {
+      content: "",
       embeds: [
         {
           title: buildVipAccessTitle(order),
@@ -189,8 +265,9 @@ export async function handleDiscordButton(input: {
           image: qrImageUrl ? { url: qrImageUrl } : undefined,
         },
       ],
-      components: homeRows(),
+      components: qrRows(),
     });
+    scheduleEphemeralCleanup(interaction);
     if (env.PAYMENT_MODE === "manual") {
       await discordAdapter.sendManualOrderReview?.({
         id: order.id,
@@ -218,14 +295,12 @@ export async function handleDiscordButton(input: {
         platformUserId: interaction.user.id,
         platformChatId: interaction.guildId ?? env.DISCORD_GUILD_ID,
       });
-      await interaction.reply({
-        flags: MessageFlags.Ephemeral,
+      await respondPanel(interaction, {
         content: `Đã kích hoạt trial VIP tới <t:${Math.floor(membership.expireAt.getTime() / 1000)}:F>.`,
         components: homeRows(),
       });
     } catch (error) {
-      await interaction.reply({
-        flags: MessageFlags.Ephemeral,
+      await respondPanel(interaction, {
         content: error instanceof Error ? error.message : "Không thể kích hoạt trial.",
         components: homeRows(),
       });
@@ -250,17 +325,12 @@ export async function handleDiscordButton(input: {
         : null);
 
     if (!membership || membership.expireAt.getTime() <= Date.now()) {
-      await interaction.reply({
-        flags: MessageFlags.Ephemeral,
-        content: "Bạn chưa có VIP đang hoạt động.",
-        components: homeRows(),
-      });
+      await respondPanel(interaction, { content: "Bạn chưa có VIP đang hoạt động.", components: homeRows() });
       return true;
     }
 
     const source = membership.source === "TRIAL" ? "Trial" : membership.source === "MANUAL" ? "Manual" : "Paid";
-    await interaction.reply({
-      flags: MessageFlags.Ephemeral,
+    await respondPanel(interaction, {
       content: [`Nguồn VIP: **${source}**`, `Hết hạn: <t:${Math.floor(membership.expireAt.getTime() / 1000)}:F>`].join("\n"),
       components: homeRows(),
     });
@@ -313,11 +383,7 @@ export async function handleDiscordButton(input: {
       inviterChatId: interaction.guildId ?? env.DISCORD_GUILD_ID,
       inviteLink,
     });
-    await interaction.reply({
-      flags: MessageFlags.Ephemeral,
-      content: `Link mời của bạn: ${inviteLink}`,
-      components: referralRows(),
-    });
+    await respondPanel(interaction, { content: `Link mời của bạn: ${inviteLink}`, components: referralRows() });
     return true;
   }
 
@@ -326,8 +392,7 @@ export async function handleDiscordButton(input: {
       platform: "discord",
       inviterUserId: interaction.user.id,
     });
-    await interaction.reply({
-      flags: MessageFlags.Ephemeral,
+    await respondPanel(interaction, {
       content: [`Điểm hiện có: ${stats.points}`, `Lượt mời thành công: ${stats.successCount}`, `Lượt đã vào chờ verify: ${stats.joinedCount}`].join("\n"),
       components: referralRows(),
     });
@@ -337,11 +402,7 @@ export async function handleDiscordButton(input: {
   if (interaction.customId.startsWith("ref_redeem_")) {
     const days = Number(interaction.customId.replace("ref_redeem_", ""));
     if (![10, 30, 90].includes(days)) {
-      await interaction.reply({
-        flags: MessageFlags.Ephemeral,
-        content: "Lựa chọn đổi VIP không hợp lệ.",
-        components: referralRows(),
-      });
+      await respondPanel(interaction, { content: "Lựa chọn đổi VIP không hợp lệ.", components: referralRows() });
       return true;
     }
     const result = await referralService.redeemVipDays({
@@ -350,8 +411,7 @@ export async function handleDiscordButton(input: {
       platformChatId: interaction.guildId ?? env.DISCORD_GUILD_ID,
       vipDays: days,
     });
-    await interaction.reply({
-      flags: MessageFlags.Ephemeral,
+    await respondPanel(interaction, {
       content: [
         `Đổi VIP thành công: +${days} ngày.`,
         `Điểm đã trừ: ${result.pointsSpent}`,
@@ -375,8 +435,57 @@ export async function handleDiscordModal(input: {
   interaction: ModalSubmitInteraction;
   promoCodeService: PromoCodeService;
   referralService: ReferralService;
+  adminService: AdminService;
+  discordAdapter: DiscordPlatformAdapter;
 }) {
-  const { interaction, promoCodeService, referralService } = input;
+  const { interaction, promoCodeService, referralService, adminService, discordAdapter } = input;
+
+  if (interaction.customId.startsWith("admin_refpts_modal:")) {
+    const canAccess = await discordAdapter.isAdmin(interaction.user.id);
+    if (!canAccess) {
+      await interaction.reply({ flags: MessageFlags.Ephemeral, content: "Bạn không có quyền dùng chức năng này." });
+      return true;
+    }
+    const [, platform, deltaRaw] = interaction.customId.split(":");
+    if (!platform || !deltaRaw || !["telegram", "discord"].includes(platform)) {
+      await interaction.reply({ flags: MessageFlags.Ephemeral, content: "Yêu cầu admin không hợp lệ." });
+      return true;
+    }
+    const deltaPoints = Number(deltaRaw);
+    if (!Number.isInteger(deltaPoints) || deltaPoints === 0) {
+      await interaction.reply({ flags: MessageFlags.Ephemeral, content: "Yêu cầu admin không hợp lệ." });
+      return true;
+    }
+    const raw = interaction.fields.getTextInputValue("target_and_note").trim();
+    const [targetUserIdRaw, ...noteParts] = raw.split("|");
+    const targetUserInput = targetUserIdRaw?.trim() ?? "";
+    const note = noteParts.join("|").trim();
+    if (!targetUserInput) {
+      await interaction.reply({ flags: MessageFlags.Ephemeral, content: "Vui lòng nhập user hợp lệ." });
+      return true;
+    }
+    const resolvedUserId = await adminService.resolveReferralTargetUserId({
+      platform: platform as "telegram" | "discord",
+      rawUserInput: targetUserInput,
+    });
+    await adminService.adjustReferralPoints({
+      platform: platform as "telegram" | "discord",
+      userId: resolvedUserId,
+      deltaPoints,
+      note: note || `Admin adjust by ${interaction.user.id}`,
+    });
+    await interaction.reply({
+      flags: MessageFlags.Ephemeral,
+      content: [
+        "Đã điều chỉnh điểm referral thành công.",
+        `Nền tảng: ${platform}`,
+        `User ID: ${resolvedUserId}`,
+        `Điểm thay đổi: ${deltaPoints > 0 ? `+${deltaPoints}` : String(deltaPoints)}`,
+      ].join("\n"),
+    });
+    return true;
+  }
+
   if (interaction.customId === "ref_redeem_modal") {
     const rawDays = interaction.fields.getTextInputValue("redeem_days").trim();
     const days = Number(rawDays);

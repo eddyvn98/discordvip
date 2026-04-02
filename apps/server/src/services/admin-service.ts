@@ -1853,4 +1853,52 @@ export class AdminService {
 
     return this.getReferralSummary();
   }
+
+  async resolveReferralTargetUserId(input: {
+    platform: "discord" | "telegram";
+    rawUserInput: string;
+  }) {
+    const raw = input.rawUserInput.trim();
+    if (!raw) {
+      throw new Error("Thiếu userId/username.");
+    }
+
+    if (input.platform === "telegram") {
+      const normalized = raw.startsWith("@") ? raw.slice(1) : raw;
+      if (!/^\d+$/u.test(normalized)) {
+        throw new Error("Telegram hiện chỉ hỗ trợ userId số. Vui lòng nhập đúng Telegram userId.");
+      }
+      return normalized;
+    }
+
+    const mentionMatch = raw.match(/^<@!?(\d+)>$/u);
+    if (mentionMatch?.[1]) {
+      return mentionMatch[1];
+    }
+    const normalized = raw.startsWith("@") ? raw.slice(1) : raw;
+    if (/^\d+$/u.test(normalized)) {
+      return normalized;
+    }
+
+    const byUsername = await prisma.discordUserProfile.findMany({
+      where: {
+        OR: [
+          { username: { equals: normalized, mode: "insensitive" } },
+          { displayName: { equals: normalized, mode: "insensitive" } },
+          { globalName: { equals: normalized, mode: "insensitive" } },
+        ],
+      },
+      select: { discordUserId: true },
+      take: 5,
+    });
+
+    if (byUsername.length === 1) {
+      return byUsername[0]!.discordUserId;
+    }
+    if (byUsername.length > 1) {
+      throw new Error("Tìm thấy nhiều user trùng username/displayName. Vui lòng dùng mention hoặc userId.");
+    }
+
+    throw new Error("Không tìm thấy user Discord từ username. Vui lòng dùng mention hoặc userId.");
+  }
 }

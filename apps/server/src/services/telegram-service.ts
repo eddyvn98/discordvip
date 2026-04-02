@@ -7,7 +7,13 @@ import { getTelegramAdminCommands, getTelegramUserCommands } from "./telegram-co
 import { getAllConfiguredVipChatIds, getVipChatIdsForPlan } from "./telegram-data.js";
 import { isIgnorableTelegramRevokeError } from "./telegram-errors.js";
 import { routeTelegramUpdate } from "./telegram-update-router.js";
-import type { TelegramBotCommand, TelegramHandlers, TelegramMessage, TelegramUpdate } from "./telegram-types.js";
+import type {
+  TelegramBotCommand,
+  TelegramHandlers,
+  TelegramMessage,
+  TelegramReplyMarkup,
+  TelegramUpdate,
+} from "./telegram-types.js";
 
 export class TelegramService implements PlatformAdapter {
   readonly platform = "telegram" as const;
@@ -255,9 +261,7 @@ export class TelegramService implements PlatformAdapter {
   async sendMessage(
     chatId: string,
     text: string,
-    replyMarkup?: {
-      inline_keyboard: Array<Array<{ text: string; callback_data?: string; url?: string }>>;
-    },
+    replyMarkup?: TelegramReplyMarkup,
     parseMode?: "HTML" | "MarkdownV2",
   ) {
     return telegramApiCall<TelegramMessage>("sendMessage", {
@@ -304,10 +308,29 @@ export class TelegramService implements PlatformAdapter {
 
   async sendVipEntryLinks(input: { userId: string; planCode?: string; headerText?: string }) {
     const chatIds = await getVipChatIdsForPlan(input.planCode);
-    const inviteLinks = await Promise.all(chatIds.map((chatId) => this.createVipInviteLink(chatId)));
+    if (chatIds.length === 0) {
+      await this.sendMessage(input.userId, "Hiện chưa có kênh VIP nào đang cấu hình.");
+      return;
+    }
+
+    const results = await Promise.allSettled(chatIds.map((chatId) => this.createVipInviteLink(chatId)));
+    const inviteLinks = results
+      .filter((item): item is PromiseFulfilledResult<string> => item.status === "fulfilled")
+      .map((item) => item.value);
+    const failedCount = results.length - inviteLinks.length;
+
+    if (inviteLinks.length > 0) {
+      const lines = [input.headerText ?? "Link vào kênh VIP (hiệu lực 24h):", inviteLinks.join("\n")];
+      if (failedCount > 0) {
+        lines.push(`Lưu ý: ${failedCount} kênh chưa tạo được link, vui lòng báo admin kiểm tra cấu hình bot.`);
+      }
+      await this.sendMessage(input.userId, lines.join("\n"));
+      return;
+    }
+
     await this.sendMessage(
       input.userId,
-      [input.headerText ?? "Link vào kênh VIP (hiệu lực 24h):", inviteLinks.join("\n")].join("\n"),
+      "Chưa thể tạo link vào kênh VIP lúc này. Vui lòng thử lại sau hoặc báo admin kiểm tra quyền bot.",
     );
   }
 

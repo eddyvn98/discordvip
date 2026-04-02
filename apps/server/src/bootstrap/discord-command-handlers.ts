@@ -1,4 +1,4 @@
-import { MessageFlags, type ChatInputCommandInteraction } from "discord.js";
+﻿import { ActionRowBuilder, ButtonBuilder, ButtonStyle, MessageFlags, type ChatInputCommandInteraction } from "discord.js";
 
 import { env } from "../config.js";
 import { formatCurrency } from "../lib/billing.js";
@@ -16,6 +16,23 @@ type BuildOrderMessageFn = (order: {
   plan: { name: string; durationDays: number };
 }) => Promise<{ qrImageUrl: string | null; paymentInstruction: string }>;
 type BuildVipAccessTitleFn = (order: { amount: number; plan: { durationDays: number } }) => string;
+
+function adminReferralRows() {
+  return [
+    new ActionRowBuilder<ButtonBuilder>().addComponents(
+      new ButtonBuilder().setCustomId("admin_refpts:telegram:1").setLabel("➕ TG +1").setStyle(ButtonStyle.Success),
+      new ButtonBuilder().setCustomId("admin_refpts:telegram:5").setLabel("➕ TG +5").setStyle(ButtonStyle.Success),
+      new ButtonBuilder().setCustomId("admin_refpts:telegram:-1").setLabel("➖ TG -1").setStyle(ButtonStyle.Danger),
+      new ButtonBuilder().setCustomId("admin_refpts:telegram:-5").setLabel("➖ TG -5").setStyle(ButtonStyle.Danger),
+    ),
+    new ActionRowBuilder<ButtonBuilder>().addComponents(
+      new ButtonBuilder().setCustomId("admin_refpts:discord:1").setLabel("➕ DC +1").setStyle(ButtonStyle.Success),
+      new ButtonBuilder().setCustomId("admin_refpts:discord:5").setLabel("➕ DC +5").setStyle(ButtonStyle.Success),
+      new ButtonBuilder().setCustomId("admin_refpts:discord:-1").setLabel("➖ DC -1").setStyle(ButtonStyle.Danger),
+      new ButtonBuilder().setCustomId("admin_refpts:discord:-5").setLabel("➖ DC -5").setStyle(ButtonStyle.Danger),
+    ),
+  ];
+}
 
 export async function handleDiscordChatCommand(
   input: {
@@ -41,6 +58,7 @@ export async function handleDiscordChatCommand(
     buildOrderMessage,
     buildVipAccessTitle,
   } = input;
+
   if (interaction.commandName === "donate") {
     const planCode = interaction.options.getString("plan", true);
     const order = await orderService.createOrder({
@@ -52,15 +70,34 @@ export async function handleDiscordChatCommand(
     const { qrImageUrl, paymentInstruction } = await buildOrderMessage(order);
     await interaction.reply({
       flags: MessageFlags.Ephemeral,
-      embeds: [{ title: buildVipAccessTitle(order), description: [`Số tiền: **${formatCurrency(order.amount)}**`, `Nội dung CK: \`DONATE ${order.orderCode}\``, `Quét QR hoặc chuyển khoản trước: <t:${Math.floor(order.expiresAt.getTime() / 1000)}:R>`, paymentInstruction].join("\n"), image: qrImageUrl ? { url: qrImageUrl } : undefined }],
+      embeds: [
+        {
+          title: buildVipAccessTitle(order),
+          description: [
+            `Số tiền: **${formatCurrency(order.amount)}**`,
+            `Nội dung CK: \`DONATE ${order.orderCode}\``,
+            `Quét QR hoặc chuyển khoản trước: <t:${Math.floor(order.expiresAt.getTime() / 1000)}:R>`,
+            paymentInstruction,
+          ].join("\n"),
+          image: qrImageUrl ? { url: qrImageUrl } : undefined,
+        },
+      ],
     });
     if (env.PAYMENT_MODE === "manual") {
       await discordAdapter.sendManualOrderReview?.({
-        id: order.id, orderCode: order.orderCode, platform: "discord", platformUserId: interaction.user.id, platformChatId: interaction.guildId!, amount: order.amount, expiresAt: order.expiresAt, plan: order.plan,
+        id: order.id,
+        orderCode: order.orderCode,
+        platform: "discord",
+        platformUserId: interaction.user.id,
+        platformChatId: interaction.guildId!,
+        amount: order.amount,
+        expiresAt: order.expiresAt,
+        plan: order.plan,
       });
     }
     return true;
   }
+
   if (interaction.commandName === "trialvip") {
     try {
       const membership = await membershipService.grantTrial({
@@ -75,15 +112,18 @@ export async function handleDiscordChatCommand(
     }
     return true;
   }
+
   if (interaction.commandName === "vipstatus") {
     const current = await membershipService.getActiveMembership({
       platform: "discord",
       platformUserId: interaction.user.id,
       platformChatId: interaction.guildId ?? env.DISCORD_GUILD_ID,
     });
-    const membership = current ?? (interaction.guildId && interaction.guildId !== env.DISCORD_GUILD_ID
-      ? await membershipService.getActiveMembership({ platform: "discord", platformUserId: interaction.user.id, platformChatId: env.DISCORD_GUILD_ID })
-      : null);
+    const membership =
+      current ??
+      (interaction.guildId && interaction.guildId !== env.DISCORD_GUILD_ID
+        ? await membershipService.getActiveMembership({ platform: "discord", platformUserId: interaction.user.id, platformChatId: env.DISCORD_GUILD_ID })
+        : null);
     if (!membership || membership.expireAt.getTime() <= Date.now()) {
       await interaction.reply({ flags: MessageFlags.Ephemeral, content: "Bạn chưa có VIP đang hoạt động." });
       return true;
@@ -92,6 +132,7 @@ export async function handleDiscordChatCommand(
     await interaction.reply({ flags: MessageFlags.Ephemeral, content: [`Nguồn VIP: **${source}**`, `Hết hạn: <t:${Math.floor(membership.expireAt.getTime() / 1000)}:F>`].join("\n") });
     return true;
   }
+
   if (interaction.commandName === "redeemvip") {
     const code = interaction.options.getString("code", true);
     try {
@@ -108,6 +149,7 @@ export async function handleDiscordChatCommand(
     }
     return true;
   }
+
   if (interaction.commandName === "adminstats") {
     const canAccess = await discordAdapter.isAdmin(interaction.user.id);
     if (!canAccess) {
@@ -118,6 +160,7 @@ export async function handleDiscordChatCommand(
     await interaction.reply({ flags: MessageFlags.Ephemeral, embeds: [{ title: `Thống kê VIP (${stats.label})`, fields: [{ name: "VIP đang active", value: String(stats.activeVipCount), inline: true }, { name: "VIP hết hạn hôm nay", value: String(stats.expiringTodayCount), inline: true }, { name: "Doanh thu khớp VIP paid", value: formatCurrency(stats.alignedRevenue), inline: true }] }] });
     return true;
   }
+
   if (interaction.commandName === "grantvip") {
     const canAccess = await discordAdapter.isAdmin(interaction.user.id);
     if (!canAccess) {
@@ -130,6 +173,7 @@ export async function handleDiscordChatCommand(
     await interaction.reply({ flags: MessageFlags.Ephemeral, content: [durationDays > 0 ? `Đã cộng thêm ${durationDays} ngày VIP cho <@${targetUser.id}>.` : `Đã trừ ${Math.abs(durationDays)} ngày VIP của <@${targetUser.id}>.`, `Hạn mới: <t:${Math.floor(result.membership.expireAt.getTime() / 1000)}:F>.`].join("\n") });
     return true;
   }
+
   if (interaction.commandName === "revokevip") {
     const canAccess = await discordAdapter.isAdmin(interaction.user.id);
     if (!canAccess) {
@@ -141,5 +185,20 @@ export async function handleDiscordChatCommand(
     await interaction.reply({ flags: MessageFlags.Ephemeral, content: `Đã thu hồi VIP của <@${targetUser.id}>.` });
     return true;
   }
+
+  if (interaction.commandName === "adminpoints") {
+    const canAccess = await discordAdapter.isAdmin(interaction.user.id);
+    if (!canAccess) {
+      await interaction.reply({ flags: MessageFlags.Ephemeral, content: "Bạn không có quyền sử dụng lệnh này." });
+      return true;
+    }
+    await interaction.reply({
+      flags: MessageFlags.Ephemeral,
+      content: "Chọn preset cộng/trừ điểm referral, sau đó nhập `mention/userId/username | ghi chú` trong modal.",
+      components: adminReferralRows(),
+    });
+    return true;
+  }
+
   return false;
 }

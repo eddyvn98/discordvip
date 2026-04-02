@@ -41,12 +41,16 @@ export function getDiscordGuildCommands() {
         { name: "user", description: "Thành viên cần điều chỉnh VIP", type: 6, required: true },
         { name: "days", description: "Số ngày điều chỉnh, âm để trừ", type: 4, required: true },
       ],
-    },
-    {
+    },    {
       name: "revokevip",
       description: "Thu hồi VIP của thành viên",
       default_member_permissions: PermissionFlagsBits.Administrator.toString(),
       options: [{ name: "user", description: "Thành viên cần thu hồi VIP", type: 6, required: true }],
+    },
+    {
+      name: "adminpoints",
+      description: "Mở bảng cộng/trừ điểm referral nhanh",
+      default_member_permissions: PermissionFlagsBits.Administrator.toString(),
     },
   ];
 }

@@ -161,31 +161,30 @@ export class DiscordService {
     }
 
     const textChannel = channel as TextChannel;
-    const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
-      new ButtonBuilder().setCustomId("home_menu").setLabel("Mở Menu VIP").setStyle(ButtonStyle.Primary),
-    );
-    const content = "Bấm nút bên dưới để mở menu bot VIP.";
+    const rows = [
+      new ActionRowBuilder<ButtonBuilder>().addComponents(
+        new ButtonBuilder().setCustomId("home_referral").setLabel("🎁 Kiếm VIP").setStyle(ButtonStyle.Primary),
+      ),
+      new ActionRowBuilder<ButtonBuilder>().addComponents(
+        new ButtonBuilder().setCustomId("home_buy").setLabel("💸 Donate VIP").setStyle(ButtonStyle.Success),
+      ),
+      new ActionRowBuilder<ButtonBuilder>().addComponents(
+        new ButtonBuilder().setCustomId("acc_trialvip").setLabel("✨ Dùng thử VIP").setStyle(ButtonStyle.Secondary),
+      ),
+      new ActionRowBuilder<ButtonBuilder>().addComponents(
+        new ButtonBuilder().setCustomId("acc_vipstatus").setLabel("📅 VIP của tôi").setStyle(ButtonStyle.Secondary),
+      ),
+      new ActionRowBuilder<ButtonBuilder>().addComponents(
+        new ButtonBuilder()
+          .setCustomId("acc_redeem_help")
+          .setLabel("🎟️ Nhập mã khuyến mãi")
+          .setStyle(ButtonStyle.Secondary),
+      ),
+    ];
+    const content =
+      "🔥 Chào mừng bạn đến với BOT VIP\n\nTại đây bạn có thể:\n• Kiếm điểm để đổi VIP 🎁\n• Donate nhanh để nhận VIP ⚡\n• Dùng thử trước khi quyết định 👀\n• Kích hoạt mã khuyến mãi siêu tiện 🎟️\n\n👉 Chọn một tùy chọn bên dưới để bắt đầu ngay!";
 
-    const recentMessages = await textChannel.messages.fetch({ limit: 30 });
-    const existing = recentMessages.find(
-      (message) =>
-        message.author.id === this.client.user?.id &&
-        message.content.includes("mở menu bot VIP") &&
-        message.components.some((rowItem) =>
-          "components" in rowItem &&
-          Array.isArray(rowItem.components) &&
-          rowItem.components.some(
-            (component: { customId?: string | null }) => component.customId === "home_menu",
-          ),
-        ),
-    );
-
-    if (existing) {
-      await existing.edit({ content, components: [row] });
-      return;
-    }
-
-    await textChannel.send({ content, components: [row] });
+    await textChannel.send({ content, components: rows });
   }
 
   async sendManualOrderReview(order: {

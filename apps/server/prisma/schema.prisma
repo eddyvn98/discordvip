@@ -299,3 +299,14 @@ model ReferralRedemption {
   createdAt        DateTime            @default(now())
   event            ReferralInviteEvent? @relation(fields: [inviteEventId], references: [id], onDelete: SetNull)
 }
+
+model ReferralVerifyLog {
+  id            String   @id @default(cuid())
+  platform      Platform
+  inviteeUserId String
+  inviterUserId String?
+  eventId       String?
+  outcome       String
+  reason        String?
+  createdAt     DateTime @default(now())
+}

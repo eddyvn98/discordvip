@@ -112,5 +112,63 @@ export function createTelegramAdminHandlers(input: {
         );
       }
     },
+    onAdminAdjustReferralPoints: async ({
+      userId,
+      chatId,
+      chatType,
+      platform,
+      targetUserId,
+      deltaPoints,
+      note,
+    }: {
+      userId: string;
+      chatId: string;
+      chatType: string;
+      platform: "telegram" | "discord";
+      targetUserId: string;
+      deltaPoints: number;
+      note?: string;
+    }) => {
+      if (chatType !== "private") {
+        await telegramService.sendMessage(chatId, "Tính năng admin chỉ được phép dùng trong private chat với bot.");
+        return;
+      }
+
+      const canAccess = await telegramService.isAdmin(userId);
+      if (!canAccess) {
+        await telegramService.sendMessage(chatId, "Bạn không có quyền sử dụng tính năng này.");
+        return;
+      }
+
+      try {
+        const resolvedUserId = await adminService.resolveReferralTargetUserId({
+          platform,
+          rawUserInput: targetUserId,
+        });
+        await adminService.adjustReferralPoints({
+          platform,
+          userId: resolvedUserId,
+          deltaPoints,
+          note,
+        });
+        await telegramService.sendMessage(
+          chatId,
+          [
+            "Đã điều chỉnh điểm referral thành công.",
+            `Nền tảng: ${platform}`,
+            `User ID: ${resolvedUserId}`,
+            `Điểm thay đổi: ${deltaPoints > 0 ? `+${deltaPoints}` : String(deltaPoints)}`,
+            note ? `Ghi chú: ${note}` : "",
+          ]
+            .filter(Boolean)
+            .join("\n"),
+        );
+      } catch (error) {
+        await telegramService.sendMessage(
+          chatId,
+          error instanceof Error ? error.message : "Không thể điều chỉnh điểm referral.",
+        );
+      }
+    },
   };
 }

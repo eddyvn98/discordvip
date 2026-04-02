@@ -46,6 +46,20 @@ export type TelegramBotCommand = {
   description: string;
 };
 
+export type TelegramInlineKeyboardMarkup = {
+  inline_keyboard: Array<Array<{ text: string; callback_data?: string; url?: string }>>;
+};
+
+export type TelegramReplyKeyboardMarkup = {
+  keyboard: Array<Array<{ text: string }>>;
+  is_persistent?: boolean;
+  resize_keyboard?: boolean;
+  one_time_keyboard?: boolean;
+  input_field_placeholder?: string;
+};
+
+export type TelegramReplyMarkup = TelegramInlineKeyboardMarkup | TelegramReplyKeyboardMarkup;
+
 export type TelegramHandlers = {
   onDonate: (input: { userId: string; chatId: string; chatType: string; planCode: string }) => Promise<void>;
   onTrialVip: (input: { userId: string; chatId: string; chatType: string }) => Promise<void>;
@@ -65,6 +79,15 @@ export type TelegramHandlers = {
     chatType: string;
     targetUserId: string;
   }) => Promise<void>;
+  onAdminAdjustReferralPoints: (input: {
+    userId: string;
+    chatId: string;
+    chatType: string;
+    platform: "telegram" | "discord";
+    targetUserId: string;
+    deltaPoints: number;
+    note?: string;
+  }) => Promise<void>;
   onReferralMenu: (input: { userId: string; chatId: string; chatType: string }) => Promise<void>;
   onReferralCreateLink: (input: { userId: string; chatId: string; chatType: string }) => Promise<void>;
   onReferralStats: (input: { userId: string; chatId: string; chatType: string }) => Promise<void>;
@@ -74,6 +97,6 @@ export type TelegramHandlers = {
     chatId: string;
     chatType: string;
     token: string;
-  }) => Promise<void>;
+  }) => Promise<{ ok: boolean; reason?: string }>;
   onReferralVerify: (input: { userId: string; chatId: string; chatType: string }) => Promise<void>;
 };

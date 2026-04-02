@@ -10,14 +10,10 @@ import {
 } from "discord.js";
 
 export async function sendDiscordVipActivatedNotice(client: Client, discordUserId: string, expireAt: Date) {
-  const user = await client.users.fetch(discordUserId);
-  await user.send({
-    content: [
-      "Thanh toán đã được xác nhận thành công. VIP của bạn đã được kích hoạt.",
-      `Hạn sử dụng hiện tại: <t:${Math.floor(expireAt.getTime() / 1000)}:F>.`,
-      "Bạn có thể tự kiểm tra bất kỳ lúc nào bằng lệnh `/vipstatus` trong server.",
-    ].join("\n"),
-  });
+  void client;
+  void discordUserId;
+  void expireAt;
+  return;
 }
 
 export async function sendDiscordManualOrderReview(
@@ -139,3 +135,4 @@ export async function fetchDiscordAdminChannel(client: Client, channelId: string
   }
   return channel as TextChannel;
 }
+

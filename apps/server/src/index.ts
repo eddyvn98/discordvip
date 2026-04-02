@@ -48,14 +48,14 @@ async function buildOrderMessage(order: {
   const paymentInstruction =
     env.PAYMENT_MODE === "manual"
       ? "Admin sẽ xác nhận khoản ủng hộ thủ công và cấp VIP sau khi kiểm tra."
-      : "Bot sẽ tự động gửi link mời vào nhóm sau khi hệ thống xác nhận chuyển khoản.\nCần hỗ trợ hoặc báo lỗi, liên hệ admin @socsuc18";
+      : "Bot sẽ tự động cấp role VIP cho bạn sau khi hệ thống xác nhận chuyển khoản.\nCần hỗ trợ hoặc báo lỗi, liên hệ admin <@1133916215375568967>.";
 
   return { qrImageUrl, paymentInstruction };
 }
 
 function buildVipAccessTitle(order: { amount: number; plan: { durationDays: number } }) {
   const displayDurationDays = order.amount === 39_000 ? 30 : order.plan.durationDays;
-  return `Ủng hộ server ${formatCurrency(order.amount)} - Nhận quyền truy cập nhóm VIP ${displayDurationDays} ngày`;
+  return `Ủng hộ server ${formatCurrency(order.amount)} - Nhận quyền truy cập kênh VIP ${displayDurationDays} ngày`;
 }
 
 async function bootstrap() {

@@ -1,5 +1,5 @@
-import { logger } from "../lib/logger.js";
-import { TelegramDonatePlan, TelegramHandlers, TelegramUpdate } from "./telegram-types.js";
+﻿import { logger } from "../lib/logger.js";
+import { TelegramDonatePlan, TelegramHandlers, TelegramReplyMarkup, TelegramUpdate } from "./telegram-types.js";
 
 type RouterInput = {
   update: TelegramUpdate;
@@ -21,9 +21,7 @@ type RouterInput = {
   sendMessage: (
     chatId: string,
     text: string,
-    replyMarkup?: {
-      inline_keyboard: Array<Array<{ text: string; callback_data?: string; url?: string }>>;
-    },
+    replyMarkup?: TelegramReplyMarkup,
     parseMode?: "HTML" | "MarkdownV2",
   ) => Promise<unknown>;
   getActiveDonatePlans: () => Promise<TelegramDonatePlan[]>;
@@ -32,22 +30,85 @@ type RouterInput = {
 };
 
 const PROMPT_TTL_MS = 3 * 60 * 1000;
-type PendingInputAction = "promo_code" | "referral_days";
-const pendingInputByChat = new Map<string, { userId: string; expiresAt: number; action: PendingInputAction }>();
+type PendingInputAction = "promo_code" | "referral_days" | "admin_referral_adjust";
+const pendingInputByChat = new Map<
+  string,
+  {
+    userId: string;
+    expiresAt: number;
+    action: PendingInputAction;
+    adminAdjustPlatform?: "telegram" | "discord";
+    adminAdjustDelta?: number;
+  }
+>();
+const HOME_BUTTONS = {
+  referral: "🎁 Kiếm VIP",
+  buy: "💎 Mua VIP",
+  trial: "👀 Dùng thử VIP",
+  status: "📅 VIP của tôi",
+} as const;
+
+const HOME_BUTTON_ALIASES: Record<keyof typeof HOME_BUTTONS, string[]> = {
+  referral: [HOME_BUTTONS.referral, "Kiếm VIP"],
+  buy: [HOME_BUTTONS.buy, "Mua VIP"],
+  trial: [HOME_BUTTONS.trial, "Dùng thử VIP"],
+  status: [HOME_BUTTONS.status, "VIP của tôi"],
+};
+
+const REFERRAL_BUTTONS = {
+  createLink: "🔗 Tạo link mời",
+  stats: "📊 Điểm của tôi",
+  redeem: "💎 Đổi VIP (1 điểm = 1 ngày VIP)",
+  promo: "🎟 Nhập mã khuyến mãi",
+  home: "🏠 Về Home",
+} as const;
+
+const BUY_BUTTONS = {
+  vip30: "💎 VIP 30 ngày",
+  vip90: "💎 VIP 90 ngày",
+  vip365: "💎 VIP 365 ngày",
+  home: "🏠 Về Home",
+} as const;
+
+const ADMIN_BUTTONS = {
+  panel: "🛠 Admin điểm",
+  tgPlus1: "➕ TG +1",
+  tgPlus5: "➕ TG +5",
+  tgMinus1: "➖ TG -1",
+  tgMinus5: "➖ TG -5",
+  dcPlus1: "➕ DC +1",
+  dcPlus5: "➕ DC +5",
+  dcMinus1: "➖ DC -1",
+  dcMinus5: "➖ DC -5",
+  home: "🏠 Về Home",
+} as const;
 
 function redeemPromptKey(userId: string, chatId: string) {
   return `${userId}:${chatId}`;
 }
 
-function setPendingInput(userId: string, chatId: string, action: PendingInputAction) {
+function setPendingInput(
+  userId: string,
+  chatId: string,
+  action: PendingInputAction,
+  options?: { adminAdjustPlatform?: "telegram" | "discord"; adminAdjustDelta?: number },
+) {
   pendingInputByChat.set(redeemPromptKey(userId, chatId), {
     userId,
     action,
     expiresAt: Date.now() + PROMPT_TTL_MS,
+    ...options,
   });
 }
 
-function consumePendingInput(userId: string, chatId: string): PendingInputAction | null {
+function consumePendingInput(
+  userId: string,
+  chatId: string,
+): {
+  action: PendingInputAction;
+  adminAdjustPlatform?: "telegram" | "discord";
+  adminAdjustDelta?: number;
+} | null {
   const key = redeemPromptKey(userId, chatId);
   const pending = pendingInputByChat.get(key);
   if (!pending) {
@@ -58,21 +119,45 @@ function consumePendingInput(userId: string, chatId: string): PendingInputAction
     return null;
   }
   pendingInputByChat.delete(key);
-  return pending.action;
+  return {
+    action: pending.action,
+    adminAdjustPlatform: pending.adminAdjustPlatform,
+    adminAdjustDelta: pending.adminAdjustDelta,
+  };
 }
 
 function clearPendingInput(userId: string, chatId: string) {
   pendingInputByChat.delete(redeemPromptKey(userId, chatId));
 }
 
-function buildHomeMenu() {
+function buildHomeMenu(isAdmin = false) {
+  const keyboard: Array<Array<{ text: string }>> = [
+    [{ text: HOME_BUTTONS.referral }, { text: HOME_BUTTONS.buy }],
+    [{ text: HOME_BUTTONS.trial }, { text: HOME_BUTTONS.status }],
+  ];
+  if (isAdmin) {
+    keyboard.push([{ text: ADMIN_BUTTONS.panel }]);
+  }
   return {
-    inline_keyboard: [
-      [{ text: "Kiếm VIP", callback_data: "home_referral" }],
-      [{ text: "Mua VIP", callback_data: "home_buy" }],
-      [{ text: "Dùng thử VIP", callback_data: "acc_trialvip" }],
-      [{ text: "VIP của tôi", callback_data: "acc_vipstatus" }],
+    keyboard,
+    is_persistent: true,
+    resize_keyboard: true,
+    input_field_placeholder: "Chọn chức năng từ menu bên dưới",
+  };
+}
+
+function buildAdminReferralMenu() {
+  return {
+    keyboard: [
+      [{ text: ADMIN_BUTTONS.tgPlus1 }, { text: ADMIN_BUTTONS.tgPlus5 }],
+      [{ text: ADMIN_BUTTONS.tgMinus1 }, { text: ADMIN_BUTTONS.tgMinus5 }],
+      [{ text: ADMIN_BUTTONS.dcPlus1 }, { text: ADMIN_BUTTONS.dcPlus5 }],
+      [{ text: ADMIN_BUTTONS.dcMinus1 }, { text: ADMIN_BUTTONS.dcMinus5 }],
+      [{ text: ADMIN_BUTTONS.home }],
     ],
+    is_persistent: true,
+    resize_keyboard: true,
+    input_field_placeholder: "Chọn thao tác điểm cho user",
   };
 }
 
@@ -85,22 +170,32 @@ function buildDonateButtons(plans: TelegramDonatePlan[]) {
   const vip365 = pickPlan(["VIP_365_DAYS", "VIP365"], 199_000);
   const orderedPlans = [vip30, vip90, vip365].filter((plan): plan is TelegramDonatePlan => !!plan);
   const buttonPlans = orderedPlans.length > 0 ? orderedPlans : plans;
+  const has30 = buttonPlans.some((p) => p.amount === 39_000);
+  const has90 = buttonPlans.some((p) => p.amount === 99_000);
+  const has365 = buttonPlans.some((p) => p.amount === 199_000);
 
-  const inlineKeyboard: Array<Array<{ text: string; callback_data: string }>> = buttonPlans.map((plan) => [
-    {
-      text: plan.amount === 39_000 ? "VIP 30 ngày" : plan.amount === 99_000 ? "VIP 90 ngày" : "VIP 365 ngày",
-      callback_data: `donate:${plan.code}`,
-    },
-  ]);
-  inlineKeyboard.push([{ text: "Về Home", callback_data: "home_menu" }]);
-  return inlineKeyboard;
+  const keyboard: Array<Array<{ text: string }>> = [];
+  const row: Array<{ text: string }> = [];
+  if (has30) row.push({ text: BUY_BUTTONS.vip30 });
+  if (has90) row.push({ text: BUY_BUTTONS.vip90 });
+  if (has365) row.push({ text: BUY_BUTTONS.vip365 });
+  if (row.length > 0) keyboard.push(row);
+  keyboard.push([{ text: BUY_BUTTONS.home }]);
+
+  return {
+    keyboard,
+    is_persistent: true,
+    resize_keyboard: true,
+    input_field_placeholder: "Chọn gói VIP để thanh toán",
+  };
 }
 
-async function showHome(input: RouterInput, chatId: string) {
+async function showHome(input: RouterInput, chatId: string, userId?: string) {
+  const isAdmin = userId ? await input.isAdmin(userId) : false;
   await input.sendMessage(
     chatId,
-    "Chào mừng bạn 👋\nĐây là BOT VIP tự động – bạn cần mình hỗ trợ gì hôm nay?",
-    buildHomeMenu(),
+    "👋 Chào mừng bạn đến với BOT VIP\nTại đây bạn có thể:\n• Kiếm điểm để đổi VIP 🎁\n• Mua VIP nhanh chóng ⚡\n• Dùng thử trước khi quyết định 👀",
+    buildHomeMenu(isAdmin),
   );
 }
 
@@ -112,15 +207,57 @@ async function showDonateMenu(input: RouterInput, chatId: string) {
   }
 
   const donateLines = [
-    "<b>Chọn gói VIP phù hợp với bạn</b>",
-    "- <b>39.000đ</b> - truy cập nhóm VIP 30 ngày",
-    "- <b>99.000đ</b> - truy cập nhóm VIP 90 ngày",
-    "- <b>199.000đ</b> - truy cập nhóm VIP 365 ngày",
+    "<b>💎 Chọn gói VIP phù hợp với bạn</b>",
+    "• 30 ngày – 39.000đ",
+    "• 90 ngày – 99.000đ (tiết kiệm hơn)",
+    "• 365 ngày – 199.000đ (rẻ nhất 🔥)",
     "",
-    "Nhấn nút bên dưới để tiếp tục thanh toán.",
+    "👉 Nhấn nút bên dưới để thanh toán nhanh chóng",
   ];
 
-  await input.sendMessage(chatId, donateLines.join("\n"), { inline_keyboard: buildDonateButtons(plans) }, "HTML");
+  await input.sendMessage(chatId, donateLines.join("\n"), buildDonateButtons(plans), "HTML");
+}
+
+function getHomeButtonAction(text: string): keyof typeof HOME_BUTTONS | null {
+  const normalized = text.trim();
+  if (HOME_BUTTON_ALIASES.referral.includes(normalized)) return "referral";
+  if (HOME_BUTTON_ALIASES.buy.includes(normalized)) return "buy";
+  if (HOME_BUTTON_ALIASES.trial.includes(normalized)) return "trial";
+  if (HOME_BUTTON_ALIASES.status.includes(normalized)) return "status";
+  return null;
+}
+
+function getReferralButtonAction(text: string): keyof typeof REFERRAL_BUTTONS | null {
+  const normalized = text.trim();
+  if (normalized === REFERRAL_BUTTONS.createLink) return "createLink";
+  if (normalized === REFERRAL_BUTTONS.stats) return "stats";
+  if (normalized === REFERRAL_BUTTONS.redeem) return "redeem";
+  if (normalized === REFERRAL_BUTTONS.promo) return "promo";
+  if (normalized === REFERRAL_BUTTONS.home) return "home";
+  return null;
+}
+
+function getBuyButtonPlanCode(text: string): string | null {
+  const normalized = text.trim();
+  if (normalized === BUY_BUTTONS.vip30) return "VIP_30_DAYS";
+  if (normalized === BUY_BUTTONS.vip90) return "VIP_90_DAYS";
+  if (normalized === BUY_BUTTONS.vip365) return "VIP_365_DAYS";
+  return null;
+}
+
+function getAdminAdjustPreset(
+  text: string,
+): { platform: "telegram" | "discord"; deltaPoints: number } | null {
+  const normalized = text.trim();
+  if (normalized === ADMIN_BUTTONS.tgPlus1) return { platform: "telegram", deltaPoints: 1 };
+  if (normalized === ADMIN_BUTTONS.tgPlus5) return { platform: "telegram", deltaPoints: 5 };
+  if (normalized === ADMIN_BUTTONS.tgMinus1) return { platform: "telegram", deltaPoints: -1 };
+  if (normalized === ADMIN_BUTTONS.tgMinus5) return { platform: "telegram", deltaPoints: -5 };
+  if (normalized === ADMIN_BUTTONS.dcPlus1) return { platform: "discord", deltaPoints: 1 };
+  if (normalized === ADMIN_BUTTONS.dcPlus5) return { platform: "discord", deltaPoints: 5 };
+  if (normalized === ADMIN_BUTTONS.dcMinus1) return { platform: "discord", deltaPoints: -1 };
+  if (normalized === ADMIN_BUTTONS.dcMinus5) return { platform: "discord", deltaPoints: -5 };
+  return null;
 }
 
 export async function routeTelegramUpdate(input: RouterInput) {
@@ -147,10 +284,10 @@ export async function routeTelegramUpdate(input: RouterInput) {
   const isCommand = text.startsWith("/");
   if (!isCommand) {
     const pendingAction = consumePendingInput(userId, chatId);
-    if (pendingAction === "promo_code") {
+    if (pendingAction?.action === "promo_code") {
       const code = text.trim();
       if (!code) {
-        await input.sendMessage(chatId, "Mã không hợp lệ. Vui lòng nhập lại mã khuyến mãi.", buildHomeMenu());
+        await input.sendMessage(chatId, "Mã không hợp lệ. Vui lòng nhập lại mã khuyến mãi.", buildHomeMenu(isAdminUser));
         setPendingInput(userId, chatId, "promo_code");
         return;
       }
@@ -159,10 +296,10 @@ export async function routeTelegramUpdate(input: RouterInput) {
       return;
     }
 
-    if (pendingAction === "referral_days") {
+    if (pendingAction?.action === "referral_days") {
       const days = Number(text.trim());
       if (!Number.isInteger(days) || days < 10) {
-        await input.sendMessage(chatId, "Số ngày không hợp lệ. Vui lòng nhập số nguyên từ 10 trở lên.", buildHomeMenu());
+        await input.sendMessage(chatId, "Số ngày không hợp lệ. Vui lòng nhập số nguyên từ 10 trở lên.", buildHomeMenu(isAdminUser));
         setPendingInput(userId, chatId, "referral_days");
         return;
       }
@@ -171,7 +308,127 @@ export async function routeTelegramUpdate(input: RouterInput) {
       return;
     }
 
-    await showHome(input, chatId);
+    if (pendingAction?.action === "admin_referral_adjust") {
+      const platform = pendingAction.adminAdjustPlatform;
+      const deltaPoints = pendingAction.adminAdjustDelta;
+      if (!platform || !deltaPoints) {
+        await input.sendMessage(chatId, "Thiếu cấu hình thao tác admin, vui lòng chọn lại từ menu Admin.");
+        await showHome(input, chatId, userId);
+        return;
+      }
+      const [targetUserIdRaw, ...noteParts] = text.split("|");
+      const targetUserId = targetUserIdRaw?.trim() ?? "";
+      const note = noteParts.join("|").trim();
+      if (!targetUserId) {
+        setPendingInput(userId, chatId, "admin_referral_adjust", {
+          adminAdjustPlatform: platform,
+          adminAdjustDelta: deltaPoints,
+        });
+        await input.sendMessage(
+          chatId,
+          "Vui lòng nhập đúng định dạng:\n<userId> | <ghi chú tùy chọn>\nVí dụ: 123456789 | Bù điểm khiếu nại",
+          buildAdminReferralMenu(),
+        );
+        return;
+      }
+      await input.handlers.onAdminAdjustReferralPoints({
+        userId,
+        chatId,
+        chatType,
+        platform,
+        targetUserId,
+        deltaPoints,
+        note: note || undefined,
+      });
+      await showHome(input, chatId, userId);
+      return;
+    }
+
+    const referralAction = getReferralButtonAction(text);
+    if (referralAction === "createLink") {
+      await input.handlers.onReferralCreateLink({ userId, chatId, chatType });
+      return;
+    }
+    if (referralAction === "stats") {
+      await input.handlers.onReferralStats({ userId, chatId, chatType });
+      return;
+    }
+    if (referralAction === "redeem") {
+      setPendingInput(userId, chatId, "referral_days");
+      await input.sendMessage(chatId, "Nhập số ngày VIP muốn đổi (số nguyên, tối thiểu 10).", buildHomeMenu(isAdminUser));
+      return;
+    }
+    if (referralAction === "promo") {
+      setPendingInput(userId, chatId, "promo_code");
+      await input.sendMessage(chatId, "Gửi mã khuyến mãi ngay trong tin nhắn tiếp theo (không cần gõ /redeemvip).", buildHomeMenu(isAdminUser));
+      return;
+    }
+    if (referralAction === "home") {
+      await showHome(input, chatId, userId);
+      return;
+    }
+
+    const planCodeFromButton = getBuyButtonPlanCode(text);
+    if (planCodeFromButton) {
+      await input.handlers.onDonate({ userId, chatId, chatType, planCode: planCodeFromButton });
+      await input.sendMessage(chatId, "Nếu đã thanh toán, bạn có thể bấm VIP của tôi để kiểm tra.", buildHomeMenu(isAdminUser));
+      return;
+    }
+
+    if (text.trim() === ADMIN_BUTTONS.panel) {
+      if (chatType !== "private" || !(await input.isAdmin(userId))) {
+        await showHome(input, chatId, userId);
+        return;
+      }
+      await input.sendMessage(
+        chatId,
+        "Chọn thao tác điểm referral, sau đó gửi:\n<userId> | <ghi chú tùy chọn>",
+        buildAdminReferralMenu(),
+      );
+      return;
+    }
+    if (text.trim() === ADMIN_BUTTONS.home) {
+      await showHome(input, chatId, userId);
+      return;
+    }
+    const adminPreset = getAdminAdjustPreset(text);
+    if (adminPreset) {
+      if (chatType !== "private" || !(await input.isAdmin(userId))) {
+        await showHome(input, chatId, userId);
+        return;
+      }
+      setPendingInput(userId, chatId, "admin_referral_adjust", {
+        adminAdjustPlatform: adminPreset.platform,
+        adminAdjustDelta: adminPreset.deltaPoints,
+      });
+      await input.sendMessage(
+        chatId,
+        `Đã chọn: ${adminPreset.platform.toUpperCase()} ${adminPreset.deltaPoints > 0 ? `+${adminPreset.deltaPoints}` : adminPreset.deltaPoints} điểm.\nGửi tiếp:\n<userId> | <ghi chú tùy chọn>`,
+        buildAdminReferralMenu(),
+      );
+      return;
+    }
+    const homeAction = getHomeButtonAction(text);
+    if (homeAction === "referral") {
+      await input.handlers.onReferralMenu({ userId, chatId, chatType });
+      return;
+    }
+    if (homeAction === "buy") {
+      await showDonateMenu(input, chatId);
+      return;
+    }
+    if (homeAction === "trial") {
+      await input.handlers.onTrialVip({ userId, chatId, chatType });
+      await showHome(input, chatId, userId);
+      return;
+    }
+    if (homeAction === "status") {
+      await input.handlers.onVipStatus({ userId, chatId, chatType });
+      await showHome(input, chatId, userId);
+      return;
+    }
+
+    await showHome(input, chatId, userId);
     return;
   }
 
@@ -193,31 +450,33 @@ export async function routeTelegramUpdate(input: RouterInput) {
   if (command === "/start") {
     const referralToken = parts[1]?.startsWith("ref_") ? parts[1].replace(/^ref_/u, "") : "";
     if (referralToken) {
-      await input.handlers.onReferralJoinByToken({ userId, chatId, chatType, token: referralToken });
-      await input.sendMessage(chatId, "Đã ghi nhận ref link. Bạn có thể tiếp tục tại Home:", buildHomeMenu());
+      const joinResult = await input.handlers.onReferralJoinByToken({ userId, chatId, chatType, token: referralToken });
+      if (joinResult.ok) {
+        await input.sendMessage(chatId, "Đã ghi nhận ref link. Bạn có thể tiếp tục tại Home:", buildHomeMenu(isAdminUser));
+      }
       return;
     }
-    await showHome(input, chatId);
+    await showHome(input, chatId, userId);
     return;
   }
 
   if (command === "/invite") {
     clearPendingInput(userId, chatId);
-    await input.sendMessage(chatId, "Lệnh cũ đã được chuyển sang thao tác bằng nút.", buildHomeMenu());
+    await input.sendMessage(chatId, "Lệnh cũ đã được chuyển sang thao tác bằng nút.", buildHomeMenu(isAdminUser));
     await input.handlers.onReferralMenu({ userId, chatId, chatType });
     return;
   }
 
   if (command === "/donate") {
     clearPendingInput(userId, chatId);
-    await input.sendMessage(chatId, "Lệnh cũ đã được chuyển sang thao tác bằng nút.", buildHomeMenu());
+    await input.sendMessage(chatId, "Lệnh cũ đã được chuyển sang thao tác bằng nút.", buildHomeMenu(isAdminUser));
     await showDonateMenu(input, chatId);
     return;
   }
 
   if (command === "/vip30" || command === "/vip90" || command === "/vip365") {
     clearPendingInput(userId, chatId);
-    await input.sendMessage(chatId, "Lệnh này đã ngưng sử dụng. Vui lòng dùng menu Mua VIP.", buildHomeMenu());
+    await input.sendMessage(chatId, "Lệnh này đã ngưng sử dụng. Vui lòng dùng menu Mua VIP.", buildHomeMenu(isAdminUser));
     await showDonateMenu(input, chatId);
     return;
   }
@@ -225,14 +484,14 @@ export async function routeTelegramUpdate(input: RouterInput) {
   if (command === "/trialvip") {
     clearPendingInput(userId, chatId);
     await input.handlers.onTrialVip({ userId, chatId, chatType });
-    await showHome(input, chatId);
+    await showHome(input, chatId, userId);
     return;
   }
 
   if (command === "/vipstatus") {
     clearPendingInput(userId, chatId);
     await input.handlers.onVipStatus({ userId, chatId, chatType });
-    await showHome(input, chatId);
+    await showHome(input, chatId, userId);
     return;
   }
 
@@ -240,7 +499,7 @@ export async function routeTelegramUpdate(input: RouterInput) {
     clearPendingInput(userId, chatId);
     const code = parts[1]?.trim() ?? "";
     if (!code) {
-      await input.sendMessage(chatId, "Vui lòng nhập mã: /redeemvip <ma_khuyen_mai>", buildHomeMenu());
+      await input.sendMessage(chatId, "Vui lòng nhập mã: /redeemvip <ma_khuyen_mai>", buildHomeMenu(isAdminUser));
       return;
     }
     await input.handlers.onRedeemVip({ userId, chatId, chatType, code });
@@ -300,36 +559,36 @@ async function handleCallbackQuery(input: RouterInput, callbackQuery: NonNullabl
   const chatId = String(chat.id);
   const chatType = chat.type;
 
-  if (data === "home_menu") await showHome(input, chatId);
+  if (data === "home_menu") await showHome(input, chatId, userId);
   if (data === "home_referral") await input.handlers.onReferralMenu({ userId, chatId, chatType });
   if (data === "home_buy") await showDonateMenu(input, chatId);
 
   if (data === "acc_vipstatus") {
     await input.handlers.onVipStatus({ userId, chatId, chatType });
-    await showHome(input, chatId);
+    await showHome(input, chatId, userId);
   }
   if (data === "acc_trialvip") {
     await input.handlers.onTrialVip({ userId, chatId, chatType });
-    await showHome(input, chatId);
+    await showHome(input, chatId, userId);
   }
   if (data === "acc_redeem_help") {
     setPendingInput(userId, chatId, "promo_code");
     await input.sendMessage(
       chatId,
       "Gửi mã khuyến mãi ngay trong tin nhắn tiếp theo (không cần gõ /redeemvip).",
-      buildHomeMenu(),
+      buildHomeMenu(await input.isAdmin(userId)),
     );
   }
   if (data === "ref_redeem_custom") {
     setPendingInput(userId, chatId, "referral_days");
-    await input.sendMessage(chatId, "Nhập số ngày VIP muốn đổi (số nguyên, tối thiểu 10).", buildHomeMenu());
+    await input.sendMessage(chatId, "Nhập số ngày VIP muốn đổi (số nguyên, tối thiểu 10).", buildHomeMenu(await input.isAdmin(userId)));
   }
 
   if (data.startsWith("donate:")) {
     const planCode = data.replace("donate:", "").trim().toUpperCase();
     if (planCode) {
       await input.handlers.onDonate({ userId, chatId, chatType, planCode });
-      await input.sendMessage(chatId, "Nếu đã thanh toán, bạn có thể bấm VIP của tôi để kiểm tra.", buildHomeMenu());
+      await input.sendMessage(chatId, "Nếu đã thanh toán, bạn có thể bấm VIP của tôi để kiểm tra.", buildHomeMenu(await input.isAdmin(userId)));
     }
   }
   if (data === "ref_menu") await input.handlers.onReferralMenu({ userId, chatId, chatType });
@@ -345,3 +604,4 @@ async function handleCallbackQuery(input: RouterInput, callbackQuery: NonNullabl
 
   await input.answerCallbackQuery(callbackQuery.id);
 }
+
