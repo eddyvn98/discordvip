@@ -43,14 +43,14 @@ const pendingInputByChat = new Map<
 >();
 const HOME_BUTTONS = {
   referral: "🎁 Kiếm VIP",
-  buy: "💎 Mua VIP",
-  trial: "👀 Dùng thử VIP",
+  buy: "💸 Donate VIP",
+  trial: "✨ Dùng thử VIP",
   status: "📅 VIP của tôi",
 } as const;
 
 const HOME_BUTTON_ALIASES: Record<keyof typeof HOME_BUTTONS, string[]> = {
   referral: [HOME_BUTTONS.referral, "Kiếm VIP"],
-  buy: [HOME_BUTTONS.buy, "Mua VIP"],
+  buy: [HOME_BUTTONS.buy, "Mua VIP", "Donate VIP"],
   trial: [HOME_BUTTONS.trial, "Dùng thử VIP"],
   status: [HOME_BUTTONS.status, "VIP của tôi"],
 };
@@ -59,15 +59,15 @@ const REFERRAL_BUTTONS = {
   createLink: "🔗 Tạo link mời",
   stats: "📊 Điểm của tôi",
   redeem: "💎 Đổi VIP (1 điểm = 1 ngày VIP)",
-  promo: "🎟 Nhập mã khuyến mãi",
-  home: "🏠 Về Home",
+  promo: "🎟️ Nhập mã khuyến mãi",
+  home: "↩️ Quay lại",
 } as const;
 
 const BUY_BUTTONS = {
   vip30: "💎 VIP 30 ngày",
   vip90: "💎 VIP 90 ngày",
   vip365: "💎 VIP 365 ngày",
-  home: "🏠 Về Home",
+  home: "↩️ Quay lại",
 } as const;
 
 const ADMIN_BUTTONS = {
@@ -80,8 +80,10 @@ const ADMIN_BUTTONS = {
   dcPlus5: "➕ DC +5",
   dcMinus1: "➖ DC -1",
   dcMinus5: "➖ DC -5",
-  home: "🏠 Về Home",
+  home: "↩️ Quay lại",
 } as const;
+
+const LEGACY_HOME_TEXT = "🏠 Về Home";
 
 function redeemPromptKey(userId: string, chatId: string) {
   return `${userId}:${chatId}`;
@@ -194,7 +196,7 @@ async function showHome(input: RouterInput, chatId: string, userId?: string) {
   const isAdmin = userId ? await input.isAdmin(userId) : false;
   await input.sendMessage(
     chatId,
-    "👋 Chào mừng bạn đến với BOT VIP\nTại đây bạn có thể:\n• Kiếm điểm để đổi VIP 🎁\n• Mua VIP nhanh chóng ⚡\n• Dùng thử trước khi quyết định 👀",
+    "👋 Chào mừng bạn đến với BOT VIP\nTại đây bạn có thể:\n• Kiếm điểm để đổi VIP 🎁\n• Donate nhanh để nhận VIP ⚡\n• Dùng thử trước khi quyết định 👀",
     buildHomeMenu(isAdmin),
   );
 }
@@ -233,8 +235,13 @@ function getReferralButtonAction(text: string): keyof typeof REFERRAL_BUTTONS | 
   if (normalized === REFERRAL_BUTTONS.stats) return "stats";
   if (normalized === REFERRAL_BUTTONS.redeem) return "redeem";
   if (normalized === REFERRAL_BUTTONS.promo) return "promo";
-  if (normalized === REFERRAL_BUTTONS.home) return "home";
+  if (normalized === REFERRAL_BUTTONS.home || normalized === LEGACY_HOME_TEXT) return "home";
   return null;
+}
+
+function isAdminHomeButton(text: string) {
+  const normalized = text.trim();
+  return normalized === ADMIN_BUTTONS.home || normalized === LEGACY_HOME_TEXT;
 }
 
 function getBuyButtonPlanCode(text: string): string | null {
@@ -290,7 +297,7 @@ export async function routeTelegramUpdate(input: RouterInput) {
       getReferralButtonAction(normalizedText) ||
       getBuyButtonPlanCode(normalizedText) ||
       normalizedText === ADMIN_BUTTONS.panel ||
-      normalizedText === ADMIN_BUTTONS.home ||
+      isAdminHomeButton(normalizedText) ||
       getAdminAdjustPreset(normalizedText)
     ) {
       clearPendingInput(userId, chatId);
@@ -400,7 +407,7 @@ export async function routeTelegramUpdate(input: RouterInput) {
       );
       return;
     }
-    if (text.trim() === ADMIN_BUTTONS.home) {
+    if (isAdminHomeButton(text)) {
       await showHome(input, chatId, userId);
       return;
     }

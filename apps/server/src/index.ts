@@ -36,7 +36,7 @@ async function buildOrderMessage(order: {
   orderCode: string;
   expiresAt: Date;
   plan: { name: string; durationDays: number };
-}) {
+}, platform: "telegram" | "discord") {
   const qrImageUrl = buildVietQrImageUrl({
     bankBin: env.SEPAY_BANK_BIN,
     accountNumber: env.SEPAY_ACCOUNT_NO,
@@ -48,7 +48,9 @@ async function buildOrderMessage(order: {
   const paymentInstruction =
     env.PAYMENT_MODE === "manual"
       ? "Admin sẽ xác nhận khoản ủng hộ thủ công và cấp VIP sau khi kiểm tra."
-      : "Bot sẽ tự động cấp role VIP cho bạn sau khi hệ thống xác nhận chuyển khoản.\nCần hỗ trợ hoặc báo lỗi, liên hệ admin Discord ID: 1133916215375568967.";
+      : platform === "telegram"
+        ? "Bot sẽ tự động gửi link mời vào nhóm VIP cho bạn sau khi hệ thống xác nhận chuyển khoản.\nCần hỗ trợ hoặc báo lỗi, liên hệ admin Telegram @socsuc18."
+        : "Bot sẽ tự động cấp role VIP cho bạn sau khi hệ thống xác nhận chuyển khoản.\nCần hỗ trợ hoặc báo lỗi, liên hệ admin Discord ID: 1133916215375568967.";
 
   return { qrImageUrl, paymentInstruction };
 }

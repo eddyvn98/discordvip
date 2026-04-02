@@ -14,7 +14,7 @@ type BuildOrderMessageFn = (order: {
   orderCode: string;
   expiresAt: Date;
   plan: { name: string; durationDays: number };
-}) => Promise<{ qrImageUrl: string | null; paymentInstruction: string }>;
+}, platform: "telegram" | "discord") => Promise<{ qrImageUrl: string | null; paymentInstruction: string }>;
 type BuildVipAccessTitleFn = (order: { amount: number; plan: { durationDays: number } }) => string;
 
 function adminReferralRows() {
@@ -67,7 +67,7 @@ export async function handleDiscordChatCommand(
       platformChatId: interaction.guildId!,
       planCode,
     });
-    const { qrImageUrl, paymentInstruction } = await buildOrderMessage(order);
+    const { qrImageUrl, paymentInstruction } = await buildOrderMessage(order, "discord");
     await interaction.reply({
       flags: MessageFlags.Ephemeral,
       embeds: [
@@ -78,6 +78,7 @@ export async function handleDiscordChatCommand(
             `Nội dung CK: \`DONATE ${order.orderCode}\``,
             `Quét QR hoặc chuyển khoản trước: <t:${Math.floor(order.expiresAt.getTime() / 1000)}:R>`,
             paymentInstruction,
+            qrImageUrl ? `Mở ảnh QR trực tiếp: ${qrImageUrl}` : "⚠️ QR tạm thời không tạo được, vui lòng chuyển khoản thủ công theo thông tin bên trên.",
           ].join("\n"),
           image: qrImageUrl ? { url: qrImageUrl } : undefined,
         },

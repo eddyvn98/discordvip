@@ -27,7 +27,7 @@ type BuildOrderMessageFn = (order: {
   orderCode: string;
   expiresAt: Date;
   plan: { name: string; durationDays: number };
-}) => Promise<{ qrImageUrl: string | null; paymentInstruction: string }>;
+}, platform: "telegram" | "discord") => Promise<{ qrImageUrl: string | null; paymentInstruction: string }>;
 type BuildVipAccessTitleFn = (order: { amount: number; plan: { durationDays: number } }) => string;
 
 const QR_PANEL_TTL_MS = 10 * 60 * 1000;
@@ -80,9 +80,10 @@ function buyRows() {
   ];
 }
 
-function qrRows() {
+function qrRows(orderCode: string) {
   return [
     new ActionRowBuilder<ButtonBuilder>().addComponents(
+      new ButtonBuilder().setCustomId(`pay_check:${orderCode}`).setLabel("✅ Tôi đã thanh toán").setStyle(ButtonStyle.Success),
       new ButtonBuilder().setCustomId("nav_back_buy").setLabel("↩️ Quay lại").setStyle(ButtonStyle.Secondary),
     ),
   ];
@@ -100,10 +101,13 @@ async function respondPanel(
   interaction: ButtonInteraction,
   payload: { content?: string; components?: ActionRowBuilder<ButtonBuilder>[]; embeds?: Array<Record<string, unknown>> },
 ) {
+  // Ephemeral interactions should be updated in place.
   if (isEphemeralContext(interaction)) {
     await interaction.update(payload);
     return;
   }
+
+  // Public panel should stay unchanged; user interactions are handled via ephemeral replies.
   await interaction.reply({ flags: MessageFlags.Ephemeral, ...payload });
 }
 
@@ -220,6 +224,66 @@ export async function handleDiscordButton(input: {
     return true;
   }
 
+  if (interaction.customId.startsWith("pay_check:")) {
+    const orderCode = interaction.customId.replace("pay_check:", "").trim().toUpperCase();
+    const order = await orderService.findByCode(orderCode);
+    if (!order) {
+      await respondPanel(interaction, {
+        content: "Không tìm thấy đơn thanh toán. Vui lòng tạo đơn mới trong mục Donate VIP.",
+        components: buyRows(),
+        embeds: [],
+      });
+      return true;
+    }
+
+    if (order.status !== "PAID") {
+      const { qrImageUrl, paymentInstruction } = await buildOrderMessage(order, "discord");
+      const discordPaymentInstruction = paymentInstruction.replace(
+        /Discord ID:\s*(\d{5,})/gu,
+        "<@$1>",
+      );
+      await respondPanel(interaction, {
+        content: "",
+        embeds: [
+          {
+            title: buildVipAccessTitle(order),
+            description: [
+              `Số tiền: **${formatCurrency(order.amount)}**`,
+              `Nội dung CK: \`DONATE ${order.orderCode}\``,
+              `Quét QR hoặc chuyển khoản trước: <t:${Math.floor(order.expiresAt.getTime() / 1000)}:R>`,
+              discordPaymentInstruction,
+              qrImageUrl ? `Mở ảnh QR trực tiếp: ${qrImageUrl}` : "⚠️ QR tạm thời không tạo được, vui lòng chuyển khoản thủ công theo thông tin bên trên.",
+              "",
+              "⏳ Hệ thống chưa ghi nhận thanh toán.",
+            ].join("\n"),
+            image: qrImageUrl ? { url: qrImageUrl } : undefined,
+          },
+        ],
+        components: qrRows(order.orderCode),
+      });
+      return true;
+    }
+
+    const membership = await membershipService.getLatestActiveMembershipForPlatformUser({
+      platform: "discord",
+      platformUserId: interaction.user.id,
+    });
+    const expiryLine =
+      membership && membership.expireAt.getTime() > Date.now()
+        ? `🎉 Hạn VIP của bạn được kích hoạt đến <t:${Math.floor(membership.expireAt.getTime() / 1000)}:F>.`
+        : "🎉 VIP của bạn đã được kích hoạt thành công.";
+    await respondPanel(interaction, {
+      content: [
+        "✅ Thanh toán của bạn đã được xác nhận thành công! Cảm ơn bạn đã ủng hộ server.",
+        `👉 Mời bạn vào kênh <#${env.DISCORD_VIP_CHANNEL_ID}> để bắt đầu trải nghiệm VIP ngay nhé!`,
+        expiryLine,
+      ].join("\n"),
+      components: homeRows(),
+      embeds: [],
+    });
+    return true;
+  }
+
   if (interaction.customId === "home_referral") {
     await respondPanel(interaction, {
       content:
@@ -250,7 +314,11 @@ export async function handleDiscordButton(input: {
       platformChatId: interaction.guildId ?? env.DISCORD_GUILD_ID,
       planCode,
     });
-    const { qrImageUrl, paymentInstruction } = await buildOrderMessage(order);
+    const { qrImageUrl, paymentInstruction } = await buildOrderMessage(order, "discord");
+    const discordPaymentInstruction = paymentInstruction.replace(
+      /Discord ID:\s*(\d{5,})/gu,
+      "<@$1>",
+    );
     await respondPanel(interaction, {
       content: "",
       embeds: [
@@ -260,12 +328,13 @@ export async function handleDiscordButton(input: {
             `Số tiền: **${formatCurrency(order.amount)}**`,
             `Nội dung CK: \`DONATE ${order.orderCode}\``,
             `Quét QR hoặc chuyển khoản trước: <t:${Math.floor(order.expiresAt.getTime() / 1000)}:R>`,
-            paymentInstruction,
+            discordPaymentInstruction,
+            qrImageUrl ? `Mở ảnh QR trực tiếp: ${qrImageUrl}` : "⚠️ QR tạm thời không tạo được, vui lòng chuyển khoản thủ công theo thông tin bên trên.",
           ].join("\n"),
           image: qrImageUrl ? { url: qrImageUrl } : undefined,
         },
       ],
-      components: qrRows(),
+      components: qrRows(order.orderCode),
     });
     scheduleEphemeralCleanup(interaction);
     if (env.PAYMENT_MODE === "manual") {

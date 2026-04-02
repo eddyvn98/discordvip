@@ -13,7 +13,7 @@ type BuildOrderMessageFn = (order: {
   orderCode: string;
   expiresAt: Date;
   plan: { name: string; durationDays: number };
-}) => Promise<{
+}, platform: "telegram" | "discord") => Promise<{
   qrImageUrl: string | null;
   paymentInstruction: string;
 }>;
@@ -66,7 +66,7 @@ export async function registerTelegramHandlers(input: {
         planCode,
       });
 
-      const { qrImageUrl, paymentInstruction } = await buildOrderMessage(order);
+      const { qrImageUrl, paymentInstruction } = await buildOrderMessage(order, "telegram");
       const donateText = [
         `<b>${escapeTelegramHtml(buildVipAccessTitle(order))}</b>`,
         `<b>Số tiền:</b> ${formatCurrency(order.amount)}`,

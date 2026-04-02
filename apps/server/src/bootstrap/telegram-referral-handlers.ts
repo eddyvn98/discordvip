@@ -7,8 +7,8 @@ export function buildTelegramReferralMenu() {
   return {
     keyboard: [
       [{ text: "🔗 Tạo link mời" }, { text: "📊 Điểm của tôi" }],
-      [{ text: "💎 Đổi VIP (1 điểm = 1 ngày VIP)" }, { text: "🎟 Nhập mã khuyến mãi" }],
-      [{ text: "🏠 Về Home" }],
+      [{ text: "💎 Đổi VIP (1 điểm = 1 ngày VIP)" }, { text: "🎟️ Nhập mã khuyến mãi" }],
+      [{ text: "↩️ Quay lại" }],
     ],
     is_persistent: true,
     resize_keyboard: true,

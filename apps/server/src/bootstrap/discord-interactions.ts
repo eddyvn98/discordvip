@@ -17,7 +17,7 @@ type BuildOrderMessageFn = (order: {
   orderCode: string;
   expiresAt: Date;
   plan: { name: string; durationDays: number };
-}) => Promise<{ qrImageUrl: string | null; paymentInstruction: string }>;
+}, platform: "telegram" | "discord") => Promise<{ qrImageUrl: string | null; paymentInstruction: string }>;
 type BuildVipAccessTitleFn = (order: { amount: number; plan: { durationDays: number } }) => string;
 
 export function registerDiscordInteractions(input: {

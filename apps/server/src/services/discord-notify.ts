@@ -8,12 +8,17 @@ import {
   MessageFlags,
   TextChannel,
 } from "discord.js";
+import { env } from "../config.js";
 
 export async function sendDiscordVipActivatedNotice(client: Client, discordUserId: string, expireAt: Date) {
-  void client;
-  void discordUserId;
-  void expireAt;
-  return;
+  const user = await client.users.fetch(discordUserId);
+  await user.send({
+    content: [
+      "✅ Thanh toán của bạn đã được xác nhận thành công! Cảm ơn bạn đã ủng hộ server.",
+      `👉 Mời bạn vào kênh <#${env.DISCORD_VIP_CHANNEL_ID}> để bắt đầu trải nghiệm VIP ngay nhé!`,
+      `🎉 Hạn VIP của bạn được kích hoạt đến <t:${Math.floor(expireAt.getTime() / 1000)}:F>.`,
+    ].join("\n"),
+  });
 }
 
 export async function sendDiscordManualOrderReview(
@@ -60,7 +65,7 @@ export async function sendDiscordVipExpiryReminder(
     content: [
       `VIP của bạn sẽ hết hạn <t:${Math.floor(expireAt.getTime() / 1000)}:R>.`,
       `Mốc nhắc hiện tại: còn khoảng ${thresholdDays} ngày.`,
-      "Nếu muốn gia hạn, hãy dùng lệnh `/donate` trong server.",
+      "👉 Sử dụng BOT VIP tại kênh <#1480627066272485487> để gia hạn VIP ngay nhé ✨",
     ].join("\n"),
   });
 }

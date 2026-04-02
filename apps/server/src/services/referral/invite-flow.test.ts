@@ -50,7 +50,7 @@ describe("verifyAndReward", () => {
         create: vi.fn().mockResolvedValue({ id: "ledger_1" }),
       },
     };
-    mockPrisma.$transaction.mockImplementationOnce(async (fn: (tx: typeof tx) => Promise<void>) => fn(tx));
+    mockPrisma.$transaction.mockImplementationOnce(async (fn: (tx: unknown) => Promise<void>) => fn(tx));
 
     const result = await verifyAndReward({ platform: "telegram", inviteeUserId: "invitee_1" });
 
@@ -84,7 +84,7 @@ describe("verifyAndReward", () => {
         create: vi.fn(),
       },
     };
-    mockPrisma.$transaction.mockImplementationOnce(async (fn: (tx: typeof tx) => Promise<void>) => fn(tx));
+    mockPrisma.$transaction.mockImplementationOnce(async (fn: (tx: unknown) => Promise<void>) => fn(tx));
 
     const result = await verifyAndReward({ platform: "telegram", inviteeUserId: "invitee_2" });
 

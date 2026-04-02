@@ -46,6 +46,7 @@ const envSchema = z.object({
   DISCORD_ADMIN_ROLE_ID: z.string().optional().default(""),
   DISCORD_ADMIN_CHANNEL_ID: z.string().optional().default(""),
   DISCORD_MENU_CHANNEL_ID: z.string().optional().default(""),
+  DISCORD_VIP_CHANNEL_ID: z.string().optional().default("1178721649642717256"),
   ADMIN_DISCORD_IDS: z.string().optional().default(""),
   TELEGRAM_BOT_ENABLED: z
     .enum(["true", "false"])

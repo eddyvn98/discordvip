@@ -8,6 +8,7 @@
   GatewayIntentBits,
   Guild,
   GuildMember,
+  Message,
   TextChannel,
 } from "discord.js";
 
@@ -141,8 +142,7 @@ export class DiscordService {
     await user.send({
       content: [
         "Bạn đã hết thời gian thử nghiệm VIP",
-        "Nếu thấy nội dung phù hợp với mình, bạn có thể donate để tiếp tục xem nhé ✨",
-        "👉 Dùng lệnh /donate",
+        "Nếu thấy nội dung phù hợp với mình, bạn có thể dùng BOT VIP tại kênh <#1480627066272485487> để nâng cấp VIP tự động nhé ✨",
       ].join("\n"),
     });
   }
@@ -184,7 +184,43 @@ export class DiscordService {
     const content =
       "🔥 Chào mừng bạn đến với BOT VIP\n\nTại đây bạn có thể:\n• Kiếm điểm để đổi VIP 🎁\n• Donate nhanh để nhận VIP ⚡\n• Dùng thử trước khi quyết định 👀\n• Kích hoạt mã khuyến mãi siêu tiện 🎟️\n\n👉 Chọn một tùy chọn bên dưới để bắt đầu ngay!";
 
-    await textChannel.send({ content, components: rows });
+    const isHomePanelMessage = (message: Message) => {
+      if (message.author.id !== this.client.user?.id) return false;
+      const componentsSignature = JSON.stringify(message.components ?? []);
+      return componentsSignature.includes("home_referral") && componentsSignature.includes("home_buy");
+    };
+
+    let panelMessage: Message | null =
+      (await textChannel.messages
+        .fetchPinned()
+        .then((messages) => messages.find((message) => isHomePanelMessage(message)) ?? null)
+        .catch(() => null)) ?? null;
+
+    if (!panelMessage) {
+      panelMessage = await textChannel.messages
+        .fetch({ limit: 50 })
+        .then((messages) => messages.find((message) => isHomePanelMessage(message)) ?? null)
+        .catch(() => null);
+    }
+
+    if (panelMessage) {
+      await panelMessage.edit({ content, components: rows });
+    } else {
+      panelMessage = await textChannel.send({ content, components: rows });
+    }
+
+    if (!panelMessage.pinned) {
+      await panelMessage.pin().catch(() => undefined);
+    }
+
+    const pinnedMessages = await textChannel.messages.fetchPinned().catch(() => null);
+    if (pinnedMessages) {
+      await Promise.all(
+        pinnedMessages
+          .filter((message) => message.id !== panelMessage!.id && isHomePanelMessage(message))
+          .map((message) => message.unpin().catch(() => undefined)),
+      );
+    }
   }
 
   async sendManualOrderReview(order: {

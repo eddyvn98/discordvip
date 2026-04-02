@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+﻿import { describe, expect, it, vi } from "vitest";
 
 import { routeTelegramUpdate } from "./telegram-update-router.js";
 
@@ -22,7 +22,7 @@ function createHandlers() {
 }
 
 describe("telegram pending input", () => {
-  it("clears pending referral_days when user taps Home", async () => {
+  it("clears pending referral_days when user taps Back", async () => {
     const handlers = createHandlers();
     const sendMessage = vi.fn(async () => ({}));
 
@@ -49,7 +49,7 @@ describe("telegram pending input", () => {
           message_id: 1,
           chat: { id: 111, type: "private" },
           from: { id: 222 },
-          text: "?? �?i VIP (1 di?m = 1 ng�y VIP)",
+          text: "💎 Đổi VIP (1 điểm = 1 ngày VIP)",
         },
       },
     });
@@ -62,13 +62,15 @@ describe("telegram pending input", () => {
           message_id: 2,
           chat: { id: 111, type: "private" },
           from: { id: 222 },
-          text: "?? V? Home",
+          text: "↩️ Quay lại",
         },
       },
     });
 
     expect(handlers.onReferralRedeem).not.toHaveBeenCalled();
     expect(sendMessage).toHaveBeenCalledTimes(2);
-    expect(String(sendMessage.mock.calls[1][1])).toContain("BOT VIP");
+    const calls = (sendMessage as unknown as { mock: { calls: unknown[][] } }).mock.calls;
+    const latestText = calls.at(-1)?.[1];
+    expect(String(latestText ?? "")).toContain("BOT VIP");
   });
 });
