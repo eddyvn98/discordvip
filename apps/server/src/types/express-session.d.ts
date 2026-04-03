@@ -9,5 +9,13 @@ declare module "express-session" {
       username: string;
       avatarUrl: string | null;
     };
+    cinemaUser?: {
+      platform: "discord" | "telegram";
+      platformUserId: string;
+      platformChatId: string;
+      isVip: boolean;
+      fingerprint: string;
+      expiresAt: number;
+    };
   }
 }

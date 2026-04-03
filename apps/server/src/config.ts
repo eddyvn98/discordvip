@@ -65,6 +65,18 @@ const envSchema = z.object({
   SEPAY_BANK_BIN: z.string().optional().default(""),
   SEPAY_ACCOUNT_NAME: z.string().optional().default(""),
   PUBLIC_BASE_URL: z.string().url(),
+  CINEMA_WEB_ENABLED: z
+    .enum(["true", "false"])
+    .optional()
+    .default("false")
+    .transform((value) => value === "true"),
+  CINEMA_PUBLIC_BASE_URL: z.string().url().optional().default("http://localhost:3000"),
+  TELEFILM_BACKEND_URL: z.string().url().optional().default("http://127.0.0.1:9999"),
+  CINEMA_ENTRY_TICKET_TTL_SECONDS: z.coerce.number().int().positive().default(90),
+  CINEMA_STREAM_TOKEN_TTL_SECONDS: z.coerce.number().int().positive().default(300),
+  CINEMA_ENTRY_SECRET: z.string().min(16).optional().default("change-this-cinema-entry-secret"),
+  CINEMA_WEB_SESSION_TTL_HOURS: z.coerce.number().int().positive().default(8),
+  CINEMA_PREVIEW_SECONDS: z.coerce.number().int().min(3).max(5).default(5),
   TIMEZONE: z.string().default("Asia/Ho_Chi_Minh"),
 });
 

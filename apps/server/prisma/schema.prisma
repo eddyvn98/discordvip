@@ -43,6 +43,36 @@ enum WebhookProcessStatus {
   FAILED
 }
 
+enum CinemaSourcePlatform {
+  TELEGRAM
+  DISCORD
+}
+
+enum CinemaChannelRole {
+  FULL_SOURCE
+  PREVIEW_STORAGE
+  POSTER_STORAGE
+}
+
+enum CinemaAssetKind {
+  FULL
+  PREVIEW
+  POSTER
+}
+
+enum CinemaScanJobStatus {
+  QUEUED
+  RUNNING
+  SUCCEEDED
+  FAILED
+}
+
+enum CinemaAccessTicketStatus {
+  ACTIVE
+  USED
+  EXPIRED
+}
+
 model Plan {
   id           String   @id @default(cuid())
   code         String   @unique
@@ -219,4 +249,81 @@ model Session {
 
   @@index([expire], map: "IDX_session_expire")
   @@map("session")
+}
+
+model CinemaChannel {
+  id              String               @id @default(cuid())
+  platform        CinemaSourcePlatform
+  sourceChannelId String
+  role            CinemaChannelRole    @default(FULL_SOURCE)
+  displayName     String
+  slug            String               @unique
+  isEnabled       Boolean              @default(true)
+  createdAt       DateTime             @default(now())
+  updatedAt       DateTime             @updatedAt
+  items           CinemaItem[]
+  scanJobs        CinemaScanJob[]
+
+  @@unique([platform, sourceChannelId])
+}
+
+model CinemaItem {
+  id              String        @id @default(cuid())
+  channelId       String
+  sourceMessageId String
+  title           String
+  description     String?
+  durationSeconds Int?
+  status          String        @default("READY")
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  channel         CinemaChannel @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  assets          CinemaAsset[]
+
+  @@unique([channelId, sourceMessageId])
+  @@index([channelId, createdAt])
+}
+
+model CinemaAsset {
+  id        String        @id @default(cuid())
+  itemId    String
+  kind      CinemaAssetKind
+  provider  String
+  fileRef   String
+  mimeType  String?
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+  item      CinemaItem    @relation(fields: [itemId], references: [id], onDelete: Cascade)
+
+  @@unique([itemId, kind])
+}
+
+model CinemaScanJob {
+  id            String              @id @default(cuid())
+  channelId     String
+  status        CinemaScanJobStatus @default(QUEUED)
+  requestedBy   String
+  totalDetected Int                 @default(0)
+  totalInserted Int                 @default(0)
+  totalFailed   Int                 @default(0)
+  failureReason String?
+  startedAt     DateTime?
+  finishedAt    DateTime?
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+  channel       CinemaChannel       @relation(fields: [channelId], references: [id], onDelete: Cascade)
+}
+
+model CinemaAccessTicket {
+  id              String                  @id @default(cuid())
+  tokenHash       String                  @unique
+  platform        Platform
+  platformUserId  String
+  platformChatId  String
+  status          CinemaAccessTicketStatus @default(ACTIVE)
+  expiresAt       DateTime
+  usedAt          DateTime?
+  usedFingerprint String?
+  createdAt       DateTime                @default(now())
+  updatedAt       DateTime                @updatedAt
 }

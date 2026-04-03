@@ -56,6 +56,84 @@ async function main() {
       isActive: true,
     },
   });
+
+  const channel = await prisma.cinemaChannel.upsert({
+    where: { slug: "vip-demo-channel" },
+    update: {
+      displayName: "VIP Demo Channel",
+      isEnabled: true,
+    },
+    create: {
+      platform: "TELEGRAM",
+      sourceChannelId: "-1000000000000",
+      role: "FULL_SOURCE",
+      displayName: "VIP Demo Channel",
+      slug: "vip-demo-channel",
+      isEnabled: true,
+    },
+  });
+
+  const item = await prisma.cinemaItem.upsert({
+    where: {
+      channelId_sourceMessageId: {
+        channelId: channel.id,
+        sourceMessageId: "seed-demo-1",
+      },
+    },
+    update: {
+      title: "Demo VIP Film",
+      description: "Sample seeded item for cinema web integration.",
+    },
+    create: {
+      channelId: channel.id,
+      sourceMessageId: "seed-demo-1",
+      title: "Demo VIP Film",
+      description: "Sample seeded item for cinema web integration.",
+      durationSeconds: 120,
+    },
+  });
+
+  await prisma.cinemaAsset.upsert({
+    where: {
+      itemId_kind: {
+        itemId: item.id,
+        kind: "PREVIEW",
+      },
+    },
+    update: {
+      provider: "seed",
+      fileRef: "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4",
+      mimeType: "video/mp4",
+    },
+    create: {
+      itemId: item.id,
+      kind: "PREVIEW",
+      provider: "seed",
+      fileRef: "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4",
+      mimeType: "video/mp4",
+    },
+  });
+
+  await prisma.cinemaAsset.upsert({
+    where: {
+      itemId_kind: {
+        itemId: item.id,
+        kind: "FULL",
+      },
+    },
+    update: {
+      provider: "seed",
+      fileRef: "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4",
+      mimeType: "video/mp4",
+    },
+    create: {
+      itemId: item.id,
+      kind: "FULL",
+      provider: "seed",
+      fileRef: "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4",
+      mimeType: "video/mp4",
+    },
+  });
 }
 
 main()

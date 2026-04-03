@@ -51,6 +51,23 @@ type TelegramBotCommand = {
   description: string;
 };
 
+type TelegramReplyMarkup =
+  | {
+      inline_keyboard: Array<
+        Array<
+          | { text: string; callback_data: string }
+          | { text: string; url: string }
+          | { text: string; web_app: { url: string } }
+        >
+      >;
+    }
+  | {
+      keyboard: Array<Array<{ text: string; web_app?: { url: string } }>>;
+      resize_keyboard?: boolean;
+      is_persistent?: boolean;
+      one_time_keyboard?: boolean;
+    };
+
 type ErrorWithCause = Error & {
   cause?: {
     code?: string;
@@ -63,6 +80,7 @@ type TelegramHandlers = {
   onDonate: (input: { userId: string; chatId: string; chatType: string; planCode: string }) => Promise<void>;
   onTrialVip: (input: { userId: string; chatId: string; chatType: string }) => Promise<void>;
   onVipStatus: (input: { userId: string; chatId: string; chatType: string }) => Promise<void>;
+  onWebVip: (input: { userId: string; chatId: string; chatType: string }) => Promise<void>;
   onRedeemVip: (input: { userId: string; chatId: string; chatType: string; code: string }) => Promise<void>;
   onAdminStats: (input: { userId: string; chatId: string; chatType: string }) => Promise<void>;
   onAdminGrantVip: (input: {
@@ -95,6 +113,19 @@ export class TelegramService implements PlatformAdapter {
         chatTitle: string;
       }) => Promise<{ ok: boolean; reason?: string }>)
     | null = null;
+
+  private buildHomeReplyKeyboard(): TelegramReplyMarkup {
+    const webAppUrl = new URL("/api/cinema", env.CINEMA_PUBLIC_BASE_URL).toString();
+    return {
+      keyboard: [
+        [{ text: "🎁 Kiếm VIP" }, { text: "💸 Donate VIP" }],
+        [{ text: "✨ Dùng thử VIP" }, { text: "📅 VIP của tôi" }],
+        [{ text: "🎬 Mở web phim", web_app: { url: webAppUrl } }],
+      ],
+      resize_keyboard: true,
+      is_persistent: true,
+    };
+  }
 
   setHandlers(handlers: TelegramHandlers) {
     this.handlers = handlers;
@@ -164,6 +195,7 @@ export class TelegramService implements PlatformAdapter {
       { command: "donate", description: "Chon goi VIP 39k / 99k / 199k" },
       { command: "trialvip", description: "Kich hoat VIP trial (1 lan/30 ngay)" },
       { command: "vipstatus", description: "Xem trang thai VIP hien tai" },
+      { command: "webvip", description: "Mo web phim VIP" },
     ];
   }
 
@@ -260,7 +292,12 @@ export class TelegramService implements PlatformAdapter {
     const chatId = String(message.chat.id);
     const chatType = message.chat.type;
     const parts = text.split(/\s+/).filter(Boolean);
-    const command = parts[0];
+    let command = parts[0];
+    if (text === "🎁 Kiếm VIP") command = "/donate";
+    if (text === "💸 Donate VIP") command = "/donate";
+    if (text === "✨ Dùng thử VIP") command = "/trialvip";
+    if (text === "📅 VIP của tôi") command = "/vipstatus";
+    if (text === "🎬 Mở web phim") command = "/webvip";
     const isAdminUser = env.adminTelegramIds.includes(userId);
 
     if (isAdminUser && !this.adminCommandsSynced.has(userId)) {
@@ -301,7 +338,7 @@ export class TelegramService implements PlatformAdapter {
           "",
           "Bạn cần hỗ trợ liên hệ admin @socsuc18",
         ].join("\n"),
-        undefined,
+        this.buildHomeReplyKeyboard(),
         "HTML",
       );
       return;
@@ -368,6 +405,11 @@ export class TelegramService implements PlatformAdapter {
 
     if (command === "/vipstatus") {
       await this.handlers.onVipStatus({ userId, chatId, chatType });
+      return;
+    }
+
+    if (command === "/webvip") {
+      await this.handlers.onWebVip({ userId, chatId, chatType });
       return;
     }
 
@@ -666,9 +708,7 @@ export class TelegramService implements PlatformAdapter {
   async sendMessage(
     chatId: string,
     text: string,
-    replyMarkup?: {
-      inline_keyboard: Array<Array<{ text: string; callback_data: string }>>;
-    },
+    replyMarkup?: TelegramReplyMarkup,
     parseMode?: "HTML" | "MarkdownV2",
   ) {
     return this.apiCall<TelegramMessage>("sendMessage", {
@@ -678,6 +718,24 @@ export class TelegramService implements PlatformAdapter {
       reply_markup: replyMarkup,
       parse_mode: parseMode,
     });
+  }
+
+  async sendWebAppButton(chatId: string, text: string, webAppUrl: string, buttonText = "Mo Cinema VIP") {
+    return this.sendMessage(
+      chatId,
+      text,
+      {
+        inline_keyboard: [
+          [
+            {
+              text: buttonText,
+              web_app: { url: webAppUrl },
+            },
+          ],
+        ],
+      },
+      "HTML",
+    );
   }
 
   async sendPhoto(

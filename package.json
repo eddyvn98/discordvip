@@ -6,9 +6,10 @@
   ],
   "scripts": {
     "check:mojibake": "node scripts/check-mojibake.js",
-    "build": "npm run check:mojibake && npm run build -w @discordvip/server && npm run build -w @discordvip/admin",
+    "build": "npm run check:mojibake && npm run build -w @discordvip/server && npm run build -w @discordvip/admin && npm run build -w @discordvip/cinema-web",
     "dev:server": "npm run dev -w @discordvip/server",
     "dev:admin": "npm run dev -w @discordvip/admin",
+    "dev:cinema-web": "npm run dev -w @discordvip/cinema-web",
     "test": "npm run test -w @discordvip/server"
   }
 }

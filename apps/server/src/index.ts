@@ -16,6 +16,7 @@ import { prisma } from "./prisma.js";
 import { startSchedulers } from "./scheduler.js";
 import { AdminService } from "./services/admin-service.js";
 import { AuthService } from "./services/auth-service.js";
+import { CinemaService } from "./services/cinema-service.js";
 import { DiscordPlatformAdapter } from "./services/discord-platform-adapter.js";
 import { DiscordService } from "./services/discord-service.js";
 import { MembershipService } from "./services/membership-service.js";
@@ -35,6 +36,7 @@ const paymentService = new PaymentService(orderService, membershipService, platf
 const adminService = new AdminService(membershipService, discordService, platformRegistry);
 const promoCodeService = new PromoCodeService(membershipService, platformRegistry);
 const authService = new AuthService(discordService);
+const cinemaService = new CinemaService(membershipService);
 
 async function buildOrderMessage(order: {
   amount: number;
@@ -195,6 +197,25 @@ async function handleRedeemVip(interaction: ChatInputCommandInteraction) {
         error instanceof Error
           ? error.message
           : "Không thể sử dụng mã khuyến mãi, vui lòng thử lại.",
+    });
+  }
+}
+
+async function handleWebVip(interaction: ChatInputCommandInteraction) {
+  try {
+    const url = await cinemaService.createEntryUrl({
+      platform: "discord",
+      platformUserId: interaction.user.id,
+      platformChatId: interaction.guildId ?? env.DISCORD_GUILD_ID,
+    });
+    await interaction.reply({
+      flags: MessageFlags.Ephemeral,
+      content: `Link web VIP (ngắn hạn, không share): ${url}`,
+    });
+  } catch (error) {
+    await interaction.reply({
+      flags: MessageFlags.Ephemeral,
+      content: error instanceof Error ? error.message : "Không thể mở web VIP lúc này.",
     });
   }
 }
@@ -431,6 +452,29 @@ async function bootstrapTelegramHandlers() {
         headerText: "Link vào kênh VIP (hiệu lực 24h):",
       });
     },
+    onWebVip: async ({ userId, chatId }) => {
+      try {
+        const platformChatId = await membershipService.resolveTelegramPlatformChatId({
+          platformUserId: userId,
+        });
+        const url = await cinemaService.createEntryUrl({
+          platform: "telegram",
+          platformUserId: userId,
+          platformChatId,
+        });
+        await telegramService.sendWebAppButton(
+          chatId,
+          "Nhan nut ben duoi de mo <b>Cinema VIP</b> trong Telegram WebView.",
+          url,
+          "Open Cinema VIP",
+        );
+      } catch (error) {
+        await telegramService.sendMessage(
+          chatId,
+          error instanceof Error ? error.message : "Không thể mở web VIP lúc này.",
+        );
+      }
+    },
     onRedeemVip: async ({ userId, chatId, code }) => {
       try {
         const platformChatId = await membershipService.resolveTelegramPlatformChatId({
@@ -590,6 +634,10 @@ async function bootstrap() {
         await handleVipStatus(interaction);
         return;
       }
+      if (interaction.commandName === "webvip") {
+        await handleWebVip(interaction);
+        return;
+      }
 
       if (interaction.commandName === "redeemvip") {
         await handleRedeemVip(interaction);
@@ -632,6 +680,7 @@ async function bootstrap() {
     authService,
     paymentService,
     promoCodeService,
+    cinemaService,
   });
 
   app.listen(env.SERVER_PORT, () => {

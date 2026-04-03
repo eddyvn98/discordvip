@@ -1,0 +1,61 @@
+
+> @discordvip/server@1.0.0 dev
+> tsx watch src/index.ts
+
+file:///D:/discordvip-cinema/node_modules/zod/v3/types.js:39
+                const error = new ZodError(ctx.common.issues);
+                              ^
+
+ZodError: [
+  {
+    "code": "invalid_type",
+    "expected": "string",
+    "received": "undefined",
+    "path": [
+      "DATABASE_URL"
+    ],
+    "message": "Required"
+  },
+  {
+    "code": "invalid_type",
+    "expected": "string",
+    "received": "undefined",
+    "path": [
+      "ADMIN_APP_URL"
+    ],
+    "message": "Required"
+  },
+  {
+    "code": "invalid_type",
+    "expected": "string",
+    "received": "undefined",
+    "path": [
+      "SESSION_SECRET"
+    ],
+    "message": "Required"
+  },
+  {
+    "code": "invalid_type",
+    "expected": "string",
+    "received": "undefined",
+    "path": [
+      "PUBLIC_BASE_URL"
+    ],
+    "message": "Required"
+  }
+]
+    at get error (file:///D:/discordvip-cinema/node_modules/zod/v3/types.js:39:31)
+    at ZodObject.parse (file:///D:/discordvip-cinema/node_modules/zod/v3/types.js:114:22)
+    at <anonymous> (D:\discordvip-cinema\apps\server\src\config.ts:82:26)
+    at ModuleJob.run (node:internal/modules/esm/module_job:413:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:660:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+
+Node.js v24.12.0
+npm error Lifecycle script `dev` failed with error:
+npm error code 4294967295
+npm error path D:\discordvip-cinema\apps\server
+npm error workspace @discordvip/server@1.0.0
+npm error location D:\discordvip-cinema\apps\server
+npm error command failed
+npm error command C:\Windows\system32\cmd.exe /d /s /c tsx watch src/index.ts

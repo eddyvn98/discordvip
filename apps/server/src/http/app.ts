@@ -7,10 +7,13 @@ import { Pool } from "pg";
 import { env } from "../config.js";
 import { AdminService } from "../services/admin-service.js";
 import { AuthService } from "../services/auth-service.js";
+import { CinemaService } from "../services/cinema-service.js";
 import { PaymentService } from "../services/payment-service.js";
 import { PromoCodeService } from "../services/promo-code-service.js";
 import { registerAdminRoutes } from "./admin.js";
+import { registerAdminCinemaRoutes } from "./admin-cinema.js";
 import { registerAuthRoutes } from "./auth.js";
+import { registerCinemaRoutes } from "./cinema.js";
 import { registerWebhookRoutes } from "./webhooks.js";
 
 const PostgresStore = pgSession(session);
@@ -20,7 +23,7 @@ function isAllowedOrigin(origin: string | undefined) {
     return true;
   }
 
-  if ([env.ADMIN_APP_URL, env.PUBLIC_BASE_URL].includes(origin)) {
+  if ([env.ADMIN_APP_URL, env.PUBLIC_BASE_URL, env.CINEMA_PUBLIC_BASE_URL].includes(origin)) {
     return true;
   }
 
@@ -41,11 +44,13 @@ export function createApp({
   authService,
   paymentService,
   promoCodeService,
+  cinemaService,
 }: {
   adminService: AdminService;
   authService: AuthService;
   paymentService: PaymentService;
   promoCodeService: PromoCodeService;
+  cinemaService: CinemaService;
 }) {
   const app = express();
   const trustProxy = env.TRUST_PROXY || env.APP_ENV === "production";
@@ -97,12 +102,23 @@ export function createApp({
       saveUninitialized: false,
       cookie: {
         httpOnly: true,
-        sameSite: "lax",
+        // Telegram WebView runs in a cross-site context (inside web.telegram.org),
+        // so production needs SameSite=None to allow session cookie round-trips.
+        sameSite: env.APP_ENV === "production" ? "none" : "lax",
         secure: env.APP_ENV === "production",
         maxAge: 7 * 24 * 60 * 60 * 1000,
       },
     }),
   );
+
+  app.use((req, res, next) => {
+    res.setHeader("Referrer-Policy", "no-referrer");
+    res.setHeader("X-Content-Type-Options", "nosniff");
+    if (req.path.startsWith("/api/cinema/e/")) {
+      res.setHeader("Cache-Control", "no-store");
+    }
+    next();
+  });
 
   app.get("/health", (_req, res) => {
     res.json({ ok: true });
@@ -110,6 +126,8 @@ export function createApp({
 
   registerAuthRoutes(app, authService);
   registerAdminRoutes(app, adminService, paymentService, promoCodeService);
+  registerAdminCinemaRoutes(app, cinemaService);
+  registerCinemaRoutes(app, cinemaService);
   registerWebhookRoutes(app, paymentService);
 
   return app;

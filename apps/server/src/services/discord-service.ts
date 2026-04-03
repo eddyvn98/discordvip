@@ -74,6 +74,10 @@ export class DiscordService {
           description: "Xem trạng thái VIP hiện tại",
         },
         {
+          name: "webvip",
+          description: "Mo web phim VIP",
+        },
+        {
           name: "redeemvip",
           description: "Nhập mã khuyến mãi để nhận thêm ngày VIP",
           options: [
