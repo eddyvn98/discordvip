@@ -61,7 +61,7 @@ async function main() {
     where: { slug: "vip-demo-channel" },
     update: {
       displayName: "VIP Demo Channel",
-      isEnabled: true,
+      isEnabled: false,
     },
     create: {
       platform: "TELEGRAM",
@@ -69,7 +69,7 @@ async function main() {
       role: "FULL_SOURCE",
       displayName: "VIP Demo Channel",
       slug: "vip-demo-channel",
-      isEnabled: true,
+      isEnabled: false,
     },
   });
 

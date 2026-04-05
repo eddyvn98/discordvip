@@ -1,0 +1,200 @@
+{
+  "name": "Auto Movie Post: Telegram -> Snote -> Shorten x3 -> Telegram + Discord",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "id": "telegram-trigger",
+      "name": "Telegram Trigger",
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -900,
+        220
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const msg = $json.message ?? {};\nconst caption = (msg.caption || '').trim();\nconst lines = caption.split(/\\r?\\n/).map((x) => x.trim()).filter(Boolean);\nconst title = lines[0] || (msg.document?.file_name || `Movie #${msg.message_id || Date.now()}`);\nconst description = lines.slice(1).join('\\n');\nconst sourceChannel = ($env.TELEGRAM_SOURCE_CHANNEL_USERNAME || '').trim();\nconst messageId = msg.message_id;\nconst fileId = msg.document?.file_id || msg.video?.file_id || msg.audio?.file_id || '';\nlet sourceLink = '';\nif (sourceChannel && messageId) {\n  sourceLink = `https://t.me/${sourceChannel}/${messageId}`;\n}\nreturn [{\n  title,\n  description,\n  messageId,\n  fileId,\n  sourceLink,\n  rawMessage: msg\n}];"
+      },
+      "id": "normalize",
+      "name": "Normalize Movie Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -660,
+        220
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{$env.SNOTE_API_URL}}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "={{'Bearer ' + $env.SNOTE_API_KEY}}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"title\": $json.title,\n  \"description\": $json.description,\n  \"sourceLink\": $json.sourceLink,\n  \"telegramMessageId\": $json.messageId,\n  \"telegramFileId\": $json.fileId\n}",
+        "options": {
+          "timeout": "={{Number($env.SNOTE_API_TIMEOUT_MS || 15000)}}"
+        }
+      },
+      "id": "post-snote",
+      "name": "Post To Snote",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -420,
+        220
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.first().json;\nconst snoteLink = input.url || input.link || input.data?.url || input.data?.link || input.postUrl || '';\nif (!snoteLink) {\n  throw new Error('Snote API chưa trả về link bài viết (url/link).');\n}\n\nconst timeout = Number($env.SHORTENER_TIMEOUT_MS || 15000);\nconst endpoint = ($env.SHORTENER_API_URL || '').trim();\nconst apiKey = ($env.SHORTENER_API_KEY || '').trim();\n\nconst sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));\n\nasync function shortenOnce(index) {\n  if (!endpoint) {\n    return snoteLink;\n  }\n\n  try {\n    const response = await this.helpers.httpRequest({\n      method: 'POST',\n      url: endpoint,\n      timeout,\n      headers: {\n        Authorization: apiKey ? `Bearer ${apiKey}` : undefined,\n        'Content-Type': 'application/json'\n      },\n      body: { longUrl: snoteLink },\n      json: true\n    });\n\n    return response.shortUrl || response.short_url || response.link || response.url || snoteLink;\n  } catch (error) {\n    return snoteLink;\n  }\n}\n\nconst links = [];\nfor (let i = 1; i <= 3; i += 1) {\n  links.push(await shortenOnce.call(this, i));\n  if (i < 3) await sleep(1200);\n}\n\nreturn [{\n  ...$json,\n  snoteLink,\n  shortLinks: links\n}];"
+      },
+      "id": "shorten-3",
+      "name": "Create 3 Short Links",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -170,
+        220
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $json;\nconst links = data.shortLinks || [];\nconst l1 = links[0] || data.snoteLink;\nconst l2 = links[1] || data.snoteLink;\nconst l3 = links[2] || data.snoteLink;\n\nconst body = [\n  `*${data.title || 'Movie mới'}*`,\n  data.description || '',\n  '',\n  `[Link 1](${l1})`,\n  `[Link 2](${l2})`,\n  `[Link 3](${l3})`\n].filter(Boolean).join('\\n');\n\nreturn [{\n  ...data,\n  publishText: body,\n  discordText: body.replace(/\\*/g, '**')\n}];"
+      },
+      "id": "compose",
+      "name": "Compose Message",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        60,
+        220
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "sendMessage",
+        "chatId": "={{$env.TELEGRAM_TARGET_CHAT_ID}}",
+        "text": "={{$json.publishText}}",
+        "additionalFields": {
+          "parseMode": "Markdown"
+        }
+      },
+      "id": "telegram-send",
+      "name": "Telegram Publish",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        300,
+        120
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{$env.DISCORD_WEBHOOK_URL}}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"content\": $json.discordText\n}",
+        "options": {}
+      },
+      "id": "discord-send",
+      "name": "Discord Publish",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        300,
+        320
+      ]
+    }
+  ],
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Normalize Movie Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Movie Data": {
+      "main": [
+        [
+          {
+            "node": "Post To Snote",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Post To Snote": {
+      "main": [
+        [
+          {
+            "node": "Create 3 Short Links",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create 3 Short Links": {
+      "main": [
+        [
+          {
+            "node": "Compose Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Compose Message": {
+      "main": [
+        [
+          {
+            "node": "Telegram Publish",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Discord Publish",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "workflow-telegram-snote-discord-v1",
+  "meta": {
+    "templateCredsSetupCompleted": false
+  }
+}

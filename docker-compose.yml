@@ -43,10 +43,31 @@ services:
       - ${APP_ENV_FILE:-.env}
     depends_on:
       - postgres
+    volumes:
+      - ./storage:/app/apps/server/storage
     expose:
       - "3000"
     cpus: 1.25
     mem_limit: 384m
+  telethon-stream:
+    image: python:3.11-slim
+    restart: unless-stopped
+    env_file:
+      - ${APP_ENV_FILE:-.env}
+    environment:
+      TELETHON_SESSION_PATH: /data/user_session
+      TELETHON_STREAM_PORT: 8090
+    command: >
+      sh -c "pip install --no-cache-dir fastapi uvicorn telethon &&
+             python /app/scripts/telethon_stream_server.py"
+    working_dir: /app/scripts
+    volumes:
+      - ./:/app
+      - ./user_session.session:/data/user_session.session
+    expose:
+      - "8090"
+    cpus: 0.75
+    mem_limit: 256m
 
   admin-web:
     build:
@@ -65,12 +86,37 @@ services:
     cpus: 0.25
     mem_limit: 128m
 
+  n8n:
+    image: n8nio/n8n:1.89.2
+    restart: unless-stopped
+    env_file:
+      - ${APP_ENV_FILE:-.env}
+    environment:
+      N8N_HOST: ${N8N_HOST:-localhost}
+      N8N_PORT: 5678
+      N8N_PROTOCOL: ${N8N_PROTOCOL:-http}
+      N8N_EDITOR_BASE_URL: ${N8N_EDITOR_BASE_URL:-http://localhost:5678}
+      WEBHOOK_URL: ${N8N_WEBHOOK_URL:-http://localhost:5678}
+      N8N_ENCRYPTION_KEY: ${N8N_ENCRYPTION_KEY:-change-me}
+      GENERIC_TIMEZONE: ${TIMEZONE:-Asia/Ho_Chi_Minh}
+      TZ: ${TIMEZONE:-Asia/Ho_Chi_Minh}
+    ports:
+      - "127.0.0.1:${N8N_PORT:-5678}:5678"
+    volumes:
+      - ./n8n/data:/home/node/.n8n
+      - ./n8n/workflows:/workflows:ro
+    depends_on:
+      - app-server
+    cpus: 0.5
+    mem_limit: 384m
+
   web-gateway:
     image: nginx:1.27-alpine
     restart: unless-stopped
     depends_on:
       - app-server
       - admin-web
+      - telethon-stream
     ports:
       - "127.0.0.1:${WEB_GATEWAY_PORT:-8080}:8080"
     volumes:

@@ -14,6 +14,8 @@ RUN npm run build -w @discordvip/server
 FROM node:24-alpine
 WORKDIR /app
 
+RUN apk add --no-cache ffmpeg
+
 COPY package.json package-lock.json ./
 COPY tsconfig.base.json ./
 COPY apps/server/package.json apps/server/package.json

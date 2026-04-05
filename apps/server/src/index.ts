@@ -457,10 +457,12 @@ async function bootstrapTelegramHandlers() {
         const platformChatId = await membershipService.resolveTelegramPlatformChatId({
           platformUserId: userId,
         });
+        const isTelegramAdmin = env.adminTelegramIds.includes(userId);
         const url = await cinemaService.createEntryUrl({
           platform: "telegram",
           platformUserId: userId,
           platformChatId,
+          bypassVipCheck: isTelegramAdmin,
         });
         await telegramService.sendWebAppButton(
           chatId,
@@ -593,6 +595,31 @@ async function bootstrapTelegramHandlers() {
       chatTitle,
     }),
   );
+  telegramService.setChannelPostHandler(async ({ chatId, chatTitle, message }) => {
+    await cinemaService.importTelegramChannelPost({
+      chatId,
+      chatTitle,
+      messageId: Number(message.message_id),
+      date: message.date,
+      text: message.text,
+      caption: message.caption,
+      video: message.video
+        ? {
+            fileId: message.video.file_id,
+            mimeType: message.video.mime_type,
+            duration: message.video.duration,
+            thumbnailFileId: message.video.thumbnail?.file_id,
+          }
+        : undefined,
+      photoFileIds: message.photo?.map((item) => item.file_id),
+      document: message.document
+        ? {
+            fileId: message.document.file_id,
+            mimeType: message.document.mime_type,
+          }
+        : undefined,
+    });
+  });
 }
 async function bootstrap() {
   await membershipService.backfillPlatformColumns();

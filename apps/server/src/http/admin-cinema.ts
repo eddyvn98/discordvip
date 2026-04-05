@@ -23,6 +23,15 @@ function requireAdmin(req: Request, res: Response, next: NextFunction) {
 }
 
 export function registerAdminCinemaRoutes(app: Express, cinemaService: CinemaService) {
+  app.post("/api/admin/cinema/storage/ensure", requireAdmin, async (_req, res) => {
+    try {
+      await cinemaService.ensureTelegramStorageChannels();
+      res.json({ ok: true });
+    } catch (error) {
+      res.status(400).json({ error: error instanceof Error ? error.message : "Cannot ensure storage channel" });
+    }
+  });
+
   app.get("/api/admin/cinema/channels", requireAdmin, async (_req, res) => {
     res.json(await cinemaService.listAllChannels());
   });
@@ -52,7 +61,8 @@ export function registerAdminCinemaRoutes(app: Express, cinemaService: CinemaSer
 
   app.post("/api/admin/cinema/jobs/scan", requireAdmin, async (req, res) => {
     try {
-      const channelId = String((req.body as { channelId?: string }).channelId ?? "");
+      const body = req.body as { channelId?: string; forceRegenerate?: boolean; autoEnsureStorage?: boolean };
+      const channelId = String(body.channelId ?? "");
       if (!channelId) {
         res.status(400).json({ error: "channelId is required" });
         return;
@@ -61,7 +71,10 @@ export function registerAdminCinemaRoutes(app: Express, cinemaService: CinemaSer
         channelId,
         requestedBy: req.session.adminUser?.id ?? "admin",
       });
-      void cinemaService.runScanJob(job.id);
+      void cinemaService.runScanJob(job.id, {
+        forceRegenerate: Boolean(body.forceRegenerate),
+        autoEnsureStorage: body.autoEnsureStorage !== false,
+      });
       res.json(job);
     } catch (error) {
       res.status(400).json({ error: error instanceof Error ? error.message : "Cannot start scan job" });
@@ -87,4 +100,3 @@ export function registerAdminCinemaRoutes(app: Express, cinemaService: CinemaSer
     }
   });
 }
-

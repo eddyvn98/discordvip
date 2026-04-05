@@ -5,8 +5,21 @@ import { AccessTarget, PlatformAdapter } from "./platform-adapter.js";
 
 type TelegramMessage = {
   message_id: number;
+  date?: number;
   chat: { id: number | string; type: string; title?: string };
   text?: string;
+  caption?: string;
+  video?: {
+    file_id: string;
+    mime_type?: string;
+    duration?: number;
+    thumbnail?: { file_id: string };
+  };
+  photo?: Array<{ file_id: string; width: number; height: number }>;
+  document?: {
+    file_id: string;
+    mime_type?: string;
+  };
   from?: { id: number | string; username?: string; first_name?: string };
 };
 
@@ -113,6 +126,9 @@ export class TelegramService implements PlatformAdapter {
         chatTitle: string;
       }) => Promise<{ ok: boolean; reason?: string }>)
     | null = null;
+  private channelPostHandler:
+    | ((input: { chatId: string; chatTitle: string; message: TelegramMessage }) => Promise<void>)
+    | null = null;
 
   private buildHomeReplyKeyboard(): TelegramReplyMarkup {
     const webAppUrl = new URL("/api/cinema", env.CINEMA_PUBLIC_BASE_URL).toString();
@@ -140,6 +156,10 @@ export class TelegramService implements PlatformAdapter {
     }) => Promise<{ ok: boolean; reason?: string }>,
   ) {
     this.channelVerificationHandler = handler;
+  }
+
+  setChannelPostHandler(handler: (input: { chatId: string; chatTitle: string; message: TelegramMessage }) => Promise<void>) {
+    this.channelPostHandler = handler;
   }
 
   async start() {
@@ -537,38 +557,40 @@ export class TelegramService implements PlatformAdapter {
   }
 
   private async handleChannelPost(message: TelegramMessage) {
-    if (!this.channelVerificationHandler) {
-      return;
-    }
-
-    const text = message.text?.trim().toUpperCase();
-    if (!text || !text.startsWith("VIP-VERIFY-")) {
-      return;
-    }
-
-    const token = text.split(/\s+/)[0];
     const chatId = String(message.chat.id);
     const chatTitle = message.chat.title?.trim() || (message.chat.type === "channel" ? `Channel ${chatId}` : `Chat ${chatId}`);
-    const telegramUserId = String(message.from?.id ?? "");
-    if (!telegramUserId) {
-      return;
+    if (this.channelVerificationHandler) {
+      const text = message.text?.trim().toUpperCase();
+      if (text && text.startsWith("VIP-VERIFY-")) {
+        const token = text.split(/\s+/)[0];
+        const telegramUserId = String(message.from?.id ?? "");
+        if (telegramUserId) {
+          try {
+            const result = await this.channelVerificationHandler({
+              token,
+              telegramUserId,
+              chatId,
+              chatTitle,
+            });
+            if (result.ok) {
+              await this.sendMessage(
+                telegramUserId,
+                `Da xac thuc kenh ${chatId} thanh cong. Ban co the vao web admin de gan plan.`,
+              );
+            }
+          } catch (error) {
+            logger.warn("Telegram channel verification failed", { error, chatId, telegramUserId });
+          }
+        }
+      }
     }
 
-    try {
-      const result = await this.channelVerificationHandler({
-        token,
-        telegramUserId,
-        chatId,
-        chatTitle,
-      });
-      if (result.ok) {
-        await this.sendMessage(
-          telegramUserId,
-          `Da xac thuc kenh ${chatId} thanh cong. Ban co the vao web admin de gan plan.`,
-        );
+    if (this.channelPostHandler) {
+      try {
+        await this.channelPostHandler({ chatId, chatTitle, message });
+      } catch (error) {
+        logger.warn("Telegram channel post import failed", { error, chatId, messageId: message.message_id });
       }
-    } catch (error) {
-      logger.warn("Telegram channel verification failed", { error, chatId, telegramUserId });
     }
   }
 

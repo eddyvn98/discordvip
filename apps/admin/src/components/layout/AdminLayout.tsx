@@ -3,6 +3,7 @@ import { NavLink, Route, Routes } from "react-router-dom";
 
 import type { AdminUser } from "../../types";
 import { DashboardPage } from "../../pages/DashboardPage";
+import { CinemaPage } from "../../pages/CinemaPage";
 import { MembershipsPage } from "../../pages/MembershipsPage";
 import { PendingPage } from "../../pages/PendingPage";
 import { PlansPage } from "../../pages/PlansPage";
@@ -67,6 +68,9 @@ export function AdminLayout({ user, onLogout }: AdminLayoutProps) {
           <NavLink to="/telegram-channels" onClick={() => setMobileSidebarOpen(false)}>
             Kênh Telegram VIP
           </NavLink>
+          <NavLink to="/cinema" onClick={() => setMobileSidebarOpen(false)}>
+            Cinema
+          </NavLink>
         </nav>
         <div className="sidebar-footer">
           <div className="user-card">
@@ -91,6 +95,7 @@ export function AdminLayout({ user, onLogout }: AdminLayoutProps) {
           <Route path="/plans" element={<PlansPage />} />
           <Route path="/pending" element={<PendingPage />} />
           <Route path="/telegram-channels" element={<TelegramChannelsPage />} />
+          <Route path="/cinema" element={<CinemaPage />} />
         </Routes>
       </main>
     </div>

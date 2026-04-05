@@ -14,6 +14,7 @@ import { registerAdminRoutes } from "./admin.js";
 import { registerAdminCinemaRoutes } from "./admin-cinema.js";
 import { registerAuthRoutes } from "./auth.js";
 import { registerCinemaRoutes } from "./cinema.js";
+import { registerLocalCinemaControlRoutes } from "./local-cinema-control.js";
 import { registerWebhookRoutes } from "./webhooks.js";
 
 const PostgresStore = pgSession(session);
@@ -114,7 +115,7 @@ export function createApp({
   app.use((req, res, next) => {
     res.setHeader("Referrer-Policy", "no-referrer");
     res.setHeader("X-Content-Type-Options", "nosniff");
-    if (req.path.startsWith("/api/cinema/e/")) {
+    if (req.path.startsWith("/api/cinema/e/") || req.path.startsWith("/cinema/e/")) {
       res.setHeader("Cache-Control", "no-store");
     }
     next();
@@ -128,6 +129,7 @@ export function createApp({
   registerAdminRoutes(app, adminService, paymentService, promoCodeService);
   registerAdminCinemaRoutes(app, cinemaService);
   registerCinemaRoutes(app, cinemaService);
+  registerLocalCinemaControlRoutes(app, cinemaService);
   registerWebhookRoutes(app, paymentService);
 
   return app;

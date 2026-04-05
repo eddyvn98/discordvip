@@ -1,0 +1,268 @@
+{
+  "name": "Movie Folder Automation (Form -> Telegram Large Upload -> Snote -> Short Links -> Telegram + Discord)",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "movie-folder-upload",
+        "formTitle": "Movie Folder Automation",
+        "formDescription": "Nhap duong dan thu muc phim tren may local va thong tin bai dang.",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Folder Path",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Post Title",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Post Description",
+              "requiredField": false
+            },
+            {
+              "fieldLabel": "Channel Title (Optional)",
+              "requiredField": false
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "form-trigger",
+      "name": "Form Trigger",
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -1020,
+        220
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $json.body || $json;\nconst folder = String(body['Folder Path'] || body.folderPath || '').trim();\nconst postTitle = String(body['Post Title'] || body.postTitle || '').trim();\nconst postDescription = String(body['Post Description'] || body.postDescription || '').trim();\nconst channelTitle = String(body['Channel Title (Optional)'] || body.channelTitle || '').trim();\nif (!folder) throw new Error('Folder Path is required');\nif (!postTitle) throw new Error('Post Title is required');\nreturn [{ folder, postTitle, postDescription, channelTitle }];"
+      },
+      "id": "normalize-input",
+      "name": "Normalize Input",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -780,
+        220
+      ]
+    },
+    {
+      "parameters": {
+        "command": "=python scripts/telegram_large_uploader.py --folder \"{{$json.folder}}\" --post-title \"{{$json.postTitle}}\" --post-description \"{{$json.postDescription}}\" --channel-title \"{{$json.channelTitle}}\""
+      },
+      "id": "execute-uploader",
+      "name": "Execute Large Uploader",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        -520,
+        220
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const raw = $json.stdout || '';\nconst data = JSON.parse(raw);\nif (data.error) throw new Error(data.error);\nreturn [{ ...data }];"
+      },
+      "id": "parse-uploader",
+      "name": "Parse Uploader Result",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -280,
+        220
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{$env.SNOTE_API_URL}}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "={{'Bearer ' + $env.SNOTE_API_KEY}}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"title\": $json.postTitle,\n  \"description\": $json.postDescription,\n  \"folder\": $json.folder,\n  \"telegramChannelId\": $json.channelId,\n  \"telegramChannelTitle\": $json.channelTitle,\n  \"videoLinks\": $json.videoLinks,\n  \"thumbnailLinks\": ($json.thumbnails || []).map(t => t.messageLink)\n}",
+        "options": {
+          "timeout": "={{Number($env.SNOTE_API_TIMEOUT_MS || 15000)}}"
+        }
+      },
+      "id": "post-snote",
+      "name": "Post To Snote",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -40,
+        220
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.first().json;\nconst snoteLink = input.url || input.link || input.data?.url || input.data?.link || input.postUrl || '';\nif (!snoteLink) throw new Error('Snote response missing article URL');\nconst endpoint = ($env.SHORTENER_API_URL || '').trim();\nconst apiKey = ($env.SHORTENER_API_KEY || '').trim();\nconst timeout = Number($env.SHORTENER_TIMEOUT_MS || 15000);\nconst sleep = (ms) => new Promise((r) => setTimeout(r, ms));\nasync function shorten(longUrl) {\n  if (!endpoint) return longUrl;\n  try {\n    const res = await this.helpers.httpRequest({\n      method: 'POST',\n      url: endpoint,\n      timeout,\n      headers: {\n        Authorization: apiKey ? `Bearer ${apiKey}` : undefined,\n        'Content-Type': 'application/json'\n      },\n      body: { longUrl },\n      json: true\n    });\n    return res.shortUrl || res.short_url || res.link || res.url || longUrl;\n  } catch {\n    return longUrl;\n  }\n}\nconst links = [];\nfor (let i = 0; i < 3; i++) {\n  links.push(await shorten.call(this, snoteLink));\n  if (i < 2) await sleep(1200);\n}\nreturn [{ ...$json, snoteLink, shortLinks: links }];"
+      },
+      "id": "shorten",
+      "name": "Create 3 Short Links",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        220,
+        220
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const links = $json.shortLinks || [];\nconst l1 = links[0] || $json.snoteLink;\nconst l2 = links[1] || $json.snoteLink;\nconst l3 = links[2] || $json.snoteLink;\nconst thumbLinks = ($json.thumbnails || []).map((t) => t.messageLink);\nconst body = [\n  `*${$json.postTitle || 'Movie moi'}*`,\n  $json.postDescription || '',\n  '',\n  `Nguon Telegram: ${$json.channelTitle || ''} (${$json.channelId || ''})`,\n  `Video da upload: ${$json.videoCount || 0}`,\n  '',\n  `[Link 1](${l1})`,\n  `[Link 2](${l2})`,\n  `[Link 3](${l3})`,\n  '',\n  'Thumbnails:',\n  ...thumbLinks\n].filter(Boolean).join('\\n');\nreturn [{ ...$json, publishText: body, discordText: body.replace(/\\*/g, '**') }];"
+      },
+      "id": "compose",
+      "name": "Compose Publish Text",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        470,
+        220
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "sendMessage",
+        "chatId": "={{$env.TELEGRAM_TARGET_CHAT_ID}}",
+        "text": "={{$json.publishText}}",
+        "additionalFields": {
+          "parseMode": "Markdown"
+        }
+      },
+      "id": "telegram-publish",
+      "name": "Telegram Publish",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        730,
+        120
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{$env.DISCORD_WEBHOOK_URL}}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"content\": $json.discordText\n}",
+        "options": {}
+      },
+      "id": "discord-publish",
+      "name": "Discord Publish",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        730,
+        320
+      ]
+    }
+  ],
+  "connections": {
+    "Form Trigger": {
+      "main": [
+        [
+          {
+            "node": "Normalize Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Input": {
+      "main": [
+        [
+          {
+            "node": "Execute Large Uploader",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute Large Uploader": {
+      "main": [
+        [
+          {
+            "node": "Parse Uploader Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Uploader Result": {
+      "main": [
+        [
+          {
+            "node": "Post To Snote",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Post To Snote": {
+      "main": [
+        [
+          {
+            "node": "Create 3 Short Links",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create 3 Short Links": {
+      "main": [
+        [
+          {
+            "node": "Compose Publish Text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Compose Publish Text": {
+      "main": [
+        [
+          {
+            "node": "Telegram Publish",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Discord Publish",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "movie-folder-automation-v1",
+  "meta": {
+    "templateCredsSetupCompleted": false
+  }
+}

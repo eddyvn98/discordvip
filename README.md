@@ -70,6 +70,8 @@ Tai lieu van hanh:
 - `docs/database-access.md`: Cach truy cap PostgreSQL sau khi da khoa port public va cach dung SSH tunnel / docker exec.
 - `docs/deploy-vps-docker.md`: Cach dung `docker-compose.prod.yml` va `.env.production` khi len VPS.
 - `docs/go-live-checklist-vps.md`: Checklist ngan de di tu luc mua VPS den luc go-live.
+- `docs/n8n-workflow-telegram-snote-discord.md`: Huong dan setup workflow tu dong Telegram -> Snote -> rut gon link -> Telegram/Discord.
+- `docs/n8n-movie-folder-automation.md`: Workflow web form nhap folder path, upload phim lon Telegram, day Snote, rut gon link, dang Discord/Telegram.
 
 ### Sao luu database tu dong
 
