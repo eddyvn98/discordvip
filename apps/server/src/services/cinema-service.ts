@@ -703,7 +703,7 @@ export class CinemaService {
     });
   }
 
-  async resolveTelegramFile(fileId: string) {
+  async resolveTelegramFile(fileId: string, rangeHeader?: string) {
     const response = await fetch(`https://api.telegram.org/bot${env.TELEGRAM_BOT_TOKEN}/getFile`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -716,14 +716,19 @@ export class CinemaService {
     }
     const filePath = data.result.file_path;
     const fileUrl = `https://api.telegram.org/file/bot${env.TELEGRAM_BOT_TOKEN}/${filePath}`;
-    const fileResponse = await fetch(fileUrl);
+    const fileResponse = await fetch(fileUrl, {
+      headers: rangeHeader ? { Range: rangeHeader } : undefined,
+    });
     if (!fileResponse.ok || !fileResponse.body) {
       throw new Error(`Telegram file download failed: ${fileResponse.status}`);
     }
     return {
+      statusCode: fileResponse.status,
       stream: fileResponse.body,
       contentType: fileResponse.headers.get("content-type") || "application/octet-stream",
       contentLength: fileResponse.headers.get("content-length"),
+      contentRange: fileResponse.headers.get("content-range"),
+      acceptRanges: fileResponse.headers.get("accept-ranges"),
       cacheControl: fileResponse.headers.get("cache-control") || "public, max-age=86400",
     };
   }

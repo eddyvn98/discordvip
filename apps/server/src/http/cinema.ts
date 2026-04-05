@@ -254,15 +254,16 @@ export function registerCinemaRoutes(app: Express, cinemaService: CinemaService)
         return;
       }
       let media;
+      const range = typeof req.headers.range === "string" ? req.headers.range.trim() : "";
       try {
-        media = await cinemaService.resolveTelegramFile(fileId);
+        media = await cinemaService.resolveTelegramFile(fileId, range || undefined);
       } catch {
         const itemId = String(req.query.itemId ?? "").trim();
         const kind = String(req.query.kind ?? "").trim().toLowerCase();
         if (itemId && kind === "full") {
           try {
             const refreshedFileId = await cinemaService.refreshTelegramFullAssetFileIdByItemId(itemId);
-            media = await cinemaService.resolveTelegramFile(refreshedFileId);
+            media = await cinemaService.resolveTelegramFile(refreshedFileId, range || undefined);
           } catch {
             await proxyTelethonBigStream(req, res, itemId);
             return;
@@ -271,9 +272,16 @@ export function registerCinemaRoutes(app: Express, cinemaService: CinemaService)
           throw new Error("telegram file not found");
         }
       }
+      res.status(media.statusCode || 200);
       res.setHeader("Content-Type", media.contentType);
       if (media.contentLength) {
         res.setHeader("Content-Length", media.contentLength);
+      }
+      if (media.contentRange) {
+        res.setHeader("Content-Range", media.contentRange);
+      }
+      if (media.acceptRanges) {
+        res.setHeader("Accept-Ranges", media.acceptRanges);
       }
       res.setHeader("Cache-Control", media.cacheControl);
       Readable.fromWeb(media.stream as any).pipe(res);

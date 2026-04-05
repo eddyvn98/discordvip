@@ -375,7 +375,7 @@ export function renderCinemaHtml(_req: Request, res: Response) {
       left:10px;
       right:10px;
       bottom:72px;
-      z-index:61;
+      z-index:65;
       border:1px solid var(--line);
       border-radius:12px;
       background:#0f1420;
@@ -497,7 +497,7 @@ export function renderCinemaHtml(_req: Request, res: Response) {
   <button id="backFabBtn" class="fab-back hide">← Quay về</button>
   <!-- Nt thot fullscreen overlay - lun ni trn phim khi  pseudo-fullscreen -->
   <script>
-    const state={channels:[],itemsByChannel:new Map(),currentChannel:null,currentItem:null,currentMediaType:'video',query:'',channelRows:[],visibleCount:20,pageSize:20,tg:null,pseudoFullscreen:false,mainBtnBound:false,autoCinemaByLandscape:false,orientTimer:null,fullscreenControlsTimer:null,itemFilters:{sort:'newest'},randomMode:false,viewCounts:{},brightness:1,lastTapAt:0,lastTapSide:'none',suppressTapUntil:0,isPip:false,pipRect:null,pipDrag:null,pipResize:null,touch:{active:false,startX:0,startY:0,lastX:0,lastY:0,startVolume:0,startBrightness:1,startCurrentTime:0,seekTime:0,isSeeking:false,isBoosting:false,mode:'pending',longPressTimer:null,rightBoostTimer:null}};
+    const state={channels:[],itemsByChannel:new Map(),currentChannel:null,currentItem:null,currentMediaType:'video',query:'',channelRows:[],visibleCount:20,pageSize:20,tg:null,pseudoFullscreen:false,mainBtnBound:false,autoCinemaByLandscape:false,orientTimer:null,fullscreenControlsTimer:null,itemFilters:{sort:'newest'},randomMode:false,viewCounts:{},brightness:1,playbackRate:1,lastTapAt:0,lastTapSide:'none',suppressTapUntil:0,isPip:false,pipRect:null,pipDrag:null,pipResize:null,touch:{active:false,startX:0,startY:0,lastX:0,lastY:0,startVolume:0,startBrightness:1,startCurrentTime:0,seekTime:0,isSeeking:false,isBoosting:false,mode:'pending',longPressTimer:null,rightBoostTimer:null}};
     const $=(id)=>document.getElementById(id);
     const dom={status:$('sessionStatus'),search:$('search'),bottomSearchInput:$('bottomSearchInput'),searchPanel:$('searchPanel'),sortPanel:$('sortPanel'),navHomeBtn:$('navHomeBtn'),navSearchBtn:$('navSearchBtn'),navSortBtn:$('navSortBtn'),navBackBtn:$('navBackBtn'),playbackDock:$('playbackDock'),dockPlayBtn:$('dockPlayBtn'),dockPrevBtn:$('dockPrevBtn'),dockNextBtn:$('dockNextBtn'),dockMuteBtn:$('dockMuteBtn'),dockTime:$('dockTime'),dockTimeline:$('dockTimeline'),dockSpeedBtn:$('dockSpeedBtn'),dockRotateBtn:$('dockRotateBtn'),dockMinBtn:$('dockMinBtn'),volumePanel:$('volumePanel'),volumeVertical:$('volumeVertical'),back:$('backHomeBtn'),retry:$('retryBtn'),crumb:$('crumb'),hero:$('hero'),state:$('state'),grid:$('grid'),loadMoreWrap:$('loadMoreWrap'),loadMoreBtn:$('loadMoreBtn'),backFab:$('backFabBtn'),fullscreenFab:$('fullscreenFabBtn'),playerWrap:$('playerWrap'),playerMedia:$('playerMedia'),playerTitle:$('playerTitle'),playerDesc:$('playerDesc'),player:$('player'),image:$('imageViewer'),related:$('relatedGrid'),itemControls:$('itemControls'),sortSelect:$('sortSelect'),randomPickBtn:$('randomPickBtn'),prevItemBtn:$('prevItemBtn'),nextItemBtn:$('nextItemBtn'),pipToggleBtn:$('pipToggleBtn'),pipMiniPlayBtn:$('pipMiniPlayBtn'),swipeHintLeft:$('swipeHintLeft'),swipeHintRight:$('swipeHintRight'),swipeHintCenter:$('swipeHintCenter')};
 
@@ -681,7 +681,7 @@ export function renderCinemaHtml(_req: Request, res: Response) {
       const vol=String(Math.max(0,Math.min(1,dom.player.volume||0)));
       dom.volumeVertical.value=vol;
       dom.dockMuteBtn.textContent=(dom.player.muted || (dom.player.volume||0)===0)?'🔇':'🔊';
-      dom.dockSpeedBtn.textContent=(dom.player.playbackRate||1)+'x';
+      dom.dockSpeedBtn.textContent=(state.playbackRate||dom.player.playbackRate||1)+'x';
       dom.dockMinBtn.style.display=(state.pseudoFullscreen||isLandscape())?'none':'';
     }
     function closePanels(){
@@ -823,7 +823,12 @@ export function renderCinemaHtml(_req: Request, res: Response) {
       if(!rows.length){dom.grid.innerHTML=''; dom.loadMoreWrap.classList.add('hide'); showState('Kênh này chưa có phim.'); return;}
       hideState();
       const visible=rows.slice(0,state.visibleCount);
-      dom.grid.innerHTML=visible.map((x)=>cardHtml(x.title,x.createdAt?new Date(x.createdAt).toLocaleDateString('vi-VN'):'',x.posterUrl,(x.mediaType==='image'?'nh':'VIP Full'),x.previewUrl||null)).join('');
+      dom.grid.innerHTML=visible.map((x)=>{
+        const dateText=x.createdAt?new Date(x.createdAt).toLocaleDateString('vi-VN'):'';
+        const viewsText='👁 '+Number(x.viewCount||0);
+        const sub=[dateText,viewsText].filter(Boolean).join(' • ');
+        return cardHtml(x.title,sub,x.posterUrl,(x.mediaType==='image'?'nh':'VIP Full'),x.previewUrl||null);
+      }).join('');
       bindCardClicks(dom.grid,(idx)=>openItem(visible[idx]));
       if(state.visibleCount<rows.length){dom.loadMoreWrap.classList.remove('hide');}else{dom.loadMoreWrap.classList.add('hide');}
     }
@@ -875,7 +880,7 @@ export function renderCinemaHtml(_req: Request, res: Response) {
         dom.player.classList.remove('hide');
         dom.player.muted=true;
         dom.player.volume=0;
-        dom.player.playbackRate=1;
+        dom.player.playbackRate=state.playbackRate||1;
         dom.player.src=links.fullUrl;
       }
       dom.playerMedia.style.filter='brightness('+state.brightness+')';
@@ -962,6 +967,7 @@ export function renderCinemaHtml(_req: Request, res: Response) {
       const cur=dom.player.playbackRate||1;
       const idx=Math.max(0,speeds.indexOf(cur));
       const next=speeds[(idx+1)%speeds.length];
+      state.playbackRate=next;
       dom.player.playbackRate=next;
       updatePlaybackDock();
     });
@@ -1046,7 +1052,7 @@ export function renderCinemaHtml(_req: Request, res: Response) {
       if(state.touch.rightBoostTimer){ clearTimeout(state.touch.rightBoostTimer); state.touch.rightBoostTimer=null; }
     }
     function stopBoost(){
-      if(state.touch.isBoosting){ state.touch.isBoosting=false; if(state.currentMediaType==='video'){ dom.player.playbackRate=1; } }
+      if(state.touch.isBoosting){ state.touch.isBoosting=false; if(state.currentMediaType==='video'){ dom.player.playbackRate=state.playbackRate||1; } }
     }
     function resetGestureHints(){
       dom.swipeHintLeft.style.opacity='0';
