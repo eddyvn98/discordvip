@@ -5,6 +5,7 @@ import session from "express-session";
 import { Pool } from "pg";
 
 import { env } from "../config.js";
+import { getCinemaPublicOrigin, isTryCloudflareOrigin } from "../lib/public-base-url.js";
 import { AdminService } from "../services/admin-service.js";
 import { AuthService } from "../services/auth-service.js";
 import { CinemaService } from "../services/cinema-service.js";
@@ -24,7 +25,11 @@ function isAllowedOrigin(origin: string | undefined) {
     return true;
   }
 
-  if ([env.ADMIN_APP_URL, env.PUBLIC_BASE_URL, env.CINEMA_PUBLIC_BASE_URL].includes(origin)) {
+  if ([env.ADMIN_APP_URL, env.PUBLIC_BASE_URL, env.CINEMA_PUBLIC_BASE_URL, getCinemaPublicOrigin()].includes(origin)) {
+    return true;
+  }
+
+  if (isTryCloudflareOrigin(origin)) {
     return true;
   }
 
@@ -63,6 +68,7 @@ export function createApp({
   const pool = new Pool({
     connectionString: env.DATABASE_URL,
   });
+  const useDevSessionCookie = env.DEV_BYPASS_ADMIN_AUTH;
 
   app.use(
     cors({
@@ -105,8 +111,8 @@ export function createApp({
         httpOnly: true,
         // Telegram WebView runs in a cross-site context (inside web.telegram.org),
         // so production needs SameSite=None to allow session cookie round-trips.
-        sameSite: env.APP_ENV === "production" ? "none" : "lax",
-        secure: env.APP_ENV === "production",
+        sameSite: env.APP_ENV === "production" && !useDevSessionCookie ? "none" : "lax",
+        secure: env.APP_ENV === "production" && !useDevSessionCookie,
         maxAge: 7 * 24 * 60 * 60 * 1000,
       },
     }),

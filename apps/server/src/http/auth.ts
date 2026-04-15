@@ -1,8 +1,16 @@
 import type { Express, Request, Response } from "express";
 
+import { env } from "../config.js";
 import { AuthService } from "../services/auth-service.js";
 
 export function registerAuthRoutes(app: Express, authService: AuthService) {
+  const applyDevCinemaLogin = (req: Request) => {
+    req.session.adminUser = {
+      id: "dev-cinema-admin",
+      username: "Dev Cinema Admin",
+      avatarUrl: null,
+    };
+  };
   app.get("/api/auth/discord/login", (req: Request, res: Response) => {
     const returnTo =
       typeof req.query.returnTo === "string" ? req.query.returnTo : undefined;
@@ -35,6 +43,27 @@ export function registerAuthRoutes(app: Express, authService: AuthService) {
         error: error instanceof Error ? error.message : "Debug login failed",
       });
     }
+  });
+
+  app.post("/api/auth/dev-cinema-login", (req: Request, res: Response) => {
+    if (!env.DEV_BYPASS_ADMIN_AUTH) {
+      res.status(403).json({ error: "Dev cinema login is disabled." });
+      return;
+    }
+
+    applyDevCinemaLogin(req);
+
+    res.json({ ok: true, redirectTo: "/cinema" });
+  });
+
+  app.get("/api/auth/dev-cinema-login", (req: Request, res: Response) => {
+    if (!env.DEV_BYPASS_ADMIN_AUTH) {
+      res.status(403).send("Dev cinema login is disabled.");
+      return;
+    }
+
+    applyDevCinemaLogin(req);
+    res.redirect("/cinema");
   });
 
   app.post("/api/auth/logout", (req: Request, res: Response) => {

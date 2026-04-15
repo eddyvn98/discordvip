@@ -29,6 +29,10 @@ services:
       TRUST_PROXY: true
       RUN_DB_PUSH_ON_START: false
       RUN_DB_SEED_ON_START: false
+      CINEMA_PUBLIC_BASE_URL_FILE: /runtime/cinema_public_base_url.txt
+      CINEMA_PUBLIC_BASE_URL_LOG_FILE: /runtime/cloudflared.log
+    volumes:
+      - ${RUNTIME_PATH:-/opt/discordvip/runtime}:/runtime
 
   admin-web:
     build:

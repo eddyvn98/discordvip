@@ -41,10 +41,14 @@ services:
     restart: unless-stopped
     env_file:
       - ${APP_ENV_FILE:-.env}
+    environment:
+      CINEMA_PUBLIC_BASE_URL_FILE: /runtime/cinema_public_base_url.txt
+      CINEMA_PUBLIC_BASE_URL_LOG_FILE: /runtime/cloudflared.log
     depends_on:
       - postgres
     volumes:
       - ./storage:/app/apps/server/storage
+      - ./runtime:/runtime
     expose:
       - "3000"
     cpus: 1.25
@@ -138,12 +142,15 @@ services:
     mem_limit: 128m
 
   cloudflared-hatangmang:
-    image: cloudflare/cloudflared:latest
+    build:
+      context: .
+      dockerfile: cloudflared/Dockerfile.quick
     restart: unless-stopped
     profiles: ["tunnel"]
-    command: tunnel --no-autoupdate --config /etc/cloudflared/config.yml run --token ${CLOUDFLARED_HATANGMANG_TOKEN}
+    command: ["/bin/sh", "/scripts/cloudflared-auto-tunnel.sh"]
     volumes:
-      - ./cloudflared/config-hatangmang.yml:/etc/cloudflared/config.yml:ro
+      - ./scripts/cloudflared-auto-tunnel.sh:/scripts/cloudflared-auto-tunnel.sh:ro
+      - ./runtime:/runtime
     depends_on:
       - web-gateway
     cpus: 0.25

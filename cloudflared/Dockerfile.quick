@@ -1,0 +1,11 @@
+FROM debian:bookworm-slim
+
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends ca-certificates curl \
+  && rm -rf /var/lib/apt/lists/*
+
+RUN curl -fsSL "https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64" \
+  -o /usr/local/bin/cloudflared \
+  && chmod +x /usr/local/bin/cloudflared
+
+WORKDIR /work

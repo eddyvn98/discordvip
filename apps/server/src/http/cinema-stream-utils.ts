@@ -4,13 +4,25 @@ import { Readable } from "node:stream";
 import type { Request, Response } from "express";
 
 import { env } from "../config.js";
+import { getCinemaPublicOrigin, isTryCloudflareOrigin } from "../lib/public-base-url.js";
 
 export function isSameOriginPlaybackRequest(req: Request): boolean {
-  const base = new URL(env.CINEMA_PUBLIC_BASE_URL);
-  const expectedOrigin = base.origin;
+  const expectedOrigin = getCinemaPublicOrigin();
   const origin = String(req.headers.origin ?? "").trim();
   const referer = String(req.headers.referer ?? "").trim();
+  const telegramHosts = new Set(["web.telegram.org", "t.me"]);
+  const isTelegramOrigin = (value: string) => {
+    if (!value) return false;
+    try {
+      const u = new URL(value);
+      return telegramHosts.has(u.hostname);
+    } catch {
+      return false;
+    }
+  };
   if (!origin && !referer) return true;
+  if (isTelegramOrigin(origin) || isTelegramOrigin(referer)) return true;
+  if ((origin && isTryCloudflareOrigin(origin)) || (referer && isTryCloudflareOrigin(referer))) return true;
   if (origin && origin !== expectedOrigin) return false;
   if (referer) {
     try {

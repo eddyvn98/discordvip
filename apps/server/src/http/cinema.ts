@@ -127,6 +127,18 @@ export function registerCinemaRoutes(app: Express, cinemaService: CinemaService)
     );
   });
 
+  app.get("/api/cinema/feed/items", async (req: Request, res: Response) => {
+    const session = requireVip(cinemaService, req, res);
+    if (!session) return;
+    const limit = Math.max(20, Math.min(Number(req.query.limit ?? 120), 400));
+    res.json(
+      await cinemaService.listFeedItemsForWeb({
+        limit,
+        userKey: `${session.platform}:${session.platformUserId}`,
+      }),
+    );
+  });
+
   app.post("/api/cinema/items/:itemId/view", async (req: Request, res: Response) => {
     const session = requireVip(cinemaService, req, res);
     if (!session) return;
@@ -306,25 +318,18 @@ export function registerCinemaRoutes(app: Express, cinemaService: CinemaService)
 
   app.get("/api/cinema/stream/:itemId/:kind", async (req: Request, res: Response) => {
     try {
-      if (!isSameOriginPlaybackRequest(req)) {
-        res.status(403).json({ error: "Cross-origin media hotlink is blocked." });
-        return;
-      }
       if (rateLimit(`stream:${req.ip}`, 240, 60_000)) {
         res.status(429).json({ error: "Rate limit exceeded." });
         return;
       }
-      const session = requireVip(cinemaService, req, res);
-      if (!session) return;
       if (String(req.params.kind ?? "") !== "full") {
         res.status(403).json({ error: "Only full stream is available for VIP cinema." });
         return;
       }
-      const asset = await cinemaService.resolveStream({
+      const { asset, userId } = await cinemaService.resolveStream({
         itemId: String(req.params.itemId ?? ""),
         kind: "full",
         token: String(req.query.token ?? ""),
-        userId: `${session.platform}:${session.platformUserId}`,
       });
 
       if (asset.fileRef.startsWith("telefilm://movie/")) {
@@ -333,7 +338,7 @@ export function registerCinemaRoutes(app: Express, cinemaService: CinemaService)
           res.status(404).json({ error: "Telefilm movie id is missing." });
           return;
         }
-        const initData = makeTelefilmInitData(session.platformUserId);
+        const initData = makeTelefilmInitData(userId);
         await proxyTelefilmStream(req, res, movieId, initData);
         return;
       }

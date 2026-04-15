@@ -49,65 +49,32 @@ export class DiscordService {
       const guild = await this.getGuild();
       await guild.commands.set([
         {
-          name: "donate",
-          description: "Tạo đơn ủng hộ server",
-          options: [
-            {
-              name: "plan",
-              description: "Chọn gói ủng hộ",
-              type: 3,
-              required: true,
-              choices: [
-                { name: "39.000đ tặng VIP 31 ngày", value: "VIP_30_DAYS" },
-                { name: "99.000đ tặng VIP 90 ngày", value: "VIP_90_DAYS" },
-                { name: "199.000đ tặng VIP 365 ngày", value: "VIP_365_DAYS" },
-              ],
-            },
-          ],
-        },
-        {
-          name: "trialvip",
-          description: "Nhận trial VIP 24h (mỗi 30 ngày 1 lần)",
-        },
-        {
           name: "vipstatus",
-          description: "Xem trạng thái VIP hiện tại",
+          description: "Xem trang thai VIP hien tai",
         },
         {
           name: "webvip",
           description: "Mo web phim VIP",
         },
         {
-          name: "redeemvip",
-          description: "Nhập mã khuyến mãi để nhận thêm ngày VIP",
-          options: [
-            {
-              name: "code",
-              description: "Mã khuyến mãi",
-              type: 3,
-              required: true,
-            },
-          ],
-        },
-        {
           name: "adminstats",
-          description: "Xem thống kê VIP và doanh thu tháng",
+          description: "Xem thong ke VIP va doanh thu thang",
           default_member_permissions: PermissionFlagsBits.Administrator.toString(),
         },
         {
           name: "grantvip",
-          description: "Điều chỉnh hạn VIP của thành viên",
+          description: "Dieu chinh han VIP cua thanh vien",
           default_member_permissions: PermissionFlagsBits.Administrator.toString(),
           options: [
             {
               name: "user",
-              description: "Thành viên cần điều chỉnh VIP",
+              description: "Thanh vien can dieu chinh VIP",
               type: 6,
               required: true,
             },
             {
               name: "days",
-              description: "Số ngày điều chỉnh, âm để trừ",
+              description: "So ngay dieu chinh, am de tru",
               type: 4,
               required: true,
             },
@@ -115,12 +82,12 @@ export class DiscordService {
         },
         {
           name: "revokevip",
-          description: "Thu hồi VIP của thành viên",
+          description: "Thu hoi VIP cua thanh vien",
           default_member_permissions: PermissionFlagsBits.Administrator.toString(),
           options: [
             {
               name: "user",
-              description: "Thành viên cần thu hồi VIP",
+              description: "Thanh vien can thu hoi VIP",
               type: 6,
               required: true,
             },
@@ -281,7 +248,7 @@ export class DiscordService {
       content: [
         `VIP của bạn sẽ hết hạn <t:${Math.floor(expireAt.getTime() / 1000)}:R>.`,
         `Mốc nhắc hiện tại: còn khoảng ${thresholdDays} ngày.`,
-        "Nếu muốn gia hạn, hãy dùng lệnh `/donate` trong server.",
+        "Neu can gia han VIP, vui long lien he admin.",
       ].join("\n"),
     });
   }
