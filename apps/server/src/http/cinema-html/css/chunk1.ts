@@ -43,9 +43,9 @@ export const cssChunk1 = `
       backdrop-filter:blur(18px);
       border-bottom:1px solid rgba(126,147,178,.18);
     }
-    .top-brand{display:flex;flex-direction:column;gap:2px;min-width:0;flex:1}
-    .title{font-size:19px;font-weight:800;letter-spacing:.02em;line-height:1;white-space:nowrap}
-    .status-note{color:#8790a2;font-size:10px;letter-spacing:.12em;text-transform:uppercase}
+    .top-brand{display:flex;align-items:center;gap:4px;min-width:0;flex:1;justify-content:flex-start}
+    .title{font-size:27px;font-weight:800;letter-spacing:-.02em;line-height:1;white-space:nowrap;display:flex;align-items:flex-start;gap:6px}
+    .status-note{color:#8790a2;font-size:10px;letter-spacing:.06em;text-transform:uppercase}
     .top-links{display:none;align-items:center;gap:18px}
     .top-link{color:#94a2bb;text-decoration:none;font-size:13px;font-weight:600;letter-spacing:.01em;padding-bottom:4px;border-bottom:2px solid transparent}
     .top-link.active{color:#87ecff;border-bottom-color:#48deff}
@@ -177,6 +177,9 @@ export const cssChunk1 = `
       color:inherit;
       padding:0;
       cursor:pointer;
+      min-width:0;
+      flex:1;
+      justify-content:flex-start;
     }
     .top-btn{border-radius:999px;padding:8px 14px;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;border:1px solid transparent}
     .top-btn-outline{background:transparent;color:#f3cb5a;border-color:#7d671e}
@@ -474,7 +477,7 @@ export const cssChunk1 = `
         color:#dff6ff;
         font-size:15px;
         line-height:1;
-        display:flex;
+        display:none;
         align-items:center;
         justify-content:center;
       }
@@ -773,6 +776,13 @@ export const cssChunk1 = `
     @media (max-width:1179px){
       .top{
         gap:8px;
+      }
+      .top-links,
+      .top-actions{
+        display:none!important;
+      }
+      .status{
+        display:none;
       }
       .account-menu{
         top:52px;

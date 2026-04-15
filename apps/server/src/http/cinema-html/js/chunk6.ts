@@ -232,6 +232,180 @@ export const jsChunk6 = `
             }
         }
     };
+    const HeaderUi = {
+        init() {
+            const top = document.querySelector('.top');
+            const sidebar = document.getElementById('desktopSideCard');
+            const sidebarBackdrop = document.getElementById('sidebarBackdrop');
+            const menuBtn = document.getElementById('mobileSidebarToggleBtn');
+            const sideCloseBtn = document.getElementById('sideCollapseBtn');
+            const logoBtn = document.getElementById('logoHomeBtn');
+            const headerSearchBtn = document.getElementById('headerSearchToggleBtn');
+            const headerSearchInput = document.getElementById('headerSearchInput');
+            const avatarBtn = document.getElementById('userAvatarBtn');
+            const accountMenu = document.getElementById('accountMenu');
+            const accountLogoutBtn = document.getElementById('accountLogoutBtn');
+            const accountName = document.getElementById('accountName');
+            const accountAvatar = document.getElementById('accountAvatar');
+            const accountExpireText = document.getElementById('accountExpireText');
+            const accountPlanText = document.getElementById('accountPlanText');
+            const searchInput = document.getElementById('search');
+            const statusEl = document.getElementById('sessionStatus');
+            const self = this;
+            if (!top) return;
+
+            const closeAccount = () => {
+                if (accountMenu) accountMenu.classList.add('hide');
+            };
+            const closeSidebar = () => {
+                if (sidebar) sidebar.classList.remove('open');
+                if (sidebarBackdrop) sidebarBackdrop.classList.remove('show');
+                if (menuBtn) menuBtn.setAttribute('aria-label', 'Mở menu');
+            };
+            const openSidebar = () => {
+                if (sidebar) sidebar.classList.add('open');
+                if (sidebarBackdrop) sidebarBackdrop.classList.add('show');
+                closeAccount();
+                if (menuBtn) menuBtn.setAttribute('aria-label', 'Đóng menu');
+            };
+            const isSidebarOpen = () => !!(sidebar && sidebar.classList.contains('open'));
+
+            const closeSearch = () => {
+                top.classList.remove('search-open');
+            };
+            const openSearch = () => {
+                top.classList.add('search-open');
+                if (headerSearchInput) {
+                    setTimeout(() => headerSearchInput.focus(), 20);
+                }
+            };
+
+            const syncSearchInputs = (value) => {
+                if (searchInput && searchInput.value !== value) searchInput.value = value;
+                if (dom.search && dom.search.value !== value) dom.search.value = value;
+                if (dom.bottomSearchInput && dom.bottomSearchInput.value !== value) dom.bottomSearchInput.value = value;
+                if (typeof applySearchInput === 'function') {
+                    applySearchInput(value);
+                } else {
+                    try {
+                        searchInput && searchInput.dispatchEvent(new Event('input', { bubbles: true }));
+                    } catch (_e) {}
+                }
+            };
+
+            const formatExpire = (epochMs) => {
+                const value = Number(epochMs);
+                if (!Number.isFinite(value) || value <= 0) return '--/--/----';
+                const d = new Date(value);
+                const dd = String(d.getDate()).padStart(2, '0');
+                const mm = String(d.getMonth() + 1).padStart(2, '0');
+                const yyyy = d.getFullYear();
+                return dd + '/' + mm + '/' + yyyy;
+            };
+
+            this.loadSessionMeta = async () => {
+                try {
+                    const res = await fetch('/api/cinema/session/me');
+                    if (!res.ok) return;
+                    const data = await res.json();
+                    const isVip = !!(data && data.isVip);
+                    const expireText = formatExpire(data && data.expiresAt);
+                    if (accountPlanText) accountPlanText.textContent = 'Gói hiện tại: ' + (isVip ? 'VIP' : 'Miễn phí');
+                    if (accountExpireText) accountExpireText.textContent = 'Hạn sử dụng: ' + expireText;
+                    if (statusEl) statusEl.textContent = isVip ? 'Phiên VIP hợp lệ' : 'Phiên miễn phí';
+                } catch (_e) {}
+            };
+
+            if (menuBtn) {
+                menuBtn.addEventListener('click', () => {
+                    if (isSidebarOpen()) closeSidebar();
+                    else openSidebar();
+                });
+            }
+            if (sideCloseBtn) sideCloseBtn.addEventListener('click', closeSidebar);
+            if (sidebarBackdrop) sidebarBackdrop.addEventListener('click', closeSidebar);
+
+            if (logoBtn) {
+                logoBtn.addEventListener('click', () => {
+                    closeSidebar();
+                    closeAccount();
+                    if (dom.navHomeBtn) {
+                        dom.navHomeBtn.click();
+                    }
+                });
+            }
+
+            if (headerSearchBtn) {
+                headerSearchBtn.addEventListener('click', () => {
+                    closeAccount();
+                    if (top.classList.contains('search-open')) closeSearch();
+                    else openSearch();
+                });
+            }
+            if (headerSearchInput) {
+                headerSearchInput.addEventListener('input', () => {
+                    syncSearchInputs(headerSearchInput.value || '');
+                });
+                headerSearchInput.addEventListener('keydown', (e) => {
+                    if (e.key === 'Escape') {
+                        closeSearch();
+                        return;
+                    }
+                    if (e.key === 'Enter') {
+                        closeSearch();
+                    }
+                });
+            }
+
+            if (avatarBtn) {
+                avatarBtn.onclick = () => {
+                    closeSidebar();
+                    if (!accountMenu) return;
+                    accountMenu.classList.toggle('hide');
+                    if (!accountMenu.classList.contains('hide')) {
+                        self.loadSessionMeta();
+                    }
+                };
+            }
+            if (accountLogoutBtn) {
+                accountLogoutBtn.addEventListener('click', () => {
+                    location.href = '/api/auth/logout';
+                });
+            }
+
+            document.addEventListener('click', (e) => {
+                const target = e.target;
+                if (accountMenu && avatarBtn && !accountMenu.classList.contains('hide')) {
+                    if (target !== accountMenu && !accountMenu.contains(target) && target !== avatarBtn && !avatarBtn.contains(target)) {
+                        closeAccount();
+                    }
+                }
+            });
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    closeSearch();
+                    closeSidebar();
+                    closeAccount();
+                }
+            });
+
+            const initials = (value) => {
+                const src = String(value || '').trim();
+                if (!src) return 'U';
+                const parts = src.split(/\s+/u).filter(Boolean);
+                const raw = (parts[0]?.[0] || '') + (parts[1]?.[0] || '');
+                return (raw || src.slice(0, 2)).toUpperCase();
+            };
+            const label = 'VIP User';
+            if (accountName) accountName.textContent = label;
+            const short = initials(label);
+            if (avatarBtn) avatarBtn.textContent = short;
+            if (accountAvatar) accountAvatar.textContent = short;
+
+            this.loadSessionMeta();
+        },
+    };
+    HeaderUi.init();
     VipFlow.init();
     window.VipFlow = VipFlow;
     updatePipButtons();

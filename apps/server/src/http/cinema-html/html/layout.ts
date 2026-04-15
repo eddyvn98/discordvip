@@ -1,41 +1,54 @@
-﻿export const getCinemaHtmlBody = () => `
+export const getCinemaHtmlBody = () => `
 
   <div class="wrap">
     <header class="top">
-      <div class="top-brand">
-        <div class="title">VIP Cinema</div>
-        <div class="status-note">Kho phim dọc cao cấp</div>
+      <button id="mobileSidebarToggleBtn" class="sidebar-toggle-btn" type="button" aria-label="Mở menu">☰</button>
+      <button id="logoHomeBtn" class="logo-btn top-brand" type="button" aria-label="Về trang chủ">
+        <div class="title">YouTube <span class="status-note">VN</span></div>
+      </button>
+      <div class="header-search-wrap">
+        <button id="headerSearchToggleBtn" class="header-search-btn" type="button" aria-label="Tìm kiếm">🔍</button>
+        <input id="headerSearchInput" class="header-search-input" placeholder="Tìm kênh hoặc phim..." />
       </div>
-      <nav class="top-links">
-        <a href="#" class="top-link active">Discover</a>
-        <a href="#" class="top-link">Originals</a>
-        <a href="#" class="top-link">VIP</a>
-      </nav>
-      <div class="top-actions">
-        <button class="top-btn top-btn-outline">Join Club</button>
-        <button class="top-btn top-btn-solid">Discord Login</button>
+      <button id="userAvatarBtn" class="user-avatar-btn" type="button" aria-label="Tài khoản">U</button>
+      <div id="accountMenu" class="account-menu hide">
+        <div class="account-head">
+          <div id="accountAvatar" class="account-avatar">U</div>
+          <div class="account-meta">
+            <strong id="accountName">Tài khoản VIP</strong>
+            <span id="accountPlanText">Gói hiện tại: VIP</span>
+            <span id="accountExpireText">Hạn sử dụng: --/--/----</span>
+          </div>
+        </div>
+        <button id="buyVipBtn" class="account-item" type="button">Mua gói VIP</button>
+        <button id="accountLogoutBtn" class="account-item" type="button">Đăng xuất</button>
       </div>
       <div id="sessionStatus" class="status">Đang xác thực...</div>
     </header>
 
-    <aside class="desktop-side-card">
+    <aside id="desktopSideCard" class="desktop-side-card">
+      <div class="side-head">
+        <button id="sideCollapseBtn" class="side-collapse-btn" type="button" aria-label="Đóng menu">✕</button>
+        <span class="side-head-label">Menu</span>
+      </div>
       <div class="side-tier-box">
-        <div class="side-tier-title">Free Tier</div>
-        <div class="side-tier-sub">Daily limit: 1/3 videos</div>
+        <div class="side-tier-title">VIP Cinema</div>
+        <div class="side-tier-sub">Gói cao cấp</div>
         <div class="side-tier-track"><span></span></div>
-        <button class="side-tier-btn">Upgrade to VIP</button>
+        <button id="sideUpgradeBtn" class="side-tier-btn" type="button">Nâng cấp VIP</button>
       </div>
       <nav class="side-nav-links">
-        <a href="#" class="side-nav-link active">Home</a>
-        <a href="#" class="side-nav-link">Trending</a>
-        <a href="#" class="side-nav-link">Library</a>
-        <a href="#" class="side-nav-link">Watch Later</a>
+        <a href="#" class="side-nav-link active">Trang chủ</a>
+        <a href="#" class="side-nav-link">Thịnh hành</a>
+        <a href="#" class="side-nav-link">Kênh đăng ký</a>
+        <a href="#" class="side-nav-link">Xem sau</a>
       </nav>
       <div class="side-footer">
-        <a href="#">Settings</a>
-        <a href="#">Support</a>
+        <a href="#">Cài đặt</a>
+        <a href="#">Hỗ trợ</a>
       </div>
     </aside>
+    <div id="sidebarBackdrop" class="sidebar-backdrop"></div>
 
     <div class="toolbar-wrap">
       <div class="toolbar">
@@ -105,7 +118,7 @@
           <p class="player-side-kicker">Daily Limit Status</p>
           <div class="player-side-count"><strong>2</strong><span>/ 3</span></div>
           <p class="player-side-reset">Resets in <em>4h 12m</em></p>
-          <button class="player-side-upgrade" type="button">Go Unlimited</button>
+          <button id="playerSideUpgradeBtn" class="player-side-upgrade" type="button">Nâng cấp VIP</button>
         </section>
         <div class="related-head">
           <h4>Phát tiếp theo</h4>
@@ -162,5 +175,6 @@
   </aside>
   <video id="feedPreloadVideo" class="hide" muted playsinline preload="metadata"></video>
   <button id="backFabBtn" class="fab-back hide">Quay về</button>
+  <div id="modalContainer" class="hide"></div>
 
 `;
