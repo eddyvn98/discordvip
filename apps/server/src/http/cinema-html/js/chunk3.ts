@@ -2,7 +2,7 @@ export const jsChunk3 = `
     function setPlayerMode(active){
       document.body.classList.toggle('player-mode',!!active);
       if(active){ closePanels(); }
-      if(!active){ dom.playbackDock.classList.remove('show'); }
+      if(!active && dom.playbackDock){ dom.playbackDock.classList.remove('show'); }
     }
     function enterPip(){
       if(state.currentMediaType!=='video' || !state.currentItem) return;
@@ -11,7 +11,7 @@ export const jsChunk3 = `
       dom.playerMedia.classList.remove('pip-exit');
       dom.playerMedia.classList.add('pip-active');
       dom.playerMedia.classList.remove('sticky-player');
-      dom.player.removeAttribute('controls');
+      dom.player.setAttribute('controls','');
       if(!state.pipRect){
         const width=clamp(Math.floor(window.innerWidth*0.46),pipMinWidth(),pipMaxWidth());
         const height=Math.round(width*9/16);

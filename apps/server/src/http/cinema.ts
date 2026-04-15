@@ -4,8 +4,10 @@ import { stat } from "node:fs/promises";
 import path from "node:path";
 import { Readable } from "node:stream";
 
+import { env } from "../config.js";
 import { CinemaService } from "../services/cinema-service.js";
-import { requireVip } from "./cinema-auth.js";
+import { OrderService } from "../services/order-service.js";
+import { requireCinemaSession } from "./cinema-auth.js";
 import { renderEntryBootstrapHtml } from "./cinema-bootstrap-html.js";
 import { renderCinemaHtml } from "./cinema-html.js";
 import { rateLimit } from "./cinema-rate-limiter.js";
@@ -16,7 +18,16 @@ import {
   proxyTelefilmStream,
 } from "./cinema-stream-utils.js";
 
-export function registerCinemaRoutes(app: Express, cinemaService: CinemaService) {
+export function registerCinemaRoutes(app: Express, cinemaService: CinemaService, orderService: OrderService) {
+  const FREE_DAILY_WATCH_LIMIT = 3;
+
+  const getWatchUsage = async (session: { isVip: boolean; platform: string; platformUserId: string }) => {
+    const userKey = `${session.platform}:${session.platformUserId}`;
+    const dailyUsed = session.isVip ? 0 : await cinemaService.getDailyViewedCount(userKey, env.TIMEZONE);
+    const dailyRemaining = session.isVip ? Number.MAX_SAFE_INTEGER : Math.max(0, FREE_DAILY_WATCH_LIMIT - dailyUsed);
+    return { userKey, dailyUsed, dailyRemaining };
+  };
+
   const proxyTelethonBigStream = async (req: Request, res: Response, itemId: string) => {
     const source = await cinemaService.getTelegramSourceForItem(itemId);
     if (!source) {
@@ -44,8 +55,19 @@ export function registerCinemaRoutes(app: Express, cinemaService: CinemaService)
     Readable.fromWeb(upstream.body as any).pipe(res);
   };
 
-  app.get("/cinema", renderCinemaHtml);
-  app.get("/api/cinema", renderCinemaHtml);
+  const renderCinemaWithDevBypass = (req: Request, res: Response) => {
+    if (env.DEV_BYPASS_ADMIN_AUTH && !req.session.adminUser) {
+      req.session.adminUser = {
+        id: "dev-cinema-admin",
+        username: "Dev Cinema Admin",
+        avatarUrl: null,
+      };
+    }
+    renderCinemaHtml(req, res);
+  };
+
+  app.get("/cinema", renderCinemaWithDevBypass);
+  app.get("/api/cinema", renderCinemaWithDevBypass);
 
   const renderEntry = (_req: Request, res: Response) => {
     const token = String(_req.params.entryTicket ?? "");
@@ -94,29 +116,40 @@ export function registerCinemaRoutes(app: Express, cinemaService: CinemaService)
     }
   });
 
-  app.get("/api/cinema/session/me", (req: Request, res: Response) => {
-    const session = requireVip(cinemaService, req, res);
-    if (!session) return;
-    res.json({ expiresAt: session.expiresAt, isVip: session.isVip });
+  app.get("/api/cinema/session/me", async (req: Request, res: Response) => {
+    try {
+      const session = requireCinemaSession(cinemaService, req, res);
+      if (!session) return;
+      const { dailyUsed, dailyRemaining } = await getWatchUsage(session);
+      res.json({
+        expiresAt: session.expiresAt,
+        isVip: session.isVip,
+        dailyLimit: FREE_DAILY_WATCH_LIMIT,
+        dailyUsed,
+        dailyRemaining,
+      });
+    } catch (error) {
+      res.status(500).json({ error: error instanceof Error ? error.message : "Failed to load cinema session" });
+    }
   });
 
   app.get("/api/cinema/channels", async (req: Request, res: Response) => {
-    const session = requireVip(cinemaService, req, res);
+    const session = requireCinemaSession(cinemaService, req, res);
     if (!session) return;
     res.json(await cinemaService.listChannelsForWeb());
   });
 
   app.get("/api/cinema/channels/:channelId/items", async (req: Request, res: Response) => {
-    const session = requireVip(cinemaService, req, res);
+    const session = requireCinemaSession(cinemaService, req, res);
     if (!session) return;
     const sortRaw = String(req.query.sort ?? "").trim().toLowerCase();
     const sort =
       sortRaw === "oldest" ||
-      sortRaw === "random" ||
-      sortRaw === "newest" ||
-      sortRaw === "most_viewed" ||
-      sortRaw === "least_viewed" ||
-      sortRaw === "unseen"
+        sortRaw === "random" ||
+        sortRaw === "newest" ||
+        sortRaw === "most_viewed" ||
+        sortRaw === "least_viewed" ||
+        sortRaw === "unseen"
         ? sortRaw
         : "newest";
     res.json(
@@ -128,7 +161,7 @@ export function registerCinemaRoutes(app: Express, cinemaService: CinemaService)
   });
 
   app.get("/api/cinema/feed/items", async (req: Request, res: Response) => {
-    const session = requireVip(cinemaService, req, res);
+    const session = requireCinemaSession(cinemaService, req, res);
     if (!session) return;
     const limit = Math.max(20, Math.min(Number(req.query.limit ?? 120), 400));
     res.json(
@@ -140,15 +173,33 @@ export function registerCinemaRoutes(app: Express, cinemaService: CinemaService)
   });
 
   app.post("/api/cinema/items/:itemId/view", async (req: Request, res: Response) => {
-    const session = requireVip(cinemaService, req, res);
+    const session = requireCinemaSession(cinemaService, req, res);
     if (!session) return;
-    await cinemaService.markItemViewed(String(req.params.itemId ?? ""), `${session.platform}:${session.platformUserId}`);
-    res.json({ ok: true });
+    const itemId = String(req.params.itemId ?? "");
+    const { userKey, dailyUsed, dailyRemaining } = await getWatchUsage(session);
+    if (!session.isVip && dailyRemaining <= 0) {
+      res.status(403).json({
+        error: `Giới hạn miễn phí: ${FREE_DAILY_WATCH_LIMIT} phim/ngày. Nâng cấp VIP để xem không giới hạn.`,
+        code: "FREE_DAILY_LIMIT_REACHED",
+        dailyLimit: FREE_DAILY_WATCH_LIMIT,
+        dailyUsed,
+        dailyRemaining,
+      });
+      return;
+    }
+    await cinemaService.markItemViewed(itemId, userKey);
+    const updatedDailyUsed = session.isVip ? dailyUsed : await cinemaService.getDailyViewedCount(userKey, env.TIMEZONE);
+    res.json({
+      ok: true,
+      dailyLimit: FREE_DAILY_WATCH_LIMIT,
+      dailyUsed: updatedDailyUsed,
+      dailyRemaining: session.isVip ? Number.MAX_SAFE_INTEGER : Math.max(0, FREE_DAILY_WATCH_LIMIT - updatedDailyUsed),
+    });
   });
 
   app.get("/api/cinema/items/:itemId", async (req: Request, res: Response) => {
     try {
-      const session = requireVip(cinemaService, req, res);
+      const session = requireCinemaSession(cinemaService, req, res);
       if (!session) return;
       res.json(await cinemaService.getItemForWeb(String(req.params.itemId ?? "")));
     } catch (error) {
@@ -157,12 +208,25 @@ export function registerCinemaRoutes(app: Express, cinemaService: CinemaService)
   });
 
   app.get("/api/cinema/items/:itemId/playback", async (req: Request, res: Response) => {
-    const session = requireVip(cinemaService, req, res);
+    const session = requireCinemaSession(cinemaService, req, res);
     if (!session) return;
+    const itemId = String(req.params.itemId ?? "");
+    const { userKey, dailyUsed, dailyRemaining } = await getWatchUsage(session);
+    if (!session.isVip && dailyRemaining <= 0) {
+      res.status(403).json({
+        error: `Giới hạn miễn phí: ${FREE_DAILY_WATCH_LIMIT} phim/ngày. Nâng cấp VIP để xem không giới hạn.`,
+        code: "FREE_DAILY_LIMIT_REACHED",
+        dailyLimit: FREE_DAILY_WATCH_LIMIT,
+        dailyUsed,
+        dailyRemaining,
+      });
+      return;
+    }
+    await cinemaService.markItemViewed(itemId, userKey);
     res.json(
       await cinemaService.getSignedPlaybackLinks({
-        itemId: String(req.params.itemId ?? ""),
-        userId: `${session.platform}:${session.platformUserId}`,
+        itemId,
+        userId: userKey,
       }),
     );
   });
@@ -173,7 +237,7 @@ export function registerCinemaRoutes(app: Express, cinemaService: CinemaService)
         res.status(403).json({ error: "Cross-origin media hotlink is blocked." });
         return;
       }
-      const session = requireVip(cinemaService, req, res);
+      const session = requireCinemaSession(cinemaService, req, res);
       if (!session) return;
       const wildcard = (req.params as Record<string, string | string[] | undefined>)["0"];
       const path = String(Array.isArray(wildcard) ? wildcard[0] : wildcard ?? "").replace(/^\/+/u, "");
@@ -193,7 +257,7 @@ export function registerCinemaRoutes(app: Express, cinemaService: CinemaService)
         res.status(403).json({ error: "Cross-origin media hotlink is blocked." });
         return;
       }
-      const session = requireVip(cinemaService, req, res);
+      const session = requireCinemaSession(cinemaService, req, res);
       if (!session) return;
       const wildcard = (req.params as Record<string, string | string[] | undefined>)["0"];
       const rel = String(Array.isArray(wildcard) ? wildcard[0] : wildcard ?? "").replace(/^\/+/u, "");
@@ -258,7 +322,7 @@ export function registerCinemaRoutes(app: Express, cinemaService: CinemaService)
         res.status(403).json({ error: "Cross-origin media hotlink is blocked." });
         return;
       }
-      const session = requireVip(cinemaService, req, res);
+      const session = requireCinemaSession(cinemaService, req, res);
       if (!session) return;
       const fileId = String(req.params.fileId ?? "").trim();
       if (!fileId) {
@@ -308,7 +372,7 @@ export function registerCinemaRoutes(app: Express, cinemaService: CinemaService)
         res.status(403).json({ error: "Cross-origin media hotlink is blocked." });
         return;
       }
-      const session = requireVip(cinemaService, req, res);
+      const session = requireCinemaSession(cinemaService, req, res);
       if (!session) return;
       await proxyTelethonBigStream(req, res, String(req.params.itemId ?? ""));
     } catch {
@@ -350,6 +414,57 @@ export function registerCinemaRoutes(app: Express, cinemaService: CinemaService)
       res.status(501).json({ error: "Only http(s) asset references are supported in v1." });
     } catch (error) {
       res.status(403).json({ error: error instanceof Error ? error.message : "Stream access denied" });
+    }
+  });
+  app.post("/api/cinema/orders/create", async (req: Request, res: Response) => {
+    try {
+      const session = requireCinemaSession(cinemaService, req, res);
+      if (!session) return;
+
+      const body = req.body as { planCode?: string };
+      const planCode = String(body.planCode ?? "").trim();
+      if (!planCode) {
+        res.status(400).json({ error: "planCode is required" });
+        return;
+      }
+
+      const order = await orderService.createOrder({
+        platform: session.platform,
+        platformUserId: session.platformUserId,
+        platformChatId: session.platformChatId,
+        planCode,
+      });
+
+      res.json(order);
+    } catch (error) {
+      res.status(400).json({ error: error instanceof Error ? error.message : "Order creation failed" });
+    }
+  });
+
+  app.get("/api/cinema/orders/:orderId/status", async (req: Request, res: Response) => {
+    try {
+      const session = requireCinemaSession(cinemaService, req, res);
+      if (!session) return;
+
+      const order = await orderService.findByCode(String(req.params.orderId ?? "").toUpperCase());
+      if (!order) {
+        res.status(404).json({ error: "Order not found" });
+        return;
+      }
+
+      // Security check: only the user who created the order (or admin) can see it
+      if (order.platformUserId !== session.platformUserId) {
+        res.status(403).json({ error: "Access denied" });
+        return;
+      }
+
+      res.json({
+        id: order.id,
+        status: order.status,
+        paidAt: order.paidAt,
+      });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch order status" });
     }
   });
 }

@@ -87,6 +87,9 @@ export class CinemaService {
   async markItemViewed(itemId: string, userKey: string) {
     return this.viewService.markItemViewed(itemId, userKey);
   }
+  async getDailyViewedCount(userKey: string, timezone: string) {
+    return this.viewService.getDailyViewedCount(userKey, timezone);
+  }
 
   // --- Streaming & Links ---
   async getSignedPlaybackLinks(input: { itemId: string; userId: string }) {

@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container-low": "#1c1b1b",
+                        "surface-container-lowest": "#0e0e0e",
+                        "error": "#ffb4ab",
+                        "surface-bright": "#3a3939",
+                        "surface-container-highest": "#353534",
+                        "on-surface": "#e5e2e1",
+                        "on-surface-variant": "#bac9cc",
+                        "primary-container": "#00e5ff",
+                        "surface-tint": "#00daf3",
+                        "on-error-container": "#ffdad6",
+                        "on-tertiary-fixed": "#1c1b1b",
+                        "outline-variant": "#3b494c",
+                        "on-primary-container": "#00626e",
+                        "on-background": "#e5e2e1",
+                        "on-tertiary-fixed-variant": "#474746",
+                        "inverse-surface": "#e5e2e1",
+                        "inverse-on-surface": "#313030",
+                        "on-secondary-container": "#342800",
+                        "error-container": "#93000a",
+                        "on-primary": "#00363d",
+                        "background": "#131313",
+                        "surface-variant": "#353534",
+                        "surface-dim": "#131313",
+                        "on-secondary": "#3c2f00",
+                        "secondary-container": "#af8d11",
+                        "secondary": "#e9c349",
+                        "tertiary": "#efeceb",
+                        "on-error": "#690005",
+                        "on-tertiary": "#313030",
+                        "outline": "#849396",
+                        "on-secondary-fixed-variant": "#574500",
+                        "tertiary-container": "#d2d0cf",
+                        "primary": "#c3f5ff",
+                        "primary-fixed-dim": "#00daf3",
+                        "on-primary-fixed": "#001f24",
+                        "inverse-primary": "#006875",
+                        "primary-fixed": "#9cf0ff",
+                        "on-primary-fixed-variant": "#004f58",
+                        "secondary-fixed-dim": "#e9c349",
+                        "on-secondary-fixed": "#241a00",
+                        "tertiary-fixed-dim": "#c8c6c5",
+                        "surface": "#131313",
+                        "secondary-fixed": "#ffe088",
+                        "surface-container-high": "#2a2a2a",
+                        "surface-container": "#201f1f",
+                        "tertiary-fixed": "#e5e2e1",
+                        "on-tertiary-container": "#5a5959"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "12px",
+                        "xl": "16px",
+                        "full": "9999px"
+                    },
+                    "fontFamily": {
+                        "headline": ["Inter", "sans-serif"],
+                        "body": ["Inter", "sans-serif"],
+                        "label": ["Inter", "sans-serif"]
+                    }
+                },
+            },
+        }
+    </script>
+    <style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .bg-noir-glow {
+            background: radial-gradient(circle at 50% 50%, #1a1a1a 0%, #131313 100%);
+        }
+        .bg-primary-luminous {
+            background: linear-gradient(135deg, #c3f5ff 0%, #00e5ff 100%);
+        }
+        .text-glow {
+            text-shadow: 0 0 20px rgba(195, 245, 255, 0.4);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body min-h-screen flex flex-col">
+<!-- Subtle Ambient Background -->
+<div class="fixed inset-0 z-0 overflow-hidden pointer-events-none">
+<div class="absolute -top-[20%] -left-[10%] w-[60%] h-[60%] rounded-full bg-primary/5 blur-[120px]"></div>
+<div class="absolute -bottom-[20%] -right-[10%] w-[60%] h-[60%] rounded-full bg-secondary/5 blur-[120px]"></div>
+<div class="absolute inset-0 bg-noir-glow opacity-80"></div>
+</div>
+<!-- Main Content Canvas -->
+<main class="relative z-10 flex-grow flex items-center justify-center px-6 py-12">
+<div class="max-w-md w-full">
+<!-- Branding Anchor -->
+<div class="text-center mb-10">
+<h1 class="font-headline text-2xl font-bold tracking-tighter text-cyan-200 uppercase mb-2">
+                    The Noir Curator
+                </h1>
+<div class="h-px w-12 bg-primary/30 mx-auto"></div>
+</div>
+<!-- Central Card (Glassmorphism & Tonal Layering) -->
+<div class="bg-surface-container-lowest/60 backdrop-blur-2xl rounded-xl p-8 md:p-10 shadow-[0px_20px_40px_rgba(0,0,0,0.6)] outline outline-1 outline-outline-variant/15 flex flex-col items-center">
+<!-- Icon/Identity Section -->
+<div class="mb-8 relative">
+<div class="w-20 h-20 rounded-full bg-surface-container-highest flex items-center justify-center overflow-hidden">
+<img alt="Logo" class="w-12 h-12 opacity-80" data-alt="abstract geometric circular logo design in deep charcoal and neon cyan tones with high-end editorial feel" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBBgbkyxF3J22Rdu_0idmg1YU1ChkN5Tqqtnj9zNXVpL0E-TGn0mxrKxGUkExTU5pT0GRJMg_TvnIajHQAxk4xiJ6fke8tJLiNPy9Xv5_gvliEZpt_fJQtWJEOCjsVwqccafX16sbcF6M6U_8RjCMjsYoHXYRS8Dim6a7vK2iY5UiDLmayE9ZXhSN7q2Ibd2fUUp6qAplAG7uh5hNzwFcYCM-YcY7xmrOs05IRmU1lDBgmNV5YgY9ak29dzGucfGfzB8CnNJOB2ujc"/>
+</div>
+<div class="absolute -bottom-1 -right-1 bg-primary p-1.5 rounded-full text-on-primary">
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">verified</span>
+</div>
+</div>
+<!-- Messaging -->
+<div class="text-center mb-8">
+<h2 class="font-headline text-3xl font-bold text-on-surface tracking-tight mb-4">
+                        Secure Access
+                    </h2>
+<p class="text-on-surface-variant leading-relaxed text-sm">
+                        Unlock instant access, join our community, and sync your VIP status for the ultimate cinematic experience.
+                    </p>
+</div>
+<!-- Primary CTA: Sync with Discord -->
+<button class="group w-full bg-primary-luminous py-4 rounded-full flex items-center justify-center gap-3 active:scale-95 transition-all duration-200 shadow-[0_0_20px_rgba(0,229,255,0.2)]">
+<span class="material-symbols-outlined text-on-primary" data-icon="discord">chat</span>
+<span class="text-on-primary font-bold tracking-wide uppercase text-xs">Sync with Discord</span>
+</button>
+<!-- Benefits List (Asymmetrical Grid) -->
+<div class="mt-10 w-full grid grid-cols-1 gap-4">
+<div class="flex items-start gap-4 p-3 rounded-lg hover:bg-surface-container-highest/30 transition-all duration-300">
+<div class="mt-1">
+<span class="material-symbols-outlined text-secondary text-lg" data-icon="star" style="font-variation-settings: 'FILL' 1;">star</span>
+</div>
+<div>
+<p class="text-xs font-bold text-on-surface uppercase tracking-widest mb-1">VIP Recognition</p>
+<p class="text-xs text-on-surface-variant">Automatic syncing of your membership tiers across platforms.</p>
+</div>
+</div>
+<div class="flex items-start gap-4 p-3 rounded-lg hover:bg-surface-container-highest/30 transition-all duration-300">
+<div class="mt-1">
+<span class="material-symbols-outlined text-primary text-lg" data-icon="groups" style="font-variation-settings: 'FILL' 1;">groups</span>
+</div>
+<div>
+<p class="text-xs font-bold text-on-surface uppercase tracking-widest mb-1">Private Community</p>
+<p class="text-xs text-on-surface-variant">Access to exclusive director's cuts and curated discussions.</p>
+</div>
+</div>
+</div>
+<!-- Secondary Tier Action -->
+<div class="mt-10 text-center">
+<button class="text-xs text-on-surface-variant hover:text-primary transition-colors flex items-center justify-center gap-2">
+<span>Continue as Guest</span>
+<span class="material-symbols-outlined text-[16px]" data-icon="chevron_right">chevron_right</span>
+</button>
+</div>
+</div>
+<!-- Footer Note -->
+<p class="mt-8 text-[10px] text-center text-on-surface-variant/50 uppercase tracking-[0.2em]">
+                By connecting, you agree to our <a class="text-primary/70 hover:text-primary underline decoration-primary/20" href="#">Terms</a> &amp; <a class="text-primary/70 hover:text-primary underline decoration-primary/20" href="#">Privacy Policy</a>
+</p>
+</div>
+</main>
+<!-- Contextual Decorative Elements -->
+<div class="fixed bottom-12 left-12 hidden lg:block opacity-20 hover:opacity-100 transition-opacity duration-700">
+<div class="rotate-[-90deg] origin-left">
+<span class="font-headline text-[80px] font-black text-transparent bg-clip-text bg-gradient-to-t from-surface-container-highest to-transparent select-none">
+                CURATED
+            </span>
+</div>
+</div>
+<!-- Navigation Suppressed for Transactional Focus per "Shell Visibility & Relevance" rule -->
+<footer class="w-full py-8 px-8 bg-zinc-950/20 z-10 border-t border-white/5">
+<div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+<p class="font-['Inter'] text-[10px] uppercase tracking-widest text-zinc-600">
+                © 2024 The Noir Curator. All rights reserved.
+            </p>
+<div class="flex gap-6">
+<a class="font-['Inter'] text-[10px] uppercase tracking-widest text-zinc-600 hover:text-cyan-400 transition-colors" href="#">Privacy Policy</a>
+<a class="font-['Inter'] text-[10px] uppercase tracking-widest text-zinc-600 hover:text-cyan-400 transition-colors" href="#">Terms of Service</a>
+<a class="font-['Inter'] text-[10px] uppercase tracking-widest text-zinc-600 hover:text-cyan-400 transition-colors" href="#">Discord Community</a>
+</div>
+</div>
+</footer>
+</body></html>

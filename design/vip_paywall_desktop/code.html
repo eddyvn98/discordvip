@@ -1,0 +1,215 @@
+<html><head><meta charset="utf-8"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        "colors": {
+                "surface-container-low": "#1c1b1b",
+                "surface-container-lowest": "#0e0e0e",
+                "error": "#ffb4ab",
+                "surface-bright": "#3a3939",
+                "surface-container-highest": "#353534",
+                "on-surface": "#e5e2e1",
+                "on-surface-variant": "#bac9cc",
+                "primary-container": "#00e5ff",
+                "surface-tint": "#00daf3",
+                "on-error-container": "#ffdad6",
+                "on-tertiary-fixed": "#1c1b1b",
+                "outline-variant": "#3b494c",
+                "on-primary-container": "#00626e",
+                "on-background": "#e5e2e1",
+                "on-tertiary-fixed-variant": "#474746",
+                "inverse-surface": "#e5e2e1",
+                "inverse-on-surface": "#313030",
+                "on-secondary-container": "#342800",
+                "error-container": "#93000a",
+                "on-primary": "#00363d",
+                "background": "#131313",
+                "surface-variant": "#353534",
+                "surface-dim": "#131313",
+                "on-secondary": "#3c2f00",
+                "secondary-container": "#af8d11",
+                "secondary": "#e9c349",
+                "tertiary": "#efeceb",
+                "on-error": "#690005",
+                "on-tertiary": "#313030",
+                "outline": "#849396",
+                "on-secondary-fixed-variant": "#574500",
+                "tertiary-container": "#d2d0cf",
+                "primary": "#c3f5ff",
+                "primary-fixed-dim": "#00daf3",
+                "on-primary-fixed": "#001f24",
+                "inverse-primary": "#006875",
+                "primary-fixed": "#9cf0ff",
+                "on-primary-fixed-variant": "#004f58",
+                "secondary-fixed-dim": "#e9c349",
+                "on-secondary-fixed": "#241a00",
+                "tertiary-fixed-dim": "#c8c6c5",
+                "surface": "#131313",
+                "secondary-fixed": "#ffe088",
+                "surface-container-high": "#2a2a2a",
+                "surface-container": "#201f1f",
+                "tertiary-fixed": "#e5e2e1",
+                "on-tertiary-container": "#5a5959"
+        },
+        "borderRadius": {
+                "DEFAULT": "0.25rem",
+                "lg": "0.5rem",
+                "xl": "0.75rem",
+                "md": "12px",
+                "full": "9999px"
+        },
+        "fontFamily": {
+                "headline": ["Inter"],
+                "body": ["Inter"],
+                "label": ["Inter"]
+        }
+      },
+    },
+  }
+</script>
+<style>
+  .material-symbols-outlined {
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  }
+  .glass-overlay {
+    background: rgba(19, 19, 19, 0.7);
+    backdrop-filter: blur(24px);
+  }
+  .noir-gradient-primary {
+    background: linear-gradient(135deg, #c3f5ff 0%, #00e5ff 100%);
+  }
+  .gold-glow {
+    box-shadow: 0 0 20px rgba(233, 195, 73, 0.15);
+  }
+</style>
+</head><body class="dark bg-background text-on-surface font-body overflow-hidden">
+<!-- Background Content (Blurred Video Page Context) -->
+<div class="fixed inset-0 z-0 overflow-hidden opacity-40 blur-2xl scale-110">
+<div class="grid grid-cols-2 md:grid-cols-4 gap-6 p-8">
+<div class="aspect-[9/16] bg-surface-container-lowest rounded-md overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="abstract digital waves in deep teal and black with cinematic moody lighting and smooth gradients" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAH5Ho6ARZPFf7tm24XOsCr0u_t9qhsg12j-yIFIdeXo_77jlJ1dLswxZLTtN5RRoglSWI_4GbiBSZWwrQAbtvQcSRVgpJxXBnDa-J4GaGb-wcJ_XnaEetRp_64KufizMlqycc4UK43A7Taa4tmKlA1lX0g8nIKI1G_gDeZi8qDiLB-MDs0qJzf-aOLv12wJcfiF2FMEhjncgroCeYwA-ESr8GcTuO9adGtkcYrPGpLhKKH-It0tammr16WWU4YgBnslE7UpAG0qLw"/>
+</div>
+<div class="aspect-[9/16] bg-surface-container-lowest rounded-md overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="minimalist dark architectural lines with dramatic shadows and cyan accent light reflected on polished concrete" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBAJ0hDBsCQU3cjyPjioxnceF_ttvI9qlDJ3J6RyUsdOcvJ6CEvKKN-CI3O8geH-7HGMh_SjhDyqA6RAq5qe8qHIBSVs08EDJCTNLYEKikqPI5tAxIuB5FvQuKAUQ-XVyy9T_vanLG92OXSZIG7mUdlAEclvrt56jlzQqhUkS_6JPrpoIlsMjqE1MKvWFwQrUs9kJH2nPBdy74yh1L7-xhfv3Lf7jxe4V-DnsuNIh69i22sxDyoR7PDIWq4-EhVDwDVgJ7LTR6SCY4"/>
+</div>
+<div class="aspect-[9/16] bg-surface-container-lowest rounded-md overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="dark fluid metallic texture with golden light highlights and deep liquid shadows in 4k resolution" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAtSzGKx9aNdO6Dc7aCNybwUm1bHW__YLhdSgwZubzmNudpLImeaK8XBqZ2D75i6ODoQpi8cAtIk2ccAfQYrfR-ylr2YKECyEPMoFm-4chMuXN7FL9tvyUO4stz1Oz3cTSD8bFAVoNzDEBV7aqTWmb03TCXR47L0V5tbL4Oy_HJyygYHZcXB21I5W0Dr7XZQGsuwBHsDmpZi4OiDUomQsWAt2mf_FGeffD8F3ZHedknwujEK-xULr7jYdVypzdrsTKvmkTOnyU6SN0"/>
+</div>
+<div class="aspect-[9/16] bg-surface-container-lowest rounded-md overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="starry night sky over a silhouettes of a distant mountain range in monochrome dark tones" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA7V1afaObUMizM8PVNpczDbOn7Gghq2M4J1GfcIwcg2Ys7yg2AyQrZvKibG7zZFn0gQrzI78U2en23PO1Ise-sZf9Mzvr1GJKR21pDuI9dhF87uLrjX1Q5NK4R_DcMigiTW7nHLk9T5woj8YwSUdunPgAO_SsU__Enklqhudu37uqGySN36zx4hCjGAeVzhfxtS56srTVun249q5pkdpAfcwFjXw_4hjMbAfyUMQ55LYWQlXUFHjLSnnNdLkfclfLALe4frlt4YrA"/>
+</div>
+</div>
+</div>
+<!-- Shared Component: TopNavBar -->
+<nav class="fixed top-0 w-full z-[100] bg-zinc-950/70 backdrop-blur-xl shadow-[0px_20px_40px_rgba(0,0,0,0.6)]">
+<div class="flex justify-between items-center h-16 px-8 w-full">
+<div class="flex items-center gap-8">
+<span class="text-xl font-bold tracking-tighter text-cyan-200">The Noir Curator</span>
+<div class="hidden md:flex gap-6 items-center">
+<a class="font-['Inter'] tracking-tighter text-cyan-300 border-b-2 border-cyan-400 pb-1" href="#">Discover</a>
+<a class="font-['Inter'] tracking-tighter text-zinc-400 hover:text-cyan-100 transition-colors" href="#">Originals</a>
+<a class="font-['Inter'] tracking-tighter text-zinc-400 hover:text-cyan-100 transition-colors" href="#">VIP</a>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="px-5 py-2 text-xs font-['Inter'] uppercase tracking-widest text-zinc-400 hover:text-cyan-100 transition-colors">Discord Login</button>
+<button class="px-6 py-2 noir-gradient-primary text-on-primary rounded-full text-sm font-bold hover:scale-[1.02] transition-all active:scale-95 duration-200">Join Club</button>
+</div>
+</div>
+</nav>
+<!-- VIP Upgrade Paywall Modal Overlay -->
+<div class="fixed inset-0 z-[200] flex items-center justify-center p-4 glass-overlay">
+<!-- Modal Container -->
+<div class="relative w-full max-w-4xl bg-surface-container-lowest rounded-md overflow-hidden shadow-[0px_20px_60px_rgba(0,0,0,0.8)] flex flex-col md:flex-row">
+<!-- Close Button -->
+<button class="absolute top-4 right-4 z-10 text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-2xl">close</span>
+</button>
+<!-- Left Side: Narrative/Benefits -->
+<div class="w-full md:w-5/12 p-8 md:p-12 bg-surface-container-low flex flex-col justify-center">
+<div class="mb-2">
+<span class="text-secondary font-['Inter'] text-xs uppercase tracking-[0.2em] font-black">Elite Access</span>
+</div>
+<h2 class="text-3xl md:text-4xl font-headline font-extrabold tracking-tighter text-on-surface mb-6 leading-tight">
+          You've reached your daily limit
+        </h2>
+<p class="text-on-surface-variant body-sm mb-8">
+          The curated gallery of high-bitrate originals awaits. Step beyond the free tier into the full cinematic experience.
+        </p>
+<ul class="space-y-4">
+<li class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary text-xl" data-icon="check_circle">check_circle</span>
+<span class="text-sm font-medium text-on-surface">Unlimited Watch Time</span>
+</li>
+<li class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary text-xl" data-icon="check_circle">check_circle</span>
+<span class="text-sm font-medium text-on-surface">Exclusive Original Series</span>
+</li>
+<li class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary text-xl" data-icon="check_circle">check_circle</span>
+<span class="text-sm font-medium text-on-surface">High-Bitrate 4K Stream</span>
+</li>
+<li class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary text-xl" data-icon="check_circle">check_circle</span>
+<span class="text-sm font-medium text-on-surface">Special Discord Role</span>
+</li>
+</ul>
+</div>
+<!-- Right Side: Pricing Selection -->
+<div class="w-full md:w-7/12 p-8 md:p-12 flex flex-col gap-6">
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+<!-- Monthly Plan -->
+<div class="group relative p-6 rounded-md bg-surface border border-outline-variant/15 hover:border-primary/50 transition-all cursor-pointer flex flex-col items-center text-center">
+<span class="text-xs font-bold text-on-surface-variant uppercase tracking-widest mb-4">Monthly Access</span>
+<div class="text-3xl font-black text-on-surface mb-1">$9.99</div>
+<span class="text-xs text-on-surface-variant">Billed every 30 days</span>
+<div class="mt-6 w-full">
+<button class="w-full py-2.5 rounded-full border border-primary text-primary text-xs font-bold uppercase tracking-widest hover:bg-primary/10 transition-all">Select Plan</button>
+</div>
+</div>
+<!-- Lifetime Plan (VIP Accent) -->
+<div class="group relative p-6 rounded-md bg-surface-container-high border border-secondary/30 gold-glow hover:border-secondary transition-all cursor-pointer flex flex-col items-center text-center overflow-hidden">
+<div class="absolute -top-1 -right-8 bg-secondary text-on-secondary text-[10px] font-black py-1 px-10 rotate-45 uppercase tracking-widest shadow-lg">Best Value</div>
+<span class="text-xs font-bold text-secondary uppercase tracking-widest mb-4">Lifetime Access</span>
+<div class="text-3xl font-black text-on-surface mb-1">$99.00</div>
+<span class="text-xs text-on-surface-variant">One-time payment</span>
+<div class="mt-6 w-full">
+<button class="w-full py-2.5 rounded-full bg-secondary text-on-secondary text-xs font-bold uppercase tracking-widest hover:opacity-90 transition-all">Select Plan</button>
+</div>
+</div>
+</div>
+<!-- Checkout Selection CTA -->
+<div class="flex flex-col gap-3 mt-4">
+<button class="w-full py-4 noir-gradient-primary text-on-primary rounded-full font-bold text-sm tracking-widest uppercase hover:scale-[1.01] active:scale-[0.98] transition-all">
+            Upgrade via Web
+          </button>
+<button class="w-full py-4 bg-[#5865F2] text-white rounded-full font-bold text-sm tracking-widest uppercase flex items-center justify-center gap-2 hover:opacity-90 active:scale-[0.98] transition-all">
+<svg class="w-5 h-5" fill="currentColor" viewbox="0 0 24 24"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037 19.736 19.736 0 0 0-4.885 1.515.069.069 0 0 0-.032.027C.533 9.048-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"></path></svg>
+            Upgrade via Discord
+          </button>
+</div>
+<p class="text-center text-[10px] text-zinc-600 uppercase tracking-widest mt-2">
+          Secure encryption enabled. Cancel any subscription at any time.
+        </p>
+</div>
+</div>
+</div>
+<!-- Shared Component: SideNavBar (Suppressed due to task-focus/paywall intent) -->
+<!-- Shared Component: Footer -->
+<footer class="fixed bottom-0 w-full z-[10] bg-zinc-950 border-t border-zinc-900 py-12 px-8">
+<div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center">
+<span class="text-zinc-500 font-black font-['Inter'] text-xs uppercase tracking-widest mb-4 md:mb-0">© 2024 The Noir Curator. All rights reserved.</span>
+<div class="flex gap-8">
+<a class="text-zinc-600 hover:text-cyan-400 font-['Inter'] text-xs uppercase tracking-widest transition-opacity hover:underline decoration-cyan-400/50" href="#">Privacy Policy</a>
+<a class="text-zinc-600 hover:text-cyan-400 font-['Inter'] text-xs uppercase tracking-widest transition-opacity hover:underline decoration-cyan-400/50" href="#">Terms of Service</a>
+<a class="text-zinc-600 hover:text-cyan-400 font-['Inter'] text-xs uppercase tracking-widest transition-opacity hover:underline decoration-cyan-400/50" href="#">Discord Community</a>
+</div>
+</div>
+</footer>
+</body></html>

@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>The Noir Curator | Home</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #131313;
+        }
+        .glass-card {
+            background: rgba(53, 53, 52, 0.6);
+            backdrop-filter: blur(24px);
+        }
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container-low": "#1c1b1b",
+                        "surface-container-lowest": "#0e0e0e",
+                        "error": "#ffb4ab",
+                        "surface-bright": "#3a3939",
+                        "surface-container-highest": "#353534",
+                        "on-surface": "#e5e2e1",
+                        "on-surface-variant": "#bac9cc",
+                        "primary-container": "#00e5ff",
+                        "surface-tint": "#00daf3",
+                        "on-error-container": "#ffdad6",
+                        "on-tertiary-fixed": "#1c1b1b",
+                        "outline-variant": "#3b494c",
+                        "on-primary-container": "#00626e",
+                        "on-background": "#e5e2e1",
+                        "on-tertiary-fixed-variant": "#474746",
+                        "inverse-surface": "#e5e2e1",
+                        "inverse-on-surface": "#313030",
+                        "on-secondary-container": "#342800",
+                        "error-container": "#93000a",
+                        "on-primary": "#00363d",
+                        "background": "#131313",
+                        "surface-variant": "#353534",
+                        "surface-dim": "#131313",
+                        "on-secondary": "#3c2f00",
+                        "secondary-container": "#af8d11",
+                        "secondary": "#e9c349",
+                        "tertiary": "#efeceb",
+                        "on-error": "#690005",
+                        "on-tertiary": "#313030",
+                        "outline": "#849396",
+                        "on-secondary-fixed-variant": "#574500",
+                        "tertiary-container": "#d2d0cf",
+                        "primary": "#c3f5ff",
+                        "primary-fixed-dim": "#00daf3",
+                        "on-primary-fixed": "#001f24",
+                        "inverse-primary": "#006875",
+                        "primary-fixed": "#9cf0ff",
+                        "on-primary-fixed-variant": "#004f58",
+                        "secondary-fixed-dim": "#e9c349",
+                        "on-secondary-fixed": "#241a00",
+                        "tertiary-fixed-dim": "#c8c6c5",
+                        "surface": "#131313",
+                        "secondary-fixed": "#ffe088",
+                        "surface-container-high": "#2a2a2a",
+                        "surface-container": "#201f1f",
+                        "tertiary-fixed": "#e5e2e1",
+                        "on-tertiary-container": "#5a5959"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px",
+                        "md": "12px"
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-background text-on-surface selection:bg-primary/30 min-h-screen">
+<!-- TopNavBar Shell -->
+<header class="fixed top-0 w-full z-[100] bg-zinc-950/70 backdrop-blur-xl shadow-[0px_20px_40px_rgba(0,0,0,0.6)]">
+<nav class="flex justify-between items-center h-16 px-8 w-full">
+<div class="flex items-center gap-8">
+<span class="text-xl font-bold tracking-tighter text-cyan-200">The Noir Curator</span>
+<div class="hidden md:flex items-center gap-6">
+<a class="text-cyan-300 border-b-2 border-cyan-400 pb-1 font-['Inter'] tracking-tighter text-lg" href="#">Discover</a>
+<a class="text-zinc-400 hover:text-cyan-100 transition-colors font-['Inter'] tracking-tighter text-lg" href="#">Originals</a>
+<a class="text-zinc-400 hover:text-cyan-100 transition-colors font-['Inter'] tracking-tighter text-lg" href="#">VIP</a>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="px-6 py-2 rounded-full border border-secondary text-secondary text-sm font-bold uppercase tracking-widest hover:bg-secondary/10 transition-all active:scale-95 duration-200">
+                    Join Club
+                </button>
+<button class="bg-gradient-to-br from-primary to-primary-container text-on-primary px-6 py-2 rounded-full text-sm font-bold flex items-center gap-2 hover:scale-[1.02] transition-all active:scale-90 duration-200 shadow-lg shadow-primary/20">
+<span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">token</span>
+                    Discord Login
+                </button>
+</div>
+</nav>
+</header>
+<div class="flex pt-16">
+<!-- SideNavBar Shell -->
+<aside class="hidden md:flex h-[calc(100vh-64px)] w-64 bg-zinc-950 flex-col py-8 px-4 fixed left-0 border-r border-zinc-800/15">
+<div class="mb-8 px-4">
+<div class="bg-surface-container-highest/20 rounded-md p-4 border border-outline-variant/10">
+<p class="text-cyan-400 text-xs font-bold uppercase tracking-widest mb-1">Free Tier</p>
+<p class="text-zinc-500 text-[10px] uppercase font-medium">Daily Limit: 1/3 videos</p>
+<div class="w-full bg-zinc-900 h-1 mt-3 rounded-full overflow-hidden">
+<div class="bg-cyan-400 h-full w-1/3"></div>
+</div>
+<button class="w-full mt-4 bg-secondary/10 text-secondary border border-secondary/20 py-2 rounded-md text-[10px] font-black uppercase tracking-tighter hover:bg-secondary/20 transition-all">
+                        Upgrade to VIP
+                    </button>
+</div>
+</div>
+<nav class="flex-1 space-y-2">
+<a class="flex items-center gap-4 py-3 px-4 text-cyan-400 font-bold border-r-2 border-cyan-400 bg-cyan-400/5 transition-transform duration-300" href="#">
+<span class="material-symbols-outlined" data-icon="home" style="font-variation-settings: 'FILL' 1;">home</span>
+<span class="font-['Inter'] text-sm font-medium">Home</span>
+</a>
+<a class="flex items-center gap-4 py-3 px-4 text-zinc-500 hover:text-zinc-200 hover:bg-zinc-900/50 transition-all transition-transform duration-300" href="#">
+<span class="material-symbols-outlined" data-icon="local_fire_department">local_fire_department</span>
+<span class="font-['Inter'] text-sm font-medium">Trending</span>
+</a>
+<a class="flex items-center gap-4 py-3 px-4 text-zinc-500 hover:text-zinc-200 hover:bg-zinc-900/50 transition-all transition-transform duration-300" href="#">
+<span class="material-symbols-outlined" data-icon="video_library">video_library</span>
+<span class="font-['Inter'] text-sm font-medium">Library</span>
+</a>
+<a class="flex items-center gap-4 py-3 px-4 text-zinc-500 hover:text-zinc-200 hover:bg-zinc-900/50 transition-all transition-transform duration-300" href="#">
+<span class="material-symbols-outlined" data-icon="schedule">schedule</span>
+<span class="font-['Inter'] text-sm font-medium">Watch Later</span>
+</a>
+</nav>
+<div class="mt-auto border-t border-zinc-900 pt-6 space-y-2">
+<a class="flex items-center gap-4 py-2 px-4 text-zinc-600 hover:text-cyan-400 transition-all" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="settings">settings</span>
+<span class="font-['Inter'] text-xs uppercase tracking-widest">Settings</span>
+</a>
+<a class="flex items-center gap-4 py-2 px-4 text-zinc-600 hover:text-cyan-400 transition-all" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="help">help</span>
+<span class="font-['Inter'] text-xs uppercase tracking-widest">Support</span>
+</a>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-1 md:ml-64 p-8">
+<!-- Hero / Featured Section (Asymmetric) -->
+<section class="mb-16 relative group overflow-hidden rounded-md h-[400px]">
+<img class="w-full h-full object-cover brightness-50 group-hover:scale-105 transition-transform duration-1000" data-alt="cinematic wide shot of a futuristic dark neon city street at night with heavy rain and atmospheric fog" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAHJjV9XvOYoMYEXNOKbeuEJs4K88IU6NLppwPSB0hJH0MqUHqGsV-OYLorxzKDIfhfeZCmYBim7dShltAD4epCqa16QN4o6BpsUxksIQ5iiSl_DUaz2VYESiYJRLrlJ4UghimWXmo7Lcbs6P_g9Yfy1KbH_G_E2PdgkmisEccAJriycRJOQxlTLMsHyvm6oxst1xt95i5KHdXHCHNNch1R2qjmMOxRImHJzpCMyFJWfD6ju827Y6nba-tTeLG1zQXDjlt1-8QtTZ4"/>
+<div class="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent"></div>
+<div class="absolute bottom-10 left-10 max-w-2xl">
+<span class="bg-secondary text-on-secondary px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest mb-4 inline-block">Exclusive Premiere</span>
+<h1 class="text-6xl font-black tracking-tighter leading-none mb-4 text-primary">SHADOWS OF THE ARCHIVE</h1>
+<p class="text-on-surface-variant text-lg max-w-lg mb-6 line-clamp-2">Enter the world of decoded memories. A Noir Curator original series exploring the intersection of digital ghosts and human consciousness.</p>
+<div class="flex gap-4">
+<button class="bg-primary text-on-primary px-8 py-3 rounded-full font-bold hover:scale-105 transition-all">Watch Now</button>
+<button class="glass-card border border-outline-variant/30 text-on-surface px-8 py-3 rounded-full font-bold hover:bg-surface-variant/40 transition-all">+ Add to Library</button>
+</div>
+</div>
+</section>
+<!-- Originals Grid -->
+<section class="mb-16">
+<div class="flex items-end justify-between mb-8">
+<div>
+<h2 class="text-xs font-black uppercase tracking-[0.3em] text-secondary mb-2">New Originals</h2>
+<h3 class="text-4xl font-bold tracking-tighter">THE VERTICAL SERIES</h3>
+</div>
+<a class="text-primary text-sm font-bold uppercase tracking-widest hover:underline decoration-primary/50" href="#">View Gallery</a>
+</div>
+<div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6">
+<!-- Video Card 1 -->
+<div class="group relative aspect-[9/16] rounded-md overflow-hidden bg-surface-container-lowest cursor-pointer">
+<img class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" data-alt="vertical cinematic shot of neon lights reflecting on wet asphalt in a dark alleyway mysterious atmosphere" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDfCwCwtgirP4I5momb2LHXGcYXj3-MTKYR0g8gp_Rrr_U9xebsHsdzeM0ptqYwM47UILbZO-hMezC8RcDCR7hicwdnIeEmEgxaXGp2gcn6qcEPoWdC_TakZaeVw0H6hiODTwdyIjFt6bqPqLI5PtzV52VKrjwo7dnpPY7RfPrb1PaHNrJmyJaJSTD5SrJt8hu5kZAW1TBSfvEleXUtom0VCc8JSw2WbpqSLB4HfB4pGyh1FL-6sBmDrOKeAn0vBDfoaSgvck6AiJ0"/>
+<div class="absolute inset-0 bg-black/20 group-hover:bg-primary/10 transition-all"></div>
+<div class="absolute top-4 right-4 bg-secondary text-on-secondary px-2 py-1 rounded-md text-[9px] font-black tracking-tighter z-10">VIP</div>
+<div class="absolute bottom-0 w-full p-4 glass-card border-t border-outline-variant/20">
+<span class="text-[10px] text-primary font-bold uppercase mb-1 block">04:32</span>
+<h4 class="text-sm font-bold text-on-surface leading-tight">Neon Pulse: Episode 01</h4>
+</div>
+</div>
+<!-- Video Card 2 -->
+<div class="group relative aspect-[9/16] rounded-md overflow-hidden bg-surface-container-lowest cursor-pointer">
+<img class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" data-alt="vertical dramatic close-up of a masked performer in high-contrast red lighting with smoke" src="https://lh3.googleusercontent.com/aida-public/AB6AXuANxbipQyo3d40DYsqz-KknDzjr_foUsznpR_D6K00NIgegjhggvKzeIEsAHuktaFVse19If9BmjIEiNBAZQt4GNRxP_icCqm9UuP4b0AWji-MZl8uymuYCkRy51dEnzs7JtsXWyJx6VSNA_y34SqZooH_25Jh7xhhaWSeCAyDOucm2pAOZ6TbnoCsBYqZXZ10h8zsE5zFIXOZtP9PylKGwli0ysUv1gk3o0my7PAJSDJ1JxPDnYTWqOq6rJjMxe75-hpWo7ugzxDQ"/>
+<div class="absolute inset-0 bg-black/20 group-hover:bg-primary/10 transition-all"></div>
+<div class="absolute top-4 left-4 bg-surface-container-lowest/80 backdrop-blur-md text-on-surface px-2 py-1 rounded-md text-[9px] font-bold z-10">CURATED</div>
+<div class="absolute bottom-0 w-full p-4 glass-card border-t border-outline-variant/20">
+<span class="text-[10px] text-primary font-bold uppercase mb-1 block">02:15</span>
+<h4 class="text-sm font-bold text-on-surface leading-tight">Vengeance Redacted</h4>
+</div>
+</div>
+<!-- Video Card 3 -->
+<div class="group relative aspect-[9/16] rounded-md overflow-hidden bg-surface-container-lowest cursor-pointer">
+<img class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" data-alt="vertical moody forest at night with bioluminescent flora and soft blue glow" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBk6imrO2NYWlRTKCS8UCgiie_id1oQQdHwWyXYH-zgh96GHkSqXA9-jFga7hnk44sUBQNaON7xewiiezPfvOtq2LEEKCN2fI6gGCoW4M4puXBJxZBx_pY1xTnWRQl9gdfwO_K9IigvbRvzRRVHAeDwvtKzubT_wivZbcFeS1wC98SIXkHq7rrqv-NhN8m168atrXSvS-wIK8ty0NwhW2WU4n72gacMNR9dEDsqAd1RnVHvymIDnv5bduaKr2GEQwPg7svThQqvU4M"/>
+<div class="absolute inset-0 bg-black/20 group-hover:bg-primary/10 transition-all"></div>
+<div class="absolute top-4 right-4 bg-secondary text-on-secondary px-2 py-1 rounded-md text-[9px] font-black tracking-tighter z-10">VIP</div>
+<div class="absolute bottom-0 w-full p-4 glass-card border-t border-outline-variant/20">
+<span class="text-[10px] text-primary font-bold uppercase mb-1 block">05:50</span>
+<h4 class="text-sm font-bold text-on-surface leading-tight">The Glow Theory</h4>
+</div>
+</div>
+<!-- Video Card 4 -->
+<div class="group relative aspect-[9/16] rounded-md overflow-hidden bg-surface-container-lowest cursor-pointer">
+<img class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" data-alt="vertical silhouette of a person standing against a massive circular white light source in a dark room" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAt00MhtKMM8X1-dH_sJroEfSU6AYdTRM0RF12LJ3Gwneyka8R3ItL8DO-xJJH4e9I1UIh54ZrFFmbdVKbnPLKWqlRd1iKwIP2NCOGaVv2xNHSRbrWRMO0XFpzCZwyJH2mm2fhpPmFYw3AlUIXCkgSh50QzTUruouMIR4ejNQo4tVxSoOCYw6Qb4TDBunTlRcl7QU58v9kRVw2BGMRcQzYkNc3b2Bgo4nbKs6dgALRJDfJbEORuvKDM-uH0HbDIqnH6T7Y6HegEA-g"/>
+<div class="absolute inset-0 bg-black/20 group-hover:bg-primary/10 transition-all"></div>
+<div class="absolute bottom-0 w-full p-4 glass-card border-t border-outline-variant/20">
+<span class="text-[10px] text-primary font-bold uppercase mb-1 block">01:45</span>
+<h4 class="text-sm font-bold text-on-surface leading-tight">Minimalist Void</h4>
+</div>
+</div>
+<!-- Video Card 5 -->
+<div class="group relative aspect-[9/16] rounded-md overflow-hidden bg-surface-container-lowest cursor-pointer">
+<img class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" data-alt="vertical grainy black and white shot of high fashion editorial with sharp shadows" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBu-2NSBPocR51tlpg_ZhOKOuBMjU4o4PRrwe_oEZVd8ro7luLd0PgQoYufIfcRA7bhrcPHaeJbYX5TAZuYUGfIrTkI9hjeGdx2u2h7u1UfoCbYwEXLf_09EXrcCK7Ci9_-oeImpf4Ma9s6zZIoWAxFYYEShMK74DGcrKrIvIyMW91oM6N3eAtDO1_voaYfnyOv6BbX7s81as72rnDNJ88T0bmT6PwQtH3ehitXfAiAMz3OR8-5bPqb5ZAY54f9OXAe5AkHQpI7c4Q"/>
+<div class="absolute inset-0 bg-black/20 group-hover:bg-primary/10 transition-all"></div>
+<div class="absolute top-4 right-4 bg-secondary text-on-secondary px-2 py-1 rounded-md text-[9px] font-black tracking-tighter z-10">VIP</div>
+<div class="absolute bottom-0 w-full p-4 glass-card border-t border-outline-variant/20">
+<span class="text-[10px] text-primary font-bold uppercase mb-1 block">03:22</span>
+<h4 class="text-sm font-bold text-on-surface leading-tight">Noir Aesthetics</h4>
+</div>
+</div>
+</div>
+</section>
+<!-- Trending Section -->
+<section class="mb-16">
+<div class="flex items-center gap-4 mb-8">
+<h3 class="text-3xl font-bold tracking-tighter">Trending Now</h3>
+<div class="h-px flex-1 bg-zinc-800"></div>
+</div>
+<div class="flex gap-4 mb-8 overflow-x-auto hide-scrollbar pb-4">
+<span class="bg-primary/10 text-primary px-6 py-2 rounded-full text-xs font-bold whitespace-nowrap cursor-pointer">#CYBERPUNK</span>
+<span class="bg-surface-container-highest text-zinc-500 px-6 py-2 rounded-full text-xs font-bold whitespace-nowrap cursor-pointer hover:bg-surface-container-highest/80 transition-colors">#EDITORIAL</span>
+<span class="bg-surface-container-highest text-zinc-500 px-6 py-2 rounded-full text-xs font-bold whitespace-nowrap cursor-pointer hover:bg-surface-container-highest/80 transition-colors">#SLOWCINEMA</span>
+<span class="bg-surface-container-highest text-zinc-500 px-6 py-2 rounded-full text-xs font-bold whitespace-nowrap cursor-pointer hover:bg-surface-container-highest/80 transition-colors">#MONOCHROME</span>
+<span class="bg-surface-container-highest text-zinc-500 px-6 py-2 rounded-full text-xs font-bold whitespace-nowrap cursor-pointer hover:bg-surface-container-highest/80 transition-colors">#EXPERIMENTAL</span>
+</div>
+<div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6">
+<!-- Similar Cards Continued -->
+<div class="group relative aspect-[9/16] rounded-md overflow-hidden bg-surface-container-lowest cursor-pointer">
+<img class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" data-alt="vertical perspective of modern skyscraper glass facade reflecting a dark cloudy sky" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCotuOun9OSsIUyImc0oyZwsd1ONQ2y4917W1t_myco1C3trUFwAeCtS73R2zkW_U6tV7vRiO0iQCNeytRatKdFqgri-ccDs8CmpJCVSRzBqECwl8gNuBFyP8AyE5xz59HqMjjv8qKZVVICHlgYEICs6P2fZMtxSr_53-Y1CRRLYCxTCf1FYouo6jgy781ONkopdy8n5Ds6xmlB-C2Cx8zFuCOzAZaKXszYbySy-zxc962KkIrG2Un6COwHg8M94RNKsLFHpcTpOBQ"/>
+<div class="absolute bottom-0 w-full p-4 glass-card">
+<h4 class="text-sm font-bold">Urban Desolation</h4>
+</div>
+</div>
+<div class="group relative aspect-[9/16] rounded-md overflow-hidden bg-surface-container-lowest cursor-pointer">
+<img class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" data-alt="vertical shot of a hand reaching through a beam of white light in a pitch black room" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDgPFQt0Bk6Srt2XLo_T-OGp-K4832pgmTVCKvhxZxaCPIpcoax-8koxm9o0NDAfZjDtYdMaqP6-RBwlsV7IGauqNj4UPGm8rTMPn-bCOOuPluiuatAcul3oShb-nkAHUmOqaMQPQyKW30lUuVmt6tIroMPc2Ar9gE8LkcrwDoPlb7L4vdnBv79Jfiy0gQyMm3JpIPbYJomEg_816JaRpyMK7ciPigjfPXUy5gS1rXz1BbhZPzAVFOzlvvvH5HF2xXw_mHOQmpSQ24"/>
+<div class="absolute bottom-0 w-full p-4 glass-card">
+<h4 class="text-sm font-bold">The Reach</h4>
+</div>
+</div>
+<div class="group relative aspect-[9/16] rounded-md overflow-hidden bg-surface-container-lowest cursor-pointer">
+<img class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" data-alt="vertical abstract shot of melting ice under blue and pink studio lights" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC9T3GdVzckgP7fbKcetGHhb_HAzgxf3G_TkUTn9nKiWYtRhAbmX8qPDVbmAcV4pX47OvxwBb_ro2RCmUWvt10ob4ghsm1ImkZMxvi3Mpe9Xh2KNPZrdpZXO_xRtThMV3tYrNfpzF5H-fq-RFQRvqA0qDsor0avzlomODENSbMpYIDNDtjUhu0AE3Cq9nGeLN8dRW0LRKxQISp1MO9NhyIzBD0dPESfFuNr0EEsASIc3OZSrNlZnElUzStoAZ0Et6ZIKekuqeBk_NU"/>
+<div class="absolute top-4 right-4 bg-secondary text-on-secondary px-2 py-1 rounded-md text-[9px] font-black tracking-tighter">VIP</div>
+<div class="absolute bottom-0 w-full p-4 glass-card">
+<h4 class="text-sm font-bold">Fractured Liquid</h4>
+</div>
+</div>
+<div class="group relative aspect-[9/16] rounded-md overflow-hidden bg-surface-container-lowest cursor-pointer">
+<img class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" data-alt="vertical dark cinema hallway with glowing red exit signs and velvet curtains" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDsdU6mT61jfeF3dc9oiO1zptu01_MN29x5JSFnfWRUAK4TUmdUs0PUSolh8mxVkVRo6H_Y68QLLaIqARefF9OFu75ghDxQbuUqZhH2kPNjySI1rlaNhQTL90fqXJ3HYadYUWCa-1QKoJfAXFkn4EyeBr2CAM0F-rt2I7g_KdghqyuTFXeQxm4I4CB5_t0pZEzt02u6GyTds0ue7WJ5WXHZnDvd2evDtqCJK-2BdvG0bCo2LkV7KvpXtMtisw_hlmOczoNQXbUu0UY"/>
+<div class="absolute bottom-0 w-full p-4 glass-card">
+<h4 class="text-sm font-bold">After Hours</h4>
+</div>
+</div>
+<div class="group relative aspect-[9/16] rounded-md overflow-hidden bg-surface-container-lowest cursor-pointer">
+<img class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" data-alt="vertical macro shot of technological circuit boards with blue electric pulses" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB63STNaizDuuP_jIo2TE3KyOzYft0xGtDuOVE5-7GGMy5Fy5XGJIfbcLMRsZMycgN5ymixLcF5UIX5__VYUEJpoZMamK8kIOTbkMns8sS8uoVAm47Q3f2udLzbIv_T-79Yrg-PfJ9LAOFBcfDDteE0rVz-TBKDVqfixzP80fVoaKWR9l9eVsXCmZXuWtfF9qLathSPm_D1DnmNu1H_XsFUOP6W-M6w9xotZZP5q2UTc9cTC8bnb9dMeeBlLAAkc_tkMzNVUk07zno"/>
+<div class="absolute bottom-0 w-full p-4 glass-card">
+<h4 class="text-sm font-bold">Digital Pulse</h4>
+</div>
+</div>
+</div>
+</section>
+</main>
+</div>
+<!-- Footer Shell -->
+<footer class="w-full py-12 px-8 bg-zinc-950 border-t border-zinc-900">
+<div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center">
+<div class="mb-8 md:mb-0">
+<span class="text-zinc-500 font-black text-xl uppercase tracking-tighter">The Noir Curator</span>
+<p class="text-zinc-600 font-['Inter'] text-xs uppercase tracking-widest mt-2">© 2024 The Noir Curator. All rights reserved.</p>
+</div>
+<div class="flex flex-wrap justify-center gap-8">
+<a class="text-zinc-600 hover:text-cyan-400 font-['Inter'] text-xs uppercase tracking-widest hover:underline decoration-cyan-400/50 transition-opacity opacity-80 hover:opacity-100" href="#">Privacy Policy</a>
+<a class="text-zinc-600 hover:text-cyan-400 font-['Inter'] text-xs uppercase tracking-widest hover:underline decoration-cyan-400/50 transition-opacity opacity-80 hover:opacity-100" href="#">Terms of Service</a>
+<a class="text-zinc-600 hover:text-cyan-400 font-['Inter'] text-xs uppercase tracking-widest hover:underline decoration-cyan-400/50 transition-opacity opacity-80 hover:opacity-100" href="#">Discord Community</a>
+<a class="text-zinc-600 hover:text-cyan-400 font-['Inter'] text-xs uppercase tracking-widest hover:underline decoration-cyan-400/50 transition-opacity opacity-80 hover:opacity-100" href="#">Contact</a>
+</div>
+</div>
+</footer>
+</body></html>

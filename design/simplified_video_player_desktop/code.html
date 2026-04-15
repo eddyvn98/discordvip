@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;300;400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-container-low": "#1c1b1b",
+                    "surface-container-lowest": "#0e0e0e",
+                    "error": "#ffb4ab",
+                    "surface-bright": "#3a3939",
+                    "surface-container-highest": "#353534",
+                    "on-surface": "#e5e2e1",
+                    "on-surface-variant": "#bac9cc",
+                    "primary-container": "#00e5ff",
+                    "surface-tint": "#00daf3",
+                    "on-error-container": "#ffdad6",
+                    "on-tertiary-fixed": "#1c1b1b",
+                    "outline-variant": "#3b494c",
+                    "on-primary-container": "#00626e",
+                    "on-background": "#e5e2e1",
+                    "on-tertiary-fixed-variant": "#474746",
+                    "inverse-surface": "#e5e2e1",
+                    "inverse-on-surface": "#313030",
+                    "on-secondary-container": "#342800",
+                    "error-container": "#93000a",
+                    "on-primary": "#00363d",
+                    "background": "#131313",
+                    "surface-variant": "#353534",
+                    "surface-dim": "#131313",
+                    "on-secondary": "#3c2f00",
+                    "secondary-container": "#af8d11",
+                    "secondary": "#e9c349",
+                    "tertiary": "#efeceb",
+                    "on-error": "#690005",
+                    "on-tertiary": "#313030",
+                    "outline": "#849396",
+                    "on-secondary-fixed-variant": "#574500",
+                    "tertiary-container": "#d2d0cf",
+                    "primary": "#c3f5ff",
+                    "primary-fixed-dim": "#00daf3",
+                    "on-primary-fixed": "#001f24",
+                    "inverse-primary": "#006875",
+                    "primary-fixed": "#9cf0ff",
+                    "on-primary-fixed-variant": "#004f58",
+                    "secondary-fixed-dim": "#e9c349",
+                    "on-secondary-fixed": "#241a00",
+                    "tertiary-fixed-dim": "#c8c6c5",
+                    "surface": "#131313",
+                    "secondary-fixed": "#ffe088",
+                    "surface-container-high": "#2a2a2a",
+                    "surface-container": "#201f1f",
+                    "tertiary-fixed": "#e5e2e1",
+                    "on-tertiary-container": "#5a5959"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "fontFamily": {
+                    "headline": ["Inter"],
+                    "body": ["Inter"],
+                    "label": ["Inter"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; background-color: #131313; color: #e5e2e1; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .glass-panel { background: rgba(53, 53, 52, 0.6); backdrop-filter: blur(24px); }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+    </style>
+</head>
+<body class="bg-background text-on-surface">
+<!-- TopNavBar -->
+<nav class="fixed top-0 w-full z-[100] bg-zinc-950/70 backdrop-blur-xl border-b border-zinc-800/50">
+<div class="flex justify-between items-center h-16 px-8 w-full">
+<div class="flex items-center gap-8">
+<span class="text-xl font-bold tracking-tighter text-cyan-200">The Noir Curator</span>
+<div class="hidden md:flex gap-6 items-center">
+<a class="font-['Inter'] tracking-tighter text-sm text-zinc-400 hover:text-cyan-100 transition-colors uppercase font-semibold" href="#">Discover</a>
+<a class="font-['Inter'] tracking-tighter text-sm text-cyan-300 border-b border-cyan-400 pb-0.5 uppercase font-semibold" href="#">Originals</a>
+<a class="font-['Inter'] tracking-tighter text-sm text-zinc-400 hover:text-cyan-100 transition-colors uppercase font-semibold" href="#">VIP</a>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="px-5 py-2 rounded-full border border-zinc-800 text-zinc-300 hover:bg-zinc-900 transition-all text-xs font-bold uppercase">Discord Login</button>
+<button class="px-5 py-2 rounded-full bg-gradient-to-br from-primary to-primary-container text-on-primary font-bold hover:scale-[1.02] active:scale-95 transition-all text-xs uppercase shadow-lg shadow-primary/20">Join Club</button>
+</div>
+</div>
+</nav>
+<div class="flex pt-16 min-h-screen">
+<!-- SideNavBar -->
+<aside class="hidden lg:flex flex-col py-8 px-4 h-[calc(100vh-64px)] w-64 border-r border-zinc-800/20 bg-zinc-950 sticky top-16">
+<div class="mb-8 px-4">
+<div class="flex items-center gap-3 mb-1">
+<div class="w-8 h-8 rounded-full bg-surface-container-highest flex items-center justify-center text-secondary shadow-[0_0_15px_rgba(233,195,73,0.15)]">
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+</div>
+<div>
+<p class="text-xs font-bold text-cyan-400">Free Tier</p>
+<p class="text-[9px] text-zinc-500 uppercase tracking-widest">Limit: 2/3 Daily</p>
+</div>
+</div>
+</div>
+<div class="space-y-1 mb-8">
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-zinc-500 hover:bg-zinc-900/50 transition-all group" href="#">
+<span class="material-symbols-outlined text-xl" data-icon="home">home</span>
+<span class="font-['Inter'] text-sm font-medium">Home</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-cyan-400 font-bold border-r-2 border-cyan-400 bg-cyan-400/5" href="#">
+<span class="material-symbols-outlined text-xl" data-icon="local_fire_department">local_fire_department</span>
+<span class="font-['Inter'] text-sm font-medium">Trending</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-zinc-500 hover:bg-zinc-900/50 transition-all" href="#">
+<span class="material-symbols-outlined text-xl" data-icon="video_library">video_library</span>
+<span class="font-['Inter'] text-sm font-medium">Library</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-zinc-500 hover:bg-zinc-900/50 transition-all" href="#">
+<span class="material-symbols-outlined text-xl" data-icon="schedule">schedule</span>
+<span class="font-['Inter'] text-sm font-medium">Watch Later</span>
+</a>
+</div>
+<div class="mt-auto pt-6 border-t border-zinc-900 space-y-4">
+<button class="w-full py-3 px-4 rounded-xl border border-secondary/30 text-secondary text-[11px] font-black uppercase tracking-widest hover:bg-secondary/5 transition-all text-left flex items-center justify-between group">
+                Upgrade to VIP
+                <span class="material-symbols-outlined text-sm transition-transform group-hover:translate-x-1">arrow_forward</span>
+</button>
+<div class="space-y-1">
+<a class="flex items-center gap-3 px-4 py-2 rounded-lg text-zinc-600 hover:text-zinc-200 text-sm transition-all" href="#">
+<span class="material-symbols-outlined text-lg" data-icon="settings">settings</span>
+                    Settings
+                </a>
+<a class="flex items-center gap-3 px-4 py-2 rounded-lg text-zinc-600 hover:text-zinc-200 text-sm transition-all" href="#">
+<span class="material-symbols-outlined text-lg" data-icon="help">help</span>
+                    Support
+                </a>
+</div>
+</div>
+</aside>
+<!-- Main Content: Simple 2-Column Layout -->
+<main class="flex-1 max-w-[1600px] mx-auto p-6 lg:p-10 grid grid-cols-1 lg:grid-cols-[1fr_400px] gap-12">
+<!-- Column 1: Video Player -->
+<section class="flex flex-col gap-6">
+<div class="relative w-full aspect-[9/16] max-h-[85vh] mx-auto bg-surface-container-lowest rounded-[32px] overflow-hidden shadow-2xl group border border-white/5 ring-1 ring-white/5">
+<img alt="Cinematic video still" class="w-full h-full object-cover opacity-90 group-hover:opacity-100 transition-opacity duration-700" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAxR0HMxHCq_AEchNNHyg2q0l7CurJm-CyOtrRESk4AQPUOlj1F30qeGnBrXWmKrUvFjRjNbwXJgXR4-erHqnxLPpTETucm8e8BKGfARS_jNQB6HGFuxYDDyPaKBN-0Wav1J54orGpkJfv_a5FUq7_AvlmOkkVKrLpepA4tVLzSX-jLQt0ajDztIR_DGY2ewzWiz6k0RHNiFNKab7lEw3eVNyj_AshVqnVtyMCqPgjrqL_Cxpt6uH432fBjQYhA_7BvnHpZzOn8Kss"/>
+<!-- Player Overlay Controls -->
+<div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/40 flex flex-col justify-between p-8">
+<!-- Top Overlay Info -->
+<div class="flex justify-between items-start">
+<div class="px-4 py-2 rounded-full glass-panel border border-white/10 flex items-center gap-2">
+<div class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></div>
+<span class="text-[10px] font-black uppercase tracking-widest text-white">Curating: 2 of 3</span>
+</div>
+</div>
+<!-- Bottom Controls -->
+<div class="space-y-6">
+<div class="flex items-center justify-between w-full">
+<div class="flex items-center gap-6">
+<button class="text-white hover:scale-110 transition-transform"><span class="material-symbols-outlined text-5xl" style="font-variation-settings: 'FILL' 1;">play_arrow</span></button>
+<button class="text-white/70 hover:text-white transition-colors"><span class="material-symbols-outlined">volume_up</span></button>
+</div>
+<div class="flex items-center gap-4">
+<span class="text-[10px] font-mono font-bold text-white/60 tracking-wider">02:45 / 04:12</span>
+<button class="text-white/70 hover:text-white transition-colors"><span class="material-symbols-outlined">fullscreen</span></button>
+</div>
+</div>
+<!-- Progress Bar -->
+<div class="h-1 w-full bg-white/10 rounded-full overflow-hidden">
+<div class="h-full bg-primary w-2/3 shadow-[0_0_15px_rgba(0,218,243,0.8)]"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- Simplified Video Title -->
+<div class="px-2">
+<h1 class="text-3xl font-black tracking-tighter text-white uppercase leading-none">The Neon Echoes — Pt. IV</h1>
+<p class="text-zinc-500 text-sm mt-2 font-medium tracking-tight">Director's Cut • 12.4K Views</p>
+</div>
+</section>
+<!-- Column 2: Sidebar Content -->
+<aside class="flex flex-col gap-8">
+<!-- Daily Limit Status Card -->
+<div class="p-8 rounded-[32px] bg-surface-container-low/40 border border-white/5 backdrop-blur-sm shadow-xl">
+<p class="text-zinc-500 text-[10px] font-black uppercase tracking-[0.2em] mb-2">Daily Limit Status</p>
+<div class="flex items-baseline gap-2">
+<span class="text-6xl font-black text-white tracking-tighter">2</span>
+<span class="text-zinc-600 font-bold text-2xl tracking-tighter">/ 3</span>
+</div>
+<p class="text-[10px] text-zinc-500 mt-4 uppercase font-bold tracking-widest">Resets in <span class="text-secondary">4h 12m</span></p>
+<button class="w-full mt-8 py-4 rounded-2xl bg-white/5 text-white text-[11px] font-black uppercase tracking-[0.2em] hover:bg-white/10 transition-all border border-white/5">Go Unlimited</button>
+</div>
+<!-- Up Next Section -->
+<div class="space-y-6">
+<div class="flex items-center justify-between px-2">
+<h2 class="text-sm font-black tracking-[0.2em] uppercase text-zinc-400">Up Next</h2>
+<span class="text-[10px] font-bold uppercase tracking-widest text-primary px-2 py-0.5 rounded-full bg-primary/10">Autoplay ON</span>
+</div>
+<div class="space-y-5">
+<!-- Up Next Item 1 -->
+<div class="group flex gap-4 cursor-pointer p-2 rounded-2xl hover:bg-white/5 transition-all">
+<div class="relative w-24 aspect-[9/16] rounded-xl overflow-hidden bg-zinc-900 flex-shrink-0 transition-transform group-hover:scale-[1.02] border border-white/5">
+<img alt="Thumbnail" class="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-opacity" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB9D2RjHUQLo8Rz51UinWlhOxTWs3aVHTI-S2YZ3fL_yvkS0Er90jdmYfwYpPpN97-KZDC-NaYwog4VsvXQ0_LuF44N-9kz4BbMsycvTw7nqS2ueccr7K5M92ivzfOCV0-CBCFKTsNWrOv9myJhmFLLZVpnT6iiwE8yHv1uBet6kTSxXZh31tJSdRev9-s-l6rGgPOH8tsWTiW8JjisVI1LLW0wK966o6Xkd6qe4J_wmAsmdfoYP6fVXrsp2aaWrPGj0KxKlFcjVLg"/>
+<span class="absolute bottom-2 right-2 px-1.5 py-0.5 rounded bg-black/80 text-[9px] font-bold text-white">03:12</span>
+</div>
+<div class="flex flex-col justify-center gap-1">
+<h4 class="text-xs font-bold text-white line-clamp-2 leading-snug group-hover:text-primary transition-colors uppercase tracking-tight">Rainfall Shadows: A Tokyo Narrative</h4>
+<p class="text-[10px] text-zinc-500 font-bold uppercase tracking-widest">Noir Studios</p>
+</div>
+</div>
+<!-- Up Next Item 2 -->
+<div class="group flex gap-4 cursor-pointer p-2 rounded-2xl hover:bg-white/5 transition-all">
+<div class="relative w-24 aspect-[9/16] rounded-xl overflow-hidden bg-zinc-900 flex-shrink-0 transition-transform group-hover:scale-[1.02] border border-white/5">
+<img alt="Thumbnail" class="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-opacity" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBbI3NN1Zyixh9IshcH5SnlmwnvU-_G789zwOV5s0nFSipMfcnjGWzYBYJQrPbyAfQl-nUWo4NgOGdNTBGED_czlPHhfg4AcmruEkeQrVIPuiNV3bnCyZw5318f1Di1PKkCtHBFJtjiWclu-kE8QV3_G5Nv0OXojf1BLT7yXuQsxqYQ9Kz0801lBTBca6hzB88lx7um_siMNm_6_Xe6S5zlmzb89e_XGH6vIKpQsaHtSqEJdx1pKhjdHrQ4HPrihOUwa6FCMC2D-Tk"/>
+<span class="absolute bottom-2 right-2 px-1.5 py-0.5 rounded bg-black/80 text-[9px] font-bold text-white">05:40</span>
+</div>
+<div class="flex flex-col justify-center gap-1">
+<h4 class="text-xs font-bold text-white line-clamp-2 leading-snug group-hover:text-primary transition-colors uppercase tracking-tight">The Void — Exclusive Interview</h4>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[10px] text-secondary" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="text-[9px] font-black text-secondary uppercase tracking-[0.1em]">VIP ONLY</span>
+</div>
+</div>
+</div>
+<!-- Up Next Item 3 -->
+<div class="group flex gap-4 cursor-pointer p-2 rounded-2xl hover:bg-white/5 transition-all">
+<div class="relative w-24 aspect-[9/16] rounded-xl overflow-hidden bg-zinc-900 flex-shrink-0 transition-transform group-hover:scale-[1.02] border border-white/5">
+<img alt="Thumbnail" class="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-opacity" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDFktDogEUW2DHjpE2hJ1ggIqd8ZUwD12n3Mbi5KL2S8d7kiUliSr3gBEyblAK0k-bkpm1yyx-_9rU7zT1R3CnaiXI4_PlbW3m_Z0qL8sj09hPoh7I7yFlN_VKejb9u73x1UJQQa3MQqT01-gODh66WKuhAB5_h0flTECG7yunXvqoHqTuAgBTqoyQ5iBx0nHRMFNkD5gI2L2N_D6u9AS7FVMr2yzcPJAVr-WIKp_rsLhHS1DNVJybxzpGLhdi6bCKjpwjLjMxP4CQ"/>
+<span class="absolute bottom-2 right-2 px-1.5 py-0.5 rounded bg-black/80 text-[9px] font-bold text-white">02:15</span>
+</div>
+<div class="flex flex-col justify-center gap-1">
+<h4 class="text-xs font-bold text-white line-clamp-2 leading-snug group-hover:text-primary transition-colors uppercase tracking-tight">Macro: Fluid Dynamics</h4>
+<p class="text-[10px] text-zinc-500 font-bold uppercase tracking-widest">Abstract Visions</p>
+</div>
+</div>
+</div>
+</div>
+</aside>
+</main>
+</div>
+<!-- Footer -->
+<footer class="bg-zinc-950 border-t border-zinc-900/50 w-full py-10 px-8">
+<div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
+<div class="text-zinc-600 font-black text-lg tracking-tighter uppercase">The Noir Curator</div>
+<div class="flex flex-wrap justify-center gap-8">
+<a class="text-[10px] uppercase font-bold tracking-[0.2em] text-zinc-600 hover:text-cyan-400 transition-all" href="#">Privacy</a>
+<a class="text-[10px] uppercase font-bold tracking-[0.2em] text-zinc-600 hover:text-cyan-400 transition-all" href="#">Terms</a>
+<a class="text-[10px] uppercase font-bold tracking-[0.2em] text-zinc-600 hover:text-cyan-400 transition-all" href="#">Discord</a>
+<a class="text-[10px] uppercase font-bold tracking-[0.2em] text-zinc-600 hover:text-cyan-400 transition-all" href="#">Contact</a>
+</div>
+<div class="text-zinc-700 text-[9px] font-bold uppercase tracking-[0.2em]">
+            © 2024 The Noir Curator.
+        </div>
+</div>
+</footer>
+</body></html>

@@ -191,32 +191,14 @@ export const jsChunk2 = `
       });
       dom.feedChannelDrawer.classList.add('show');
     }
-    function fmtTime(sec){
-      const s=Math.max(0,Math.floor(sec||0));
-      const h=Math.floor(s/3600);
-      const m=Math.floor((s%3600)/60);
-      const r=s%60;
-      return h>0?(h+':'+String(m).padStart(2,'0')+':'+String(r).padStart(2,'0')):(m+':'+String(r).padStart(2,'0'));
-    }
     function updatePlaybackDock(){
-      const show=!!state.currentItem && state.currentMediaType==='video' && !state.isPip;
-      dom.playbackDock.classList.toggle('show',show);
-      if(!show){ dom.volumePanel.classList.remove('show'); return; }
-      const duration=(Number.isFinite(dom.player.duration)&&dom.player.duration>0)?dom.player.duration:0;
-      const current=Math.max(0,dom.player.currentTime||0);
-      const pct=duration>0?(current/duration)*100:0;
-      dom.dockTimeline.value=String(Math.min(100,Math.max(0,pct)));
-      dom.dockTime.textContent=fmtTime(current)+'/'+fmtTime(duration);
-      const vol=String(Math.max(0,Math.min(1,dom.player.volume||0)));
-      dom.volumeVertical.value=vol;
-      dom.dockMuteBtn.textContent=(dom.player.muted || (dom.player.volume||0)===0)?'🔇':'🔊';
-      dom.dockSpeedBtn.textContent=(state.playbackRate||dom.player.playbackRate||1)+'x';
-      dom.dockMinBtn.style.display=(state.pseudoFullscreen||isLandscape())?'none':'';
+      if(dom.playbackDock){ dom.playbackDock.classList.remove('show'); }
+      if(dom.volumePanel){ dom.volumePanel.classList.remove('show'); }
     }
     function closePanels(){
       dom.searchPanel.classList.remove('show');
       dom.sortPanel.classList.remove('show');
-      dom.volumePanel.classList.remove('show');
+      if(dom.volumePanel){ dom.volumePanel.classList.remove('show'); }
       dom.navSearchBtn.classList.remove('active');
       dom.navSortBtn.classList.remove('active');
     }

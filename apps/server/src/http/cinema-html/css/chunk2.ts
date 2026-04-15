@@ -54,9 +54,11 @@ export const cssChunk2 = `
     body.player-mode .toolbar-wrap,
     body.player-mode #crumb,
     body.player-mode #hero{display:none!important}
+    body.player-mode #grid,
+    body.player-mode #loadMoreWrap{display:none!important}
     body.player-mode .wrap{padding-top:0}
     body.player-mode .player{border:none;background:transparent;border-radius:0;padding:0}
-    body.player-mode .player-nav{display:none!important}
+    body.player-mode .player-nav{display:flex!important}
     body.player-mode #playerTitle,
     body.player-mode #playerDesc{padding-left:12px;padding-right:12px}
     body.player-mode .pseudo-fullscreen .player-nav{display:flex!important}
@@ -90,9 +92,10 @@ export const cssChunk2 = `
     @media (min-width:1180px){
       body.player-mode .top{display:flex!important}
       body.player-mode .desktop-side-card{display:flex!important}
+      body.player-mode .player-nav{display:flex!important}
     }
     @media (max-width:1179px){
-      body.player-mode .top{display:none!important}
+      body.player-mode .top{display:flex!important}
       body.player-mode .related{padding-left:12px;padding-right:12px}
       body.player-mode #playerMedia.sticky-player{
         margin-left:-14px;
@@ -106,7 +109,7 @@ export const cssChunk2 = `
     }
     @media (max-width:760px){
       body.player-mode .wrap{
-        padding:12px 10px 98px;
+        padding:74px 10px 18px;
       }
       body.player-mode .player{
         padding:0;
@@ -150,6 +153,7 @@ export const cssChunk2 = `
         padding-left:0;
         padding-right:0;
       }
+      body.player-mode .bottom-nav{display:none!important}
       body.player-mode .related .player-side-limit{
         margin-bottom:14px;
       }
@@ -180,11 +184,11 @@ export const cssChunk2 = `
       background:rgba(9,11,16,.96);
       backdrop-filter:blur(6px);
       padding:8px 10px 10px;
-      display:none;
+      display:none!important;
       flex-direction:column;
       gap:8px;
     }
-    .playback-dock.show{display:flex}
+    .playback-dock.show{display:none!important}
     .dock-timeline-row{
       display:flex;
       align-items:center;

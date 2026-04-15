@@ -65,7 +65,7 @@ export const jsChunk1 = `
         if(state.isPip) exitPip();
         document.body.classList.add('fullscreen-mode');
         document.body.classList.add('controls-visible');
-        dom.player.removeAttribute('controls');
+        dom.player.setAttribute('controls','');
         dom.playerWrap.classList.add('pseudo-fullscreen'); document.body.classList.add('no-scroll'); dom.grid.classList.add('hide'); dom.loadMoreWrap.classList.add('hide');        syncFullscreenMainButton(true);
         try{ const tg=state.tg; if(tg&&tg.requestFullscreen){ tg.requestFullscreen(); } }catch(_e){}
         /* Luôn unlock để user xoay thiết bị tự do - KHÔNG lock landscape */

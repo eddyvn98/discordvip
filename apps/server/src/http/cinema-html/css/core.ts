@@ -245,7 +245,7 @@ export const coreCss = `
       flex-direction:column;
       gap:8px;
     }
-    .playback-dock.show{display:flex}
+    .playback-dock.show{display:none!important}
     .dock-timeline-row{
       display:flex;
       align-items:center;

@@ -37,7 +37,7 @@ export const cssChunk3 = `
       align-items:center;
       justify-content:center;
     }
-    .volume-panel.show{display:flex}
+    .volume-panel.show{display:none!important}
     .volume-panel input{
       writing-mode:vertical-lr;
       direction:rtl;

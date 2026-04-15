@@ -9,6 +9,7 @@ import { getCinemaPublicOrigin, isTryCloudflareOrigin } from "../lib/public-base
 import { AdminService } from "../services/admin-service.js";
 import { AuthService } from "../services/auth-service.js";
 import { CinemaService } from "../services/cinema-service.js";
+import { OrderService } from "../services/order-service.js";
 import { PaymentService } from "../services/payment-service.js";
 import { PromoCodeService } from "../services/promo-code-service.js";
 import { registerAdminRoutes } from "./admin.js";
@@ -51,12 +52,14 @@ export function createApp({
   paymentService,
   promoCodeService,
   cinemaService,
+  orderService,
 }: {
   adminService: AdminService;
   authService: AuthService;
   paymentService: PaymentService;
   promoCodeService: PromoCodeService;
   cinemaService: CinemaService;
+  orderService: OrderService;
 }) {
   const app = express();
   const trustProxy = env.TRUST_PROXY || env.APP_ENV === "production";
@@ -134,7 +137,7 @@ export function createApp({
   registerAuthRoutes(app, authService);
   registerAdminRoutes(app, adminService, paymentService, promoCodeService);
   registerAdminCinemaRoutes(app, cinemaService);
-  registerCinemaRoutes(app, cinemaService);
+  registerCinemaRoutes(app, cinemaService, orderService);
   registerLocalCinemaControlRoutes(app, cinemaService);
   registerWebhookRoutes(app, paymentService);
 

@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-container-low": "#1c1b1b",
+                    "surface-container-lowest": "#0e0e0e",
+                    "error": "#ffb4ab",
+                    "surface-bright": "#3a3939",
+                    "surface-container-highest": "#353534",
+                    "on-surface": "#e5e2e1",
+                    "on-surface-variant": "#bac9cc",
+                    "primary-container": "#00e5ff",
+                    "surface-tint": "#00daf3",
+                    "on-error-container": "#ffdad6",
+                    "on-tertiary-fixed": "#1c1b1b",
+                    "outline-variant": "#3b494c",
+                    "on-primary-container": "#00626e",
+                    "on-background": "#e5e2e1",
+                    "on-tertiary-fixed-variant": "#474746",
+                    "inverse-surface": "#e5e2e1",
+                    "inverse-on-surface": "#313030",
+                    "on-secondary-container": "#342800",
+                    "error-container": "#93000a",
+                    "on-primary": "#00363d",
+                    "background": "#131313",
+                    "surface-variant": "#353534",
+                    "surface-dim": "#131313",
+                    "on-secondary": "#3c2f00",
+                    "secondary-container": "#af8d11",
+                    "secondary": "#e9c349",
+                    "tertiary": "#efeceb",
+                    "on-error": "#690005",
+                    "on-tertiary": "#313030",
+                    "outline": "#849396",
+                    "on-secondary-fixed-variant": "#574500",
+                    "tertiary-container": "#d2d0cf",
+                    "primary": "#c3f5ff",
+                    "primary-fixed-dim": "#00daf3",
+                    "on-primary-fixed": "#001f24",
+                    "inverse-primary": "#006875",
+                    "primary-fixed": "#9cf0ff",
+                    "on-primary-fixed-variant": "#004f58",
+                    "secondary-fixed-dim": "#e9c349",
+                    "on-secondary-fixed": "#241a00",
+                    "tertiary-fixed-dim": "#c8c6c5",
+                    "surface": "#131313",
+                    "secondary-fixed": "#ffe088",
+                    "surface-container-high": "#2a2a2a",
+                    "surface-container": "#201f1f",
+                    "tertiary-fixed": "#e5e2e1",
+                    "on-tertiary-container": "#5a5959"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "12px",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "fontFamily": {
+                    "headline": ["Inter"],
+                    "body": ["Inter"],
+                    "label": ["Inter"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .glass-panel {
+            background: rgba(28, 27, 27, 0.7);
+            backdrop-filter: blur(24px);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface min-h-screen selection:bg-primary/30">
+<!-- TopNavBar -->
+<header class="fixed top-0 w-full z-[100] bg-zinc-950/70 backdrop-blur-xl shadow-[0px_20px_40px_rgba(0,0,0,0.6)]">
+<div class="flex justify-between items-center h-16 px-8 w-full max-w-7xl mx-auto">
+<div class="text-xl font-bold tracking-tighter text-cyan-200">The Noir Curator</div>
+<nav class="hidden md:flex items-center space-x-8">
+<a class="font-['Inter'] tracking-tighter headline-lg text-zinc-400 hover:text-cyan-100 transition-colors" href="#">Discover</a>
+<a class="font-['Inter'] tracking-tighter headline-lg text-zinc-400 hover:text-cyan-100 transition-colors" href="#">Originals</a>
+<a class="font-['Inter'] tracking-tighter headline-lg text-zinc-400 hover:text-cyan-100 transition-colors" href="#">VIP</a>
+</nav>
+<div class="flex items-center gap-4">
+<button class="bg-zinc-900/50 text-zinc-400 hover:text-cyan-100 transition-all px-4 py-2 rounded-full text-sm font-medium">Discord Login</button>
+<button class="bg-gradient-to-br from-primary to-primary-container text-on-primary px-6 py-2 rounded-full font-bold text-sm hover:scale-[1.02] active:scale-95 transition-all">Join Club</button>
+</div>
+</div>
+</header>
+<main class="pt-32 pb-20 px-6 max-w-6xl mx-auto">
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+<!-- Left Side: Order Summary -->
+<div class="lg:col-span-5 space-y-6">
+<div class="flex items-center gap-3 mb-8">
+<div class="h-10 w-10 rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-400">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">verified_user</span>
+</div>
+<div>
+<h2 class="text-xs uppercase tracking-[0.2em] text-emerald-400 font-bold">Secure Payment</h2>
+<p class="text-on-surface-variant text-sm">Powered by SePay &amp; VietQR</p>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-8 rounded-lg border-l-4 border-secondary relative overflow-hidden">
+<div class="absolute top-0 right-0 p-4 opacity-5">
+<span class="material-symbols-outlined text-9xl">workspace_premium</span>
+</div>
+<span class="inline-block px-3 py-1 rounded-full bg-secondary/10 text-secondary text-[10px] font-bold uppercase tracking-widest mb-4">Priority Access</span>
+<h1 class="text-4xl font-black tracking-tighter mb-2">VIP Access</h1>
+<p class="text-on-surface-variant mb-8 text-sm leading-relaxed">Unlimited access to the Curator's Private Collection, 4K HDR Streaming, and Exclusive Discord Channels.</p>
+<div class="space-y-4 pt-6 border-t border-outline-variant/20">
+<div class="flex justify-between items-center">
+<span class="text-on-surface-variant text-sm">Subscription Period</span>
+<span class="font-medium">12 Months</span>
+</div>
+<div class="flex justify-between items-center">
+<span class="text-on-surface-variant text-sm">Tax (VAT 0%)</span>
+<span class="font-medium">0 ₫</span>
+</div>
+<div class="flex justify-between items-end pt-4">
+<span class="text-lg font-bold">Total Amount</span>
+<div class="text-right">
+<span class="block text-3xl font-black text-primary">2,490,000 ₫</span>
+<span class="text-[10px] text-on-surface-variant uppercase tracking-widest">Pay once, no auto-renew</span>
+</div>
+</div>
+</div>
+</div>
+<div class="flex gap-4 p-4 rounded-lg bg-surface-container-low border border-outline-variant/10">
+<span class="material-symbols-outlined text-primary">info</span>
+<p class="text-xs text-on-surface-variant leading-tight">
+                        Please ensure the transfer content is exactly as displayed. Your VIP status will be activated automatically within 60 seconds of successful transfer.
+                    </p>
+</div>
+</div>
+<!-- Right Side: QR Code Payment -->
+<div class="lg:col-span-7">
+<div class="bg-surface-container-low rounded-lg p-1 md:p-8 relative">
+<div class="bg-surface-container-lowest rounded-lg p-8 md:p-12 shadow-2xl flex flex-col md:flex-row gap-12 items-center">
+<!-- QR Section -->
+<div class="w-full md:w-1/2 flex flex-col items-center">
+<div class="relative group">
+<div class="absolute -inset-4 bg-primary/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity rounded-full"></div>
+<div class="relative bg-white p-4 rounded-xl">
+<img alt="VietQR Payment Code" class="w-64 h-64 grayscale contrast-125" data-alt="A clean VietQR code for bank transfer payment, minimal white background, sharp black squares, center logo of a banking service" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCeSqPFVCsCnDpuqL1NzvazIWIHXWgmK5fYi4IV0Q41Ftg1tL0CtUxzv7_RsH5hzMNSJ1RYHpBDAFbD8YbqKeFR411pOfT102vsY-AaL3VEv_XiBRfb5eHM-Tw5Z2GSOiuTaOcF-5ngdhm1GgBh53bEwo0-bQEz_yLsb22LepSlJFQMmxy0408FnC3BnfkXyLXOXLHF7x5Du8oOETJLEMuM50e6MEo9eHiLzIjH13xM1t-qJ0v9t1_-in1884mXJ13wxFckYSkNtdw"/>
+</div>
+</div>
+<div class="mt-8 flex flex-col items-center gap-2">
+<div class="flex items-center gap-2 px-4 py-2 rounded-full bg-surface-container-high border border-outline-variant/30">
+<span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+<span class="text-sm font-medium text-on-surface">Waiting for payment...</span>
+</div>
+<p class="text-[10px] text-on-surface-variant uppercase tracking-widest mt-2">Scan with any Banking App</p>
+</div>
+</div>
+<!-- Details Section -->
+<div class="w-full md:w-1/2 space-y-6">
+<div>
+<label class="text-[10px] uppercase tracking-widest text-on-surface-variant block mb-2">Account Holder</label>
+<div class="text-lg font-bold text-on-surface">THE NOIR CURATOR LTD.</div>
+</div>
+<div>
+<label class="text-[10px] uppercase tracking-widest text-on-surface-variant block mb-2">Amount</label>
+<div class="flex items-center justify-between group cursor-pointer hover:bg-surface-container-high p-3 -m-3 rounded-lg transition-colors">
+<span class="text-2xl font-black text-primary">2,490,000 ₫</span>
+<span class="material-symbols-outlined text-zinc-600 group-hover:text-primary transition-colors">content_copy</span>
+</div>
+</div>
+<div>
+<label class="text-[10px] uppercase tracking-widest text-on-surface-variant block mb-2">Transfer Content</label>
+<div class="flex items-center justify-between bg-surface-container-high/50 p-4 rounded-lg border border-outline-variant/10 group cursor-pointer hover:border-primary/50 transition-all">
+<span class="font-mono text-secondary font-bold tracking-wider uppercase">NOIRVIP992X</span>
+<span class="material-symbols-outlined text-zinc-600 group-hover:text-primary transition-colors">content_copy</span>
+</div>
+<p class="text-[10px] text-error/60 mt-2">* Transaction will fail if content is incorrect</p>
+</div>
+<div class="pt-4 flex flex-col gap-3">
+<div class="flex items-center gap-3 text-on-surface-variant">
+<span class="material-symbols-outlined text-sm">account_balance</span>
+<span class="text-sm">Vietcombank (VCB)</span>
+</div>
+<div class="flex items-center gap-3 text-on-surface-variant">
+<span class="material-symbols-outlined text-sm">tag</span>
+<span class="text-sm">1024883921002</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Mobile Visual Hint -->
+<div class="mt-6 flex justify-center lg:hidden">
+<button class="flex items-center gap-2 text-zinc-500 hover:text-on-surface transition-colors">
+<span class="material-symbols-outlined">download</span>
+<span class="text-xs font-bold uppercase tracking-widest">Save QR to Gallery</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Footer -->
+<footer class="bg-zinc-950 w-full py-12 px-8 border-t border-zinc-900">
+<div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
+<div class="text-zinc-500 font-black text-xl">The Noir Curator</div>
+<div class="flex flex-wrap justify-center gap-8">
+<a class="font-['Inter'] text-xs uppercase tracking-widest text-zinc-600 hover:text-cyan-400 transition-all hover:underline decoration-cyan-400/50" href="#">Privacy Policy</a>
+<a class="font-['Inter'] text-xs uppercase tracking-widest text-zinc-600 hover:text-cyan-400 transition-all hover:underline decoration-cyan-400/50" href="#">Terms of Service</a>
+<a class="font-['Inter'] text-xs uppercase tracking-widest text-zinc-600 hover:text-cyan-400 transition-all hover:underline decoration-cyan-400/50" href="#">Discord Community</a>
+<a class="font-['Inter'] text-xs uppercase tracking-widest text-zinc-600 hover:text-cyan-400 transition-all hover:underline decoration-cyan-400/50" href="#">Contact</a>
+</div>
+<p class="font-['Inter'] text-xs uppercase tracking-widest text-zinc-600">© 2024 The Noir Curator. All rights reserved.</p>
+</div>
+</footer>
+<!-- Security Badges Floating -->
+<div class="fixed bottom-8 right-8 flex flex-col gap-4 items-end z-50 pointer-events-none opacity-40 hover:opacity-100 transition-opacity">
+<div class="bg-surface-container-high/80 backdrop-blur-md px-4 py-2 rounded-full border border-outline-variant/20 flex items-center gap-2 shadow-xl">
+<span class="material-symbols-outlined text-emerald-400 text-sm" style="font-variation-settings: 'FILL' 1;">lock</span>
+<span class="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">SSL Encrypted</span>
+</div>
+<div class="bg-surface-container-high/80 backdrop-blur-md px-4 py-2 rounded-full border border-outline-variant/20 flex items-center gap-2 shadow-xl">
+<span class="material-symbols-outlined text-primary text-sm" style="font-variation-settings: 'FILL' 1;">verified</span>
+<span class="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">Verified Merchant</span>
+</div>
+</div>
+</body></html>

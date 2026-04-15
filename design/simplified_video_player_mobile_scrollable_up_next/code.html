@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;300;400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-container-low": "#1c1b1b",
+                    "surface-container-lowest": "#0e0e0e",
+                    "error": "#ffb4ab",
+                    "surface-bright": "#3a3939",
+                    "surface-container-highest": "#353534",
+                    "on-surface": "#e5e2e1",
+                    "on-surface-variant": "#bac9cc",
+                    "primary-container": "#00e5ff",
+                    "surface-tint": "#00daf3",
+                    "on-error-container": "#ffdad6",
+                    "on-tertiary-fixed": "#1c1b1b",
+                    "outline-variant": "#3b494c",
+                    "on-primary-container": "#00626e",
+                    "on-background": "#e5e2e1",
+                    "on-tertiary-fixed-variant": "#474746",
+                    "inverse-surface": "#e5e2e1",
+                    "inverse-on-surface": "#313030",
+                    "on-secondary-container": "#342800",
+                    "error-container": "#93000a",
+                    "on-primary": "#00363d",
+                    "background": "#131313",
+                    "surface-variant": "#353534",
+                    "surface-dim": "#131313",
+                    "on-secondary": "#3c2f00",
+                    "secondary-container": "#af8d11",
+                    "secondary": "#e9c349",
+                    "tertiary": "#efeceb",
+                    "on-error": "#690005",
+                    "on-tertiary": "#313030",
+                    "outline": "#849396",
+                    "on-secondary-fixed-variant": "#574500",
+                    "tertiary-container": "#d2d0cf",
+                    "primary": "#c3f5ff",
+                    "primary-fixed-dim": "#00daf3",
+                    "on-primary-fixed": "#001f24",
+                    "inverse-primary": "#006875",
+                    "primary-fixed": "#9cf0ff",
+                    "on-primary-fixed-variant": "#004f58",
+                    "secondary-fixed-dim": "#e9c349",
+                    "on-secondary-fixed": "#241a00",
+                    "tertiary-fixed-dim": "#c8c6c5",
+                    "surface": "#131313",
+                    "secondary-fixed": "#ffe088",
+                    "surface-container-high": "#2a2a2a",
+                    "surface-container": "#201f1f",
+                    "tertiary-fixed": "#e5e2e1",
+                    "on-tertiary-container": "#5a5959"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "fontFamily": {
+                    "headline": ["Inter"],
+                    "body": ["Inter"],
+                    "label": ["Inter"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; background-color: #131313; color: #e5e2e1; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .glass-panel { background: rgba(53, 53, 52, 0.6); backdrop-filter: blur(24px); }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+    </style>
+</head>
+<body class="bg-background text-on-surface flex flex-col min-h-screen">
+<!-- TopNavBar (Simplified for Mobile) -->
+<nav class="fixed top-0 w-full z-[100] bg-zinc-950/80 backdrop-blur-xl border-b border-zinc-800/50">
+<div class="flex justify-between items-center h-14 px-4 w-full">
+<span class="text-lg font-bold tracking-tighter text-cyan-200 uppercase">The Noir Curator</span>
+<div class="flex items-center gap-2">
+<button class="w-8 h-8 flex items-center justify-center rounded-full bg-zinc-900 border border-zinc-800">
+<span class="material-symbols-outlined text-lg text-zinc-400">menu</span>
+</button>
+</div>
+</div>
+</nav>
+<main class="flex-1 pt-14 pb-20 flex flex-col">
+<!-- 1. Vertical Video Player at the Top -->
+<section class="w-full bg-zinc-950 p-2 sm:p-4">
+<div class="relative w-full aspect-[9/16] bg-surface-container-lowest rounded-3xl overflow-hidden shadow-2xl border border-white/5">
+<img alt="Cinematic video still" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAxR0HMxHCq_AEchNNHyg2q0l7CurJm-CyOtrRESk4AQPUOlj1F30qeGnBrXWmKrUvFjRjNbwXJgXR4-erHqnxLPpTETucm8e8BKGfARS_jNQB6HGFuxYDDyPaKBN-0Wav1J54orGpkJfv_a5FUq7_AvlmOkkVKrLpepA4tVLzSX-jLQt0ajDztIR_DGY2ewzWiz6k0RHNiFNKab7lEw3eVNyj_AshVqnVtyMCqPgjrqL_Cxpt6uH432fBjQYhA_7BvnHpZzOn8Kss"/>
+<!-- Player Overlay -->
+<div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/30 flex flex-col justify-between p-6">
+<div class="flex justify-start">
+<div class="px-3 py-1 rounded-full glass-panel border border-white/10 flex items-center gap-2">
+<div class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></div>
+<span class="text-[9px] font-black uppercase tracking-widest text-white">Curating: 2/3</span>
+</div>
+</div>
+<div class="space-y-4">
+<div class="flex items-center justify-between">
+<button class="text-white"><span class="material-symbols-outlined text-4xl" style="font-variation-settings: 'FILL' 1;">play_arrow</span></button>
+<div class="flex items-center gap-3">
+<span class="text-[9px] font-mono font-bold text-white/70 tracking-widest">02:45/04:12</span>
+<span class="material-symbols-outlined text-white/70 text-lg">fullscreen</span>
+</div>
+</div>
+<div class="h-1 w-full bg-white/20 rounded-full">
+<div class="h-full bg-primary w-2/3"></div>
+</div>
+</div>
+</div>
+</div>
+<div class="mt-4 px-2">
+<h1 class="text-xl font-black tracking-tight text-white uppercase leading-tight">The Neon Echoes — Pt. IV</h1>
+<p class="text-zinc-500 text-[10px] mt-1 font-bold uppercase tracking-wider">Noir Studios • 12.4K Views</p>
+</div>
+</section>
+<!-- 4. Daily Limit Status Counter Above Grid -->
+<section class="px-4 py-6">
+<div class="p-5 rounded-2xl bg-surface-container-low/40 border border-white/5 backdrop-blur-sm">
+<div class="flex justify-between items-center">
+<div>
+<p class="text-zinc-500 text-[9px] font-black uppercase tracking-widest mb-1">Daily Limit Status</p>
+<div class="flex items-baseline gap-1">
+<span class="text-3xl font-black text-white tracking-tighter">2</span>
+<span class="text-zinc-600 font-bold text-lg tracking-tighter">/ 3</span>
+</div>
+</div>
+<div class="text-right">
+<p class="text-[9px] text-zinc-500 uppercase font-bold tracking-widest">Resets in <span class="text-secondary">4h 12m</span></p>
+<button class="mt-2 px-4 py-2 rounded-lg bg-primary/10 text-primary text-[9px] font-black uppercase tracking-widest border border-primary/20">Upgrade</button>
+</div>
+</div>
+</div>
+</section>
+<!-- 2. Up Next Section (2-Column Grid) -->
+<section class="px-4 pb-12 flex-1">
+<div class="flex items-center justify-between mb-4">
+<h2 class="text-[10px] font-black tracking-[0.2em] uppercase text-zinc-500">Up Next</h2>
+<span class="text-[8px] font-bold uppercase tracking-widest text-primary px-2 py-0.5 rounded-full bg-primary/10">Autoplay ON</span>
+</div>
+<!-- 2-column grid -->
+<div class="grid grid-cols-2 gap-3 max-h-[500px] overflow-y-auto no-scrollbar">
+<!-- Grid Item 1 -->
+<div class="group relative aspect-[9/16] rounded-xl overflow-hidden bg-zinc-900 border border-white/5">
+<img alt="Thumbnail" class="w-full h-full object-cover opacity-80" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB9D2RjHUQLo8Rz51UinWlhOxTWs3aVHTI-S2YZ3fL_yvkS0Er90jdmYfwYpPpN97-KZDC-NaYwog4VsvXQ0_LuF44N-9kz4BbMsycvTw7nqS2ueccr7K5M92ivzfOCV0-CBCFKTsNWrOv9myJhmFLLZVpnT6iiwE8yHv1uBet6kTSxXZh31tJSdRev9-s-l6rGgPOH8tsWTiW8JjisVI1LLW0wK966o6Xkd6qe4J_wmAsmdfoYP6fVXrsp2aaWrPGj0KxKlFcjVLg"/>
+<!-- 3. Show only minimal duration -->
+<span class="absolute bottom-2 right-2 px-1 py-0.5 rounded bg-black/80 text-[8px] font-bold text-white">03:12</span>
+<!-- Minimal Title (overlay or very small) -->
+<div class="absolute inset-x-0 bottom-0 p-2 bg-gradient-to-t from-black/80 to-transparent">
+<p class="text-[8px] font-bold text-white truncate uppercase tracking-tighter">Rainfall Shadows</p>
+</div>
+</div>
+<!-- Grid Item 2 -->
+<div class="group relative aspect-[9/16] rounded-xl overflow-hidden bg-zinc-900 border border-white/5">
+<img alt="Thumbnail" class="w-full h-full object-cover opacity-80" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBbI3NN1Zyixh9IshcH5SnlmwnvU-_G789zwOV5s0nFSipMfcnjGWzYBYJQrPbyAfQl-nUWo4NgOGdNTBGED_czlPHhfg4AcmruEkeQrVIPuiNV3bnCyZw5318f1Di1PKkCtHBFJtjiWclu-kE8QV3_G5Nv0OXojf1BLT7yXuQsxqYQ9Kz0801lBTBca6hzB88lx7um_siMNm_6_Xe6S5zlmzb89e_XGH6vIKpQsaHtSqEJdx1pKhjdHrQ4HPrihOUwa6FCMC2D-Tk"/>
+<span class="absolute bottom-2 right-2 px-1 py-0.5 rounded bg-black/80 text-[8px] font-bold text-white">05:40</span>
+<div class="absolute inset-x-0 bottom-0 p-2 bg-gradient-to-t from-black/80 to-transparent flex items-center justify-between">
+<p class="text-[8px] font-bold text-white truncate uppercase tracking-tighter">The Void</p>
+<span class="material-symbols-outlined text-[10px] text-secondary" style="font-variation-settings: 'FILL' 1;">star</span>
+</div>
+</div>
+<!-- Grid Item 3 -->
+<div class="group relative aspect-[9/16] rounded-xl overflow-hidden bg-zinc-900 border border-white/5">
+<img alt="Thumbnail" class="w-full h-full object-cover opacity-80" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDFktDogEUW2DHjpE2hJ1ggIqd8ZUwD12n3Mbi5KL2S8d7kiUliSr3gBEyblAK0k-bkpm1yyx-_9rU7zT1R3CnaiXI4_PlbW3m_Z0qL8sj09hPoh7I7yFlN_VKejb9u73x1UJQQa3MQqT01-gODh66WKuhAB5_h0flTECG7yunXvqoHqTuAgBTqoyQ5iBx0nHRMFNkD5gI2L2N_D6u9AS7FVMr2yzcPJAVr-WIKp_rsLhHS1DNVJybxzpGLhdi6bCKjpwjLjMxP4CQ"/>
+<span class="absolute bottom-2 right-2 px-1 py-0.5 rounded bg-black/80 text-[8px] font-bold text-white">02:15</span>
+<div class="absolute inset-x-0 bottom-0 p-2 bg-gradient-to-t from-black/80 to-transparent">
+<p class="text-[8px] font-bold text-white truncate uppercase tracking-tighter">Fluid Dynamics</p>
+</div>
+</div>
+<!-- Grid Item 4 -->
+<div class="group relative aspect-[9/16] rounded-xl overflow-hidden bg-zinc-900 border border-white/5">
+<img alt="Thumbnail" class="w-full h-full object-cover opacity-80" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAxR0HMxHCq_AEchNNHyg2q0l7CurJm-CyOtrRESk4AQPUOlj1F30qeGnBrXWmKrUvFjRjNbwXJgXR4-erHqnxLPpTETucm8e8BKGfARS_jNQB6HGFuxYDDyPaKBN-0Wav1J54orGpkJfv_a5FUq7_AvlmOkkVKrLpepA4tVLzSX-jLQt0ajDztIR_DGY2ewzWiz6k0RHNiFNKab7lEw3eVNyj_AshVqnVtyMCqPgjrqL_Cxpt6uH432fBjQYhA_7BvnHpZzOn8Kss"/>
+<span class="absolute bottom-2 right-2 px-1 py-0.5 rounded bg-black/80 text-[8px] font-bold text-white">04:12</span>
+<div class="absolute inset-x-0 bottom-0 p-2 bg-gradient-to-t from-black/80 to-transparent">
+<p class="text-[8px] font-bold text-white truncate uppercase tracking-tighter">Echoes Pt. I</p>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<footer class="bg-zinc-950 border-t border-zinc-900/50 w-full py-8 px-6 text-center">
+<div class="text-zinc-700 font-black text-xs tracking-widest uppercase mb-4">The Noir Curator</div>
+<div class="flex flex-wrap justify-center gap-4 mb-4">
+<a class="text-[8px] uppercase font-bold tracking-[0.2em] text-zinc-600" href="#">Privacy</a>
+<a class="text-[8px] uppercase font-bold tracking-[0.2em] text-zinc-600" href="#">Terms</a>
+<a class="text-[8px] uppercase font-bold tracking-[0.2em] text-zinc-600" href="#">Discord</a>
+</div>
+<div class="text-zinc-800 text-[8px] font-bold uppercase tracking-widest">
+            © 2024 The Noir Curator
+        </div>
+</footer>
+</body></html>

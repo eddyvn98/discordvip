@@ -82,10 +82,10 @@ async function handleDonate(interaction: ChatInputCommandInteraction) {
   await interaction.reply({
     flags: MessageFlags.Ephemeral,
     embeds: [
-        {
-          title: buildVipAccessTitle(order),
-          description: [
-            `Số tiền: **${formatCurrency(order.amount)}**`,
+      {
+        title: buildVipAccessTitle(order),
+        description: [
+          `Số tiền: **${formatCurrency(order.amount)}**`,
           `Nội dung CK: \`DONATE ${order.orderCode}\``,
           `Quét QR hoặc chuyển khoản trước: <t:${Math.floor(order.expiresAt.getTime() / 1000)}:R>`,
           paymentInstruction,
@@ -144,10 +144,10 @@ async function handleVipStatus(interaction: ChatInputCommandInteraction) {
     membershipInCurrentGuild ??
     (interaction.guildId && interaction.guildId !== env.DISCORD_GUILD_ID
       ? await membershipService.getActiveMembership({
-          platform: "discord",
-          platformUserId: interaction.user.id,
-          platformChatId: env.DISCORD_GUILD_ID,
-        })
+        platform: "discord",
+        platformUserId: interaction.user.id,
+        platformChatId: env.DISCORD_GUILD_ID,
+      })
       : null);
 
   if (!membership || membership.expireAt.getTime() <= Date.now()) {
@@ -605,18 +605,18 @@ async function bootstrapTelegramHandlers() {
       caption: message.caption,
       video: message.video
         ? {
-            fileId: message.video.file_id,
-            mimeType: message.video.mime_type,
-            duration: message.video.duration,
-            thumbnailFileId: message.video.thumbnail?.file_id,
-          }
+          fileId: message.video.file_id,
+          mimeType: message.video.mime_type,
+          duration: message.video.duration,
+          thumbnailFileId: message.video.thumbnail?.file_id,
+        }
         : undefined,
       photoFileIds: message.photo?.map((item) => item.file_id),
       document: message.document
         ? {
-            fileId: message.document.file_id,
-            mimeType: message.document.mime_type,
-          }
+          fileId: message.document.file_id,
+          mimeType: message.document.mime_type,
+        }
         : undefined,
     });
   });
@@ -708,6 +708,7 @@ async function bootstrap() {
     paymentService,
     promoCodeService,
     cinemaService,
+    orderService,
   });
 
   app.listen(env.SERVER_PORT, () => {

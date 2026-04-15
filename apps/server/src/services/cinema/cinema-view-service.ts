@@ -48,6 +48,15 @@ export class CinemaViewService {
 
   async markItemViewed(itemId: string, userKey: string) {
     await this.ensureViewTables();
+    const inserted = (await prisma.$queryRawUnsafe(
+      `INSERT INTO cinema_user_item_views (item_id, user_key, first_viewed_at)
+       VALUES ($1::TEXT, $2::TEXT, NOW())
+       ON CONFLICT (item_id, user_key) DO NOTHING
+       RETURNING item_id;`,
+      itemId,
+      userKey,
+    )) as Array<{ item_id: string }>;
+    if (!inserted.length) return false;
     await prisma.$executeRawUnsafe(
       `INSERT INTO cinema_item_view_stats (item_id, view_count, updated_at)
        VALUES ($1::TEXT, 1, NOW())
@@ -55,12 +64,19 @@ export class CinemaViewService {
        DO UPDATE SET view_count = cinema_item_view_stats.view_count + 1, updated_at = NOW();`,
       itemId,
     );
-    await prisma.$executeRawUnsafe(
-      `INSERT INTO cinema_user_item_views (item_id, user_key, first_viewed_at)
-       VALUES ($1::TEXT, $2::TEXT, NOW())
-       ON CONFLICT (item_id, user_key) DO NOTHING;`,
-      itemId,
+    return true;
+  }
+
+  async getDailyViewedCount(userKey: string, timezone: string) {
+    await this.ensureViewTables();
+    const rows = (await prisma.$queryRawUnsafe(
+      `SELECT COUNT(*)::INT AS viewed_count
+       FROM cinema_user_item_views u
+       WHERE u.user_key = $1::TEXT
+         AND (u.first_viewed_at AT TIME ZONE $2::TEXT) >= date_trunc('day', NOW() AT TIME ZONE $2::TEXT);`,
       userKey,
-    );
+      timezone,
+    )) as Array<{ viewed_count: number }>;
+    return Number(rows[0]?.viewed_count ?? 0);
   }
 }

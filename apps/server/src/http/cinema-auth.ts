@@ -15,11 +15,11 @@ function adminFallbackSession(req: Request) {
 }
 
 export function requireCinemaSession(cinemaService: CinemaService, req: Request, res: Response) {
+  const adminSession = adminFallbackSession(req);
+  if (adminSession) return adminSession;
   try {
     return cinemaService.requireCinemaSession(req);
   } catch (error) {
-    const adminSession = adminFallbackSession(req);
-    if (adminSession) return adminSession;
     res.status(401).json({ error: error instanceof Error ? error.message : "Unauthorized cinema session" });
     return null;
   }

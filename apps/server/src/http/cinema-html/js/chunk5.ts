@@ -92,10 +92,13 @@
     dom.playerMedia.addEventListener('touchstart',(e)=>{
       if(state.isPip) return;
       if(!state.currentItem) return;
+      const target=e.target;
+      if(target&&target.closest&&target.closest('button,input,a,[data-pip-edge]')) return;
       if(Date.now()<state.suppressTapUntil){ e.preventDefault(); return; }
       const t=e.touches&&e.touches[0]; if(!t) return;
       const rect=dom.playerMedia.getBoundingClientRect();
       const relX=t.clientX-rect.left;
+      state.touch.startAt=Date.now();
       const now=Date.now();
       const side=(relX<rect.width/2)?'left':'right';
       if(!state.feedMode && state.currentMediaType==='video' && now-state.lastTapAt<=280 && state.lastTapSide===side){
@@ -170,32 +173,8 @@
         return;
       }
       if(Math.abs(dx)>12 || Math.abs(dy)>12){ clearTouchTimers(); }
-      if(state.touch.mode==='brightness'){
-        e.preventDefault();
-        if(Math.abs(dy)>=Math.abs(dx)){
-          applyBrightness(state.touch.startBrightness + (-dy/rect.height)*1.2);
-        }
+      if(state.touch.mode==='brightness' || state.touch.mode==='volume' || state.touch.mode==='channel'){
         return;
-      }
-      if(state.touch.mode==='volume'){
-        e.preventDefault();
-        applyVolume(state.touch.startVolume + (-dy/rect.height)*1.1);
-        return;
-      }
-      if(state.touch.mode==='channel'){
-        if(state.feedMode && Math.abs(dy)>20){
-          e.preventDefault();
-          dom.swipeHintCenter.textContent=(dy<0)?'Vuot len de phim tiep':'Vuot xuong de phim truoc';
-          dom.swipeHintCenter.style.opacity='1';
-          updateFeedDragPreview(dy);
-          return;
-        }
-        if(!state.feedMode && Math.abs(dx)>20 && Math.abs(dx)>=Math.abs(dy)){
-          e.preventDefault();
-          dom.swipeHintCenter.textContent=(dx<0)?'Vuot trai de phim tiep':'Vuot phai de phim truoc';
-          dom.swipeHintCenter.style.opacity='1';
-          return;
-        }
       }
     },{passive:false});
     dom.playerMedia.addEventListener('touchend',()=>{
@@ -203,24 +182,18 @@
       if(!state.touch.active) return;
       const dy=state.touch.lastY-state.touch.startY;
       const dx=state.touch.lastX-state.touch.startX;
+      const pressMs=Date.now()-(state.touch.startAt||Date.now());
       const rect=dom.playerMedia.getBoundingClientRect();
       const feedCommitThreshold=Math.max(60,(rect.height||window.innerHeight||0)*0.16);
       if(state.touch.isSeeking && state.currentMediaType==='video'){
         dom.player.currentTime=Math.max(0,Math.min(dom.player.duration||0,state.touch.seekTime||dom.player.currentTime||0));
         state.suppressTapUntil=Date.now()+280;
       }
-      if(!state.touch.isSeeking && state.touch.mode==='channel'){
-        if(state.feedMode){
-          if(state.feedMode && state.touch.feedDirection){
-            settleFeedDrag(Math.abs(dy)>=feedCommitThreshold);
-          }else if(Math.abs(dy)>=30){
-            if(dy<0){ swipeItem(1); }else{ swipeItem(-1); }
-          }
-        }else if(Math.abs(dx)>=44 && Math.abs(dx)>=Math.abs(dy)){
-          if(dx<0){ swipeItem(1); }else{ swipeItem(-1); }
-        }else if(Math.abs(dy)>=48 && Math.abs(dy)>Math.abs(dx)){
-          if(dy<0){ swipeItem(1); }else{ swipeItem(-1); }
-        }
+      const isTap=Math.abs(dx)<10 && Math.abs(dy)<10 && pressMs<240;
+      if(isTap && !state.touch.isSeeking && !state.feedMode && state.currentMediaType==='video'){
+        if(dom.player.paused) dom.player.play().catch(()=>{});
+        else dom.player.pause();
+        updateMiniPlayIcon();
       }
       state.touch.active=false;
       clearTouchTimers();
