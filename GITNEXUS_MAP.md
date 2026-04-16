@@ -3,11 +3,11 @@
 Dự án này đã được lập bản đồ tri thức bằng **GitNexus**. Bản đồ này cung cấp cái nhìn 360 độ về kiến trúc dự án, các luồng xử lý và các vùng chức năng quan trọng.
 
 ## 📊 Overview
-- **Symbols**: 1787
-- **Relationships**: 4369
-- **Execution Flows**: 134
+- **Symbols**: 1830
+- **Relationships**: 4464
+- **Execution Flows**: 136
 - **Clusters (Areas)**: 20 chính
-- **Cập nhật lúc**: 12:31 16/04/2026
+- **Cập nhật lúc**: 12:51 16/04/2026
 
 ## 🧩 Các vùng chức năng chính (Functional Areas)
 
