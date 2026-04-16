@@ -59,6 +59,24 @@ export function registerAdminCinemaRoutes(app: Express, cinemaService: CinemaSer
     res.json(await cinemaService.listScanJobs(Number.isFinite(limit) ? limit : 50));
   });
 
+  app.post("/api/admin/cinema/upload-local", requireAdmin, async (req, res) => {
+    try {
+      const body = req.body as { directoryPath: string };
+      const directoryPath = String(body.directoryPath ?? "").trim();
+      if (!directoryPath) {
+        res.status(400).json({ error: "directoryPath is required" });
+        return;
+      }
+      const job = await cinemaService.createScanJob({
+        requestedBy: req.session.adminUser?.id ?? "admin",
+      });
+      void cinemaService.runLocalUploadJob(job.id, directoryPath);
+      res.json(job);
+    } catch (error) {
+      res.status(400).json({ error: error instanceof Error ? error.message : "Cannot start local upload job" });
+    }
+  });
+
   app.post("/api/admin/cinema/jobs/scan", requireAdmin, async (req, res) => {
     try {
       const body = req.body as { channelId?: string; forceRegenerate?: boolean; autoEnsureStorage?: boolean };
@@ -90,7 +108,7 @@ export function registerAdminCinemaRoutes(app: Express, cinemaService: CinemaSer
         return;
       }
       const newJob = await cinemaService.createScanJob({
-        channelId: target.channelId,
+        channelId: target.channelId ?? undefined,
         requestedBy: req.session.adminUser?.id ?? "admin",
       });
       void cinemaService.runScanJob(newJob.id);

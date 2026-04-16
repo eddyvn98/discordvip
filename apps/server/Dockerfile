@@ -14,7 +14,10 @@ RUN npm run build -w @discordvip/server
 FROM node:24-alpine
 WORKDIR /app
 
-RUN apk add --no-cache ffmpeg
+RUN apk add --no-cache ffmpeg python3 py3-pip
+RUN python3 -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+RUN pip install telethon python-dotenv
 
 COPY package.json package-lock.json ./
 COPY tsconfig.base.json ./

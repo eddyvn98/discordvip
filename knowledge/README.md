@@ -1,4 +1,4 @@
-﻿# Developer Knowledge Base
+# Developer Knowledge Base
 
 > Domain: VIP Telegram WebApp cinema + proxied media streaming
 
@@ -15,3 +15,4 @@
 - [10-release-workflow-feature-branch.md](./10-release-workflow-feature-branch.md) - Safe rollout workflow
 - [11-anti-patterns-checklist.md](./11-anti-patterns-checklist.md) - What to avoid
 - [12-performance-playbook.md](./12-performance-playbook.md) - Bottlenecks + optimizations
+- [13-cinema-local-pipeline-automation.md](./13-cinema-local-pipeline-automation.md) - Local folder-to-Telegram automation & Docker isolation

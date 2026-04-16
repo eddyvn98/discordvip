@@ -26,7 +26,7 @@ function isAllowedOrigin(origin: string | undefined) {
     return true;
   }
 
-  if ([env.ADMIN_APP_URL, env.PUBLIC_BASE_URL, env.CINEMA_PUBLIC_BASE_URL, getCinemaPublicOrigin()].includes(origin)) {
+  if ([env.ADMIN_APP_URL, env.PUBLIC_BASE_URL, env.CINEMA_PUBLIC_BASE_URL, getCinemaPublicOrigin(), "http://localhost:13002"].includes(origin)) {
     return true;
   }
 

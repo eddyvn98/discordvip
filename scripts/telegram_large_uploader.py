@@ -92,18 +92,23 @@ async def run(args):
     if not folder.exists() or not folder.is_dir():
         raise RuntimeError(f"Folder not found: {folder}")
 
+    print(f"[*] Quét thư mục: {folder}", file=sys.stderr, flush=True)
     videos, images = pick_files(folder)
+    print(f"[*] Tìm thấy {len(videos)} video và {len(images)} ảnh.", file=sys.stderr, flush=True)
     if not videos:
         raise RuntimeError("No video files found in folder")
 
     base_title = args.channel_title.strip() if args.channel_title else folder.name
-    unique_title = f"{base_title} | {time.strftime('%Y%m%d-%H%M%S')}"
-    unique_title = slugify(unique_title).replace("-", " ")[:120]
+    # Sử dụng tên folder trực tiếp làm tên kênh theo yêu cầu của user
+    unique_title = base_title[:120]
 
+    print(f"[*] Đang kết nối Telegram (Session: {session_name})...", file=sys.stderr, flush=True)
     client = TelegramClient(session_name, api_id, api_hash)
     await client.start()
+    print("[*] Đăng nhập Telegram thành công.", file=sys.stderr, flush=True)
 
-    created = await client(CreateChannelRequest(title=unique_title, about=f"Auto channel for {folder.name}", megagroup=True))
+    # Tạo kênh Private (không set username). megagroup=True tạo group lớn (Suppergroup/Channel).
+    created = await client(CreateChannelRequest(title=unique_title, about=f"Cinema Channel: {unique_title}", megagroup=True))
     channel = created.chats[0]
     channel_id = int(getattr(channel, "id", 0))
     if channel_id > 0:
@@ -125,7 +130,9 @@ async def run(args):
     chosen_images = images[:5]
     generated_paths = []
     if len(chosen_images) < 3 and ffmpeg_exists():
-        thumb_dir = folder / ".auto_thumbs"
+        import tempfile
+        tmp_root = Path(tempfile.gettempdir()) / "cinema_thumbs"
+        thumb_dir = tmp_root / slugify(folder.name)
         generated_paths = generate_thumbnails(videos[0], thumb_dir, 5)
         chosen_images = (images + generated_paths)[:5]
 

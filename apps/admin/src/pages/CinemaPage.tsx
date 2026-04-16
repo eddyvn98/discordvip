@@ -32,6 +32,8 @@ export function CinemaPage() {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [runningByChannel, setRunningByChannel] = useState<Record<string, boolean>>({});
+  const [localPath, setLocalPath] = useState("");
+  const [localUploading, setLocalUploading] = useState(false);
 
   const load = async () => {
     const [channelRows, jobRows] = await Promise.all([
@@ -92,12 +94,53 @@ export function CinemaPage() {
     }
   };
 
+  const startLocalUpload = async () => {
+    if (!localPath.trim()) {
+      setError("Vui lòng nhập đường dẫn thư mục.");
+      return;
+    }
+    setLocalUploading(true);
+    setError("");
+    setMessage("");
+    try {
+      await api.post("/api/admin/cinema/upload-local", { directoryPath: localPath.trim() });
+      setMessage("Đã bắt đầu quá trình upload và đồng bộ từ thư mục local.");
+      await load();
+    } catch (value) {
+      setError((value as Error).message);
+    } finally {
+      setLocalUploading(false);
+    }
+  };
+
   return (
     <section className="card">
       <div className="section-header">
         <div>
           <h1>Cinema</h1>
           <p>Quét toàn bộ phim, tạo lại preview/thumbnail và theo dõi tiến độ realtime.</p>
+        </div>
+      </div>
+
+      <div className="manual-grant-panel" style={{ marginBottom: 24, border: "1px solid #3b82f633", background: "#3b82f605" }}>
+        <div style={{ flex: 1 }}>
+          <h2 style={{ marginBottom: 8, color: "#3b82f6" }}>Tải phim từ thư mục máy chủ (Local)</h2>
+          <p style={{ marginBottom: 12, fontSize: "0.85rem", opacity: 0.7 }}>
+            Dán đường dẫn thư mục chứa phim trực tiếp trên Server. Hệ thống sẽ tự tạo kênh Private và Upload.
+          </p>
+          <input
+            type="text"
+            className="input"
+            placeholder="Ví dụ: D:\Movies\HanhDong"
+            value={localPath}
+            onChange={(e) => setLocalPath(e.target.value)}
+            style={{ width: "100%", maxWidth: 600, background: "#00000033" }}
+          />
+        </div>
+        <div>
+          <button className="button primary" onClick={startLocalUpload} disabled={localUploading}>
+            {localUploading ? "Đang khởi tạo..." : "Bắt đầu tải & đồng bộ"}
+          </button>
         </div>
       </div>
 

@@ -103,8 +103,11 @@ export class CinemaService {
   }
 
   // --- Scan Jobs ---
-  async createScanJob(input: { channelId: string; requestedBy: string }) {
+  async createScanJob(input: { channelId?: string; requestedBy: string }) {
     return this.scanJobService.createScanJob(input);
+  }
+  async runLocalUploadJob(jobId: string, directoryPath: string) {
+    return this.scanJobService.runLocalUploadJob(jobId, directoryPath);
   }
   async runScanJob(jobId: string, options?: { forceRegenerate?: boolean; autoEnsureStorage?: boolean }) {
     return this.scanJobService.runScanJob(jobId, options);

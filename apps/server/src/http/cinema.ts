@@ -66,6 +66,7 @@ export function registerCinemaRoutes(app: Express, cinemaService: CinemaService,
     renderCinemaHtml(req, res);
   };
 
+  app.get("/", renderCinemaWithDevBypass);
   app.get("/cinema", renderCinemaWithDevBypass);
   app.get("/api/cinema", renderCinemaWithDevBypass);
 
