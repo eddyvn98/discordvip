@@ -9,13 +9,16 @@ export type CinemaChannel = {
 
 export type CinemaScanJob = {
   id: string;
-  channelId: string;
-  status: "QUEUED" | "RUNNING" | "SUCCEEDED" | "FAILED";
+  channelId: string | null;
+  status: "QUEUED" | "RUNNING" | "SUCCEEDED" | "FAILED" | "CANCELLED" | "TIMEOUT";
   totalDetected: number;
   totalInserted: number;
   totalFailed: number;
+  progress: number;
   createdAt: string;
   updatedAt: string;
+  startedAt?: string | null;
   finishedAt?: string | null;
+  lastHeartbeatAt?: string | null;
   failureReason?: string | null;
 };

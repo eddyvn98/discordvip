@@ -10,17 +10,28 @@ import { callTelegramApi, pickTelegramMessageFileId } from "./cinema-utils.js";
 export class CinemaMediaService {
   public readonly localMediaRoot = path.resolve(process.cwd(), "storage", "cinema-media");
 
-  async runFfmpeg(args: string[]) {
+  async runFfmpeg(args: string[], signal?: AbortSignal) {
+    if (signal?.aborted) throw new Error("AbortError");
     await new Promise<void>((resolve, reject) => {
-      const child = spawn("ffmpeg", args, { stdio: ["ignore", "ignore", "pipe"] });
+      const child = spawn("ffmpeg", args, { stdio: ["ignore", "ignore", "pipe"], signal });
       let stderr = "";
       child.stderr.on("data", (chunk) => {
         stderr += chunk.toString();
       });
-      child.on("error", (error) => reject(error));
+      child.on("error", (error) => {
+        if (error.name === "AbortError") {
+          reject(new Error("Job was cancelled."));
+          return;
+        }
+        reject(error);
+      });
       child.on("close", (code) => {
         if (code === 0) {
           resolve();
+          return;
+        }
+        if (signal?.aborted) {
+          reject(new Error("Job was cancelled."));
           return;
         }
         reject(new Error(`ffmpeg exited with code ${code}. ${stderr.slice(-500)}`));
@@ -28,13 +39,13 @@ export class CinemaMediaService {
     });
   }
 
-  async generatePosterAndPreview(input: { sourceUrl: string; itemId: string }) {
+  async generatePosterAndPreview(input: { sourceUrl: string; itemId: string }, signal?: AbortSignal) {
     const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "cinema-scan-"));
     const posterPath = path.join(tmpDir, `${input.itemId}-poster.jpg`);
     const previewPath = path.join(tmpDir, `${input.itemId}-preview.mp4`);
     try {
-      await this.runFfmpeg(["-y", "-ss", "00:00:03", "-i", input.sourceUrl, "-frames:v", "1", "-vf", "scale='min(720,iw)':-2", "-q:v", "3", posterPath]);
-      await this.runFfmpeg(["-y", "-ss", "00:00:05", "-i", input.sourceUrl, "-t", "6", "-vf", "scale='min(640,iw)':-2", "-an", "-c:v", "libx264", "-preset", "veryfast", "-movflags", "+faststart", previewPath]);
+      await this.runFfmpeg(["-y", "-ss", "00:00:03", "-i", input.sourceUrl, "-frames:v", "1", "-vf", "scale='min(720,iw)':-2", "-q:v", "3", posterPath], signal);
+      await this.runFfmpeg(["-y", "-ss", "00:00:05", "-i", input.sourceUrl, "-t", "6", "-vf", "scale='min(640,iw)':-2", "-an", "-c:v", "libx264", "-preset", "veryfast", "-movflags", "+faststart", previewPath], signal);
       return { tmpDir, posterPath, previewPath };
     } catch (error) {
       await fs.rm(tmpDir, { recursive: true, force: true }).catch(() => undefined);

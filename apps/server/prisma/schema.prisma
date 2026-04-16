@@ -7,6 +7,263 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model Plan {
+  id                      String                @id @default(cuid())
+  code                    String                @unique
+  name                    String
+  amount                  Int
+  durationDays            Int
+  isActive                Boolean               @default(true)
+  createdAt               DateTime              @default(now())
+  updatedAt               DateTime              @updatedAt
+  orders                  Order[]
+  telegramChannelMappings TelegramPlanChannel[]
+}
+
+model TelegramVipChannel {
+  id           String                @id @default(cuid())
+  chatId       String                @unique
+  title        String
+  isActive     Boolean               @default(true)
+  createdAt    DateTime              @default(now())
+  updatedAt    DateTime              @updatedAt
+  planMappings TelegramPlanChannel[]
+}
+
+model TelegramPlanChannel {
+  id        String             @id @default(cuid())
+  planId    String
+  channelId String
+  createdAt DateTime           @default(now())
+  channel   TelegramVipChannel @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  plan      Plan               @relation(fields: [planId], references: [id], onDelete: Cascade)
+
+  @@unique([planId, channelId])
+}
+
+model TelegramChannelVerification {
+  id                       String    @id @default(cuid())
+  token                    String    @unique
+  requestedBy              String
+  expiresAt                DateTime
+  usedAt                   DateTime?
+  verifiedByTelegramUserId String?
+  verifiedChatId           String?
+  verifiedChatTitle        String?
+  createdAt                DateTime  @default(now())
+  updatedAt                DateTime  @updatedAt
+}
+
+model Order {
+  id                     String      @id @default(cuid())
+  orderCode              String      @unique
+  discordUserId          String
+  guildId                String
+  platform               Platform    @default(DISCORD)
+  platformUserId         String?
+  platformChatId         String?
+  amount                 Int
+  status                 OrderStatus @default(PENDING)
+  expiresAt              DateTime
+  paidAt                 DateTime?
+  paymentPromptChatId    String?
+  paymentPromptMessageId Int?
+  createdAt              DateTime    @default(now())
+  updatedAt              DateTime    @updatedAt
+  planId                 String
+  plan                   Plan        @relation(fields: [planId], references: [id])
+  payments               Payment[]
+}
+
+model Payment {
+  id                    String        @id @default(cuid())
+  provider              String        @default("sepay")
+  providerTransactionId String        @unique
+  amount                Int
+  bankRef               String?
+  transferContent       String?
+  payerName             String?
+  status                PaymentStatus @default(PENDING_REVIEW)
+  matchedAt             DateTime?
+  createdAt             DateTime      @default(now())
+  updatedAt             DateTime      @updatedAt
+  raw                   Json
+  orderId               String?
+  order                 Order?        @relation(fields: [orderId], references: [id])
+}
+
+model Membership {
+  id             String           @id @default(cuid())
+  discordUserId  String
+  guildId        String
+  roleId         String
+  platform       Platform         @default(DISCORD)
+  platformUserId String?
+  platformChatId String?
+  source         MembershipSource
+  status         MembershipStatus @default(ACTIVE)
+  startAt        DateTime
+  expireAt       DateTime
+  reminded3dAt   DateTime?
+  reminded1dAt   DateTime?
+  removeRetries  Int              @default(0)
+  lastError      String?
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+
+  @@unique([discordUserId, guildId, roleId])
+}
+
+model PromoCode {
+  id           String                @id @default(cuid())
+  code         String                @unique
+  label        String
+  durationDays Int
+  maxUses      Int
+  usedCount    Int                   @default(0)
+  expiresAt    DateTime?
+  isActive     Boolean               @default(true)
+  createdBy    String?
+  createdAt    DateTime              @default(now())
+  updatedAt    DateTime              @updatedAt
+  redemptions  PromoCodeRedemption[]
+}
+
+model PromoCodeRedemption {
+  id                  String    @id @default(cuid())
+  promoCodeId         String
+  platform            Platform  @default(DISCORD)
+  platformUserId      String
+  platformChatId      String?
+  discordUserId       String
+  durationDaysApplied Int
+  redeemedAt          DateTime  @default(now())
+  promoCode           PromoCode @relation(fields: [promoCodeId], references: [id], onDelete: Cascade)
+
+  @@unique([promoCodeId, platform, platformUserId])
+}
+
+model TrialClaim {
+  id             String   @id @default(cuid())
+  discordUserId  String   @unique
+  platform       Platform @default(DISCORD)
+  platformUserId String?
+  claimedAt      DateTime @default(now())
+
+  @@unique([platform, platformUserId])
+}
+
+model WebhookEvent {
+  id              String               @id @default(cuid())
+  provider        String               @default("sepay")
+  providerEventId String?
+  signature       String?
+  payload         Json
+  processStatus   WebhookProcessStatus @default(RECEIVED)
+  errorMessage    String?
+  createdAt       DateTime             @default(now())
+  updatedAt       DateTime             @updatedAt
+}
+
+model DiscordUserProfile {
+  discordUserId String   @id
+  username      String
+  globalName    String?
+  discriminator String
+  avatar        String?
+  displayName   String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model Session {
+  sid    String   @id @db.VarChar
+  sess   Json
+  expire DateTime @db.Timestamp(6)
+
+  @@index([expire], map: "IDX_session_expire")
+  @@map("session")
+}
+
+model CinemaChannel {
+  id              String               @id @default(cuid())
+  platform        CinemaSourcePlatform
+  sourceChannelId String
+  role            CinemaChannelRole    @default(FULL_SOURCE)
+  displayName     String
+  slug            String               @unique
+  isEnabled       Boolean              @default(true)
+  createdAt       DateTime             @default(now())
+  updatedAt       DateTime             @updatedAt
+  items           CinemaItem[]
+  scanJobs        CinemaScanJob[]
+
+  @@unique([platform, sourceChannelId])
+}
+
+model CinemaItem {
+  id              String        @id @default(cuid())
+  channelId       String
+  sourceMessageId String
+  title           String
+  description     String?
+  durationSeconds Int?
+  status          String        @default("READY")
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  assets          CinemaAsset[]
+  channel         CinemaChannel @relation(fields: [channelId], references: [id], onDelete: Cascade)
+
+  @@unique([channelId, sourceMessageId])
+  @@index([channelId, createdAt])
+}
+
+model CinemaAsset {
+  id        String          @id @default(cuid())
+  itemId    String
+  kind      CinemaAssetKind
+  provider  String
+  fileRef   String
+  mimeType  String?
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+  item      CinemaItem      @relation(fields: [itemId], references: [id], onDelete: Cascade)
+
+  @@unique([itemId, kind])
+}
+
+model CinemaScanJob {
+  id              String              @id @default(cuid())
+  channelId       String?
+  status          CinemaScanJobStatus @default(QUEUED)
+  requestedBy     String
+  totalDetected   Int                 @default(0)
+  totalInserted   Int                 @default(0)
+  totalFailed     Int                 @default(0)
+  failureReason   String?
+  startedAt       DateTime?
+  finishedAt      DateTime?
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+  lastHeartbeatAt DateTime?
+  progress        Float               @default(0)
+  channel         CinemaChannel?      @relation(fields: [channelId], references: [id], onDelete: Cascade)
+}
+
+model CinemaAccessTicket {
+  id              String                   @id @default(cuid())
+  tokenHash       String                   @unique
+  platform        Platform
+  platformUserId  String
+  platformChatId  String
+  status          CinemaAccessTicketStatus @default(ACTIVE)
+  expiresAt       DateTime
+  usedAt          DateTime?
+  usedFingerprint String?
+  createdAt       DateTime                 @default(now())
+  updatedAt       DateTime                 @updatedAt
+}
+
 enum OrderStatus {
   PENDING
   PAID
@@ -65,265 +322,12 @@ enum CinemaScanJobStatus {
   RUNNING
   SUCCEEDED
   FAILED
+  CANCELLED
+  TIMEOUT
 }
 
 enum CinemaAccessTicketStatus {
   ACTIVE
   USED
   EXPIRED
-}
-
-model Plan {
-  id           String   @id @default(cuid())
-  code         String   @unique
-  name         String
-  amount       Int
-  durationDays Int
-  isActive     Boolean  @default(true)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-  orders       Order[]
-  telegramChannelMappings TelegramPlanChannel[]
-}
-
-model TelegramVipChannel {
-  id        String   @id @default(cuid())
-  chatId    String   @unique
-  title     String
-  isActive  Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  planMappings TelegramPlanChannel[]
-}
-
-model TelegramPlanChannel {
-  id        String             @id @default(cuid())
-  planId    String
-  channelId String
-  createdAt DateTime           @default(now())
-  plan      Plan               @relation(fields: [planId], references: [id], onDelete: Cascade)
-  channel   TelegramVipChannel @relation(fields: [channelId], references: [id], onDelete: Cascade)
-
-  @@unique([planId, channelId])
-}
-
-model TelegramChannelVerification {
-  id                      String    @id @default(cuid())
-  token                   String    @unique
-  requestedBy             String
-  expiresAt               DateTime
-  usedAt                  DateTime?
-  verifiedByTelegramUserId String?
-  verifiedChatId          String?
-  verifiedChatTitle       String?
-  createdAt               DateTime  @default(now())
-  updatedAt               DateTime  @updatedAt
-}
-
-model Order {
-  id            String      @id @default(cuid())
-  orderCode     String      @unique
-  discordUserId String
-  guildId       String
-  platform      Platform    @default(DISCORD)
-  platformUserId String?
-  platformChatId String?
-  amount        Int
-  status        OrderStatus @default(PENDING)
-  expiresAt     DateTime
-  paidAt        DateTime?
-  paymentPromptChatId String?
-  paymentPromptMessageId Int?
-  createdAt     DateTime    @default(now())
-  updatedAt     DateTime    @updatedAt
-  planId        String
-  plan          Plan        @relation(fields: [planId], references: [id])
-  payments      Payment[]
-}
-
-model Payment {
-  id                    String        @id @default(cuid())
-  provider              String        @default("sepay")
-  providerTransactionId String        @unique
-  amount                Int
-  bankRef               String?
-  transferContent       String?
-  payerName             String?
-  status                PaymentStatus @default(PENDING_REVIEW)
-  matchedAt             DateTime?
-  createdAt             DateTime      @default(now())
-  updatedAt             DateTime      @updatedAt
-  raw                   Json
-  orderId               String?
-  order                 Order?        @relation(fields: [orderId], references: [id])
-}
-
-model Membership {
-  id            String           @id @default(cuid())
-  discordUserId String
-  guildId       String
-  roleId        String
-  platform      Platform         @default(DISCORD)
-  platformUserId String?
-  platformChatId String?
-  source        MembershipSource
-  status        MembershipStatus @default(ACTIVE)
-  startAt       DateTime
-  expireAt      DateTime
-  reminded3dAt  DateTime?
-  reminded1dAt  DateTime?
-  removeRetries Int              @default(0)
-  lastError     String?
-  createdAt     DateTime         @default(now())
-  updatedAt     DateTime         @updatedAt
-
-  @@unique([discordUserId, guildId, roleId])
-}
-
-model PromoCode {
-  id          String                @id @default(cuid())
-  code        String                @unique
-  label       String
-  durationDays Int
-  maxUses     Int
-  usedCount   Int                   @default(0)
-  expiresAt   DateTime?
-  isActive    Boolean               @default(true)
-  createdBy   String?
-  createdAt   DateTime              @default(now())
-  updatedAt   DateTime              @updatedAt
-  redemptions PromoCodeRedemption[]
-}
-
-model PromoCodeRedemption {
-  id                 String     @id @default(cuid())
-  promoCodeId        String
-  platform           Platform   @default(DISCORD)
-  platformUserId     String
-  platformChatId     String?
-  discordUserId      String
-  durationDaysApplied Int
-  redeemedAt         DateTime   @default(now())
-  promoCode          PromoCode  @relation(fields: [promoCodeId], references: [id], onDelete: Cascade)
-
-  @@unique([promoCodeId, platform, platformUserId])
-}
-
-model TrialClaim {
-  id            String   @id @default(cuid())
-  discordUserId String   @unique
-  platform      Platform @default(DISCORD)
-  platformUserId String?
-  claimedAt     DateTime @default(now())
-
-  @@unique([platform, platformUserId])
-}
-
-model WebhookEvent {
-  id              String               @id @default(cuid())
-  provider        String               @default("sepay")
-  providerEventId String?
-  signature       String?
-  payload         Json
-  processStatus   WebhookProcessStatus @default(RECEIVED)
-  errorMessage    String?
-  createdAt       DateTime             @default(now())
-  updatedAt       DateTime             @updatedAt
-}
-
-model DiscordUserProfile {
-  discordUserId  String   @id
-  username       String
-  globalName     String?
-  discriminator  String
-  avatar         String?
-  displayName    String
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
-}
-
-model Session {
-  sid    String   @id(map: "session_pkey") @db.VarChar
-  sess   Json
-  expire DateTime @db.Timestamp(6)
-
-  @@index([expire], map: "IDX_session_expire")
-  @@map("session")
-}
-
-model CinemaChannel {
-  id              String               @id @default(cuid())
-  platform        CinemaSourcePlatform
-  sourceChannelId String
-  role            CinemaChannelRole    @default(FULL_SOURCE)
-  displayName     String
-  slug            String               @unique
-  isEnabled       Boolean              @default(true)
-  createdAt       DateTime             @default(now())
-  updatedAt       DateTime             @updatedAt
-  items           CinemaItem[]
-  scanJobs        CinemaScanJob[]
-
-  @@unique([platform, sourceChannelId])
-}
-
-model CinemaItem {
-  id              String        @id @default(cuid())
-  channelId       String
-  sourceMessageId String
-  title           String
-  description     String?
-  durationSeconds Int?
-  status          String        @default("READY")
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
-  channel         CinemaChannel @relation(fields: [channelId], references: [id], onDelete: Cascade)
-  assets          CinemaAsset[]
-
-  @@unique([channelId, sourceMessageId])
-  @@index([channelId, createdAt])
-}
-
-model CinemaAsset {
-  id        String        @id @default(cuid())
-  itemId    String
-  kind      CinemaAssetKind
-  provider  String
-  fileRef   String
-  mimeType  String?
-  createdAt DateTime      @default(now())
-  updatedAt DateTime      @updatedAt
-  item      CinemaItem    @relation(fields: [itemId], references: [id], onDelete: Cascade)
-
-  @@unique([itemId, kind])
-}
-
-model CinemaScanJob {
-  id            String              @id @default(cuid())
-  channelId     String?
-  status        CinemaScanJobStatus @default(QUEUED)
-  requestedBy   String
-  totalDetected Int                 @default(0)
-  totalInserted Int                 @default(0)
-  totalFailed   Int                 @default(0)
-  failureReason String?
-  startedAt     DateTime?
-  finishedAt    DateTime?
-  createdAt     DateTime            @default(now())
-  updatedAt     DateTime            @updatedAt
-  channel       CinemaChannel?      @relation(fields: [channelId], references: [id], onDelete: Cascade)
-}
-
-model CinemaAccessTicket {
-  id              String                  @id @default(cuid())
-  tokenHash       String                  @unique
-  platform        Platform
-  platformUserId  String
-  platformChatId  String
-  status          CinemaAccessTicketStatus @default(ACTIVE)
-  expiresAt       DateTime
-  usedAt          DateTime?
-  usedFingerprint String?
-  createdAt       DateTime                @default(now())
-  updatedAt       DateTime                @updatedAt
 }

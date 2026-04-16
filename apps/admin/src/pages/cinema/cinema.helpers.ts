@@ -7,7 +7,9 @@ import { CinemaChannel, CinemaScanJob } from "./cinema.types";
 export const getLatestJobByChannel = (jobs: CinemaScanJob[]): Map<string, CinemaScanJob> => {
   const map = new Map<string, CinemaScanJob>();
   for (const job of jobs) {
-    if (!map.has(job.channelId)) map.set(job.channelId, job);
+    if (job.channelId && !map.has(job.channelId)) {
+      map.set(job.channelId, job);
+    }
   }
   return map;
 };

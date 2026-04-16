@@ -42,8 +42,11 @@ export function CinemaPage() {
   const {
     runningByChannel,
     localUploading,
+    cancellingJobs,
     ensureStorageAndScan,
     startLocalUpload,
+    cancelJob,
+    retryJob,
   } = useCinemaActions({ reload, setMessage, setError });
 
   const fullSourceChannels = useMemo(
@@ -109,7 +112,13 @@ export function CinemaPage() {
             isScanning={selectedChannel ? !!runningByChannel[selectedChannel.id] : false}
           />
 
-          <CinemaRecentJobsTable jobs={jobs} channels={channels} />
+          <CinemaRecentJobsTable 
+            jobs={jobs} 
+            channels={channels} 
+            onCancel={cancelJob}
+            onRetry={retryJob}
+            cancellingJobs={cancellingJobs}
+          />
         </div>
       </div>
 

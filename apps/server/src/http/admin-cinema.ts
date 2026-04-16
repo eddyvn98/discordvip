@@ -117,4 +117,13 @@ export function registerAdminCinemaRoutes(app: Express, cinemaService: CinemaSer
       res.status(400).json({ error: error instanceof Error ? error.message : "Cannot retry scan job" });
     }
   });
+  app.post("/api/admin/cinema/jobs/:id/cancel", requireAdmin, async (req, res) => {
+    try {
+      const jobId = String(req.params.id ?? "");
+      await cinemaService.scanJobService.cancelJob(jobId);
+      res.json({ ok: true });
+    } catch (error) {
+      res.status(400).json({ error: error instanceof Error ? error.message : "Cannot cancel cinema job" });
+    }
+  });
 }

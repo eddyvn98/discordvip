@@ -34,16 +34,16 @@ function isAllowedOrigin(origin: string | undefined) {
     return true;
   }
 
-  if (!env.DEV_BYPASS_ADMIN_AUTH) {
-    return false;
+  if (env.DEV_BYPASS_ADMIN_AUTH) {
+    try {
+      const url = new URL(origin);
+      if (["localhost", "127.0.0.1"].includes(url.hostname)) {
+        return true;
+      }
+    } catch {}
   }
 
-  try {
-    const url = new URL(origin);
-    return ["localhost", "127.0.0.1"].includes(url.hostname);
-  } catch {
-    return false;
-  }
+  return false;
 }
 
 export function createApp({

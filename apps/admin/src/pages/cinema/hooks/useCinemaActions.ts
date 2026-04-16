@@ -14,6 +14,7 @@ export function useCinemaActions({
 }: UseCinemaActionsProps) {
   const [runningByChannel, setRunningByChannel] = useState<Record<string, boolean>>({});
   const [localUploading, setLocalUploading] = useState(false);
+  const [cancellingJobs, setCancellingJobs] = useState<Record<string, boolean>>({});
 
   const ensureStorageAndScan = async (channelId: string) => {
     setRunningByChannel((current) => ({ ...current, [channelId]: true }));
@@ -56,10 +57,37 @@ export function useCinemaActions({
     }
   };
 
+  const cancelJob = async (jobId: string) => {
+    setCancellingJobs((curr) => ({ ...curr, [jobId]: true }));
+    try {
+      await api.post(`/api/admin/cinema/jobs/${jobId}/cancel`, {});
+      setMessage("Đã gửi yêu cầu dừng công việc.");
+      await reload();
+    } catch (value) {
+      setError((value as Error).message);
+    } finally {
+      setCancellingJobs((curr) => ({ ...curr, [jobId]: false }));
+    }
+  };
+
+  const retryJob = async (jobId: string) => {
+    try {
+      setError("");
+      await api.post(`/api/admin/cinema/jobs/${jobId}/retry`, {});
+      setMessage("Đã bắt đầu chạy lại công việc.");
+      await reload();
+    } catch (value) {
+      setError((value as Error).message);
+    }
+  };
+
   return {
     runningByChannel,
     localUploading,
+    cancellingJobs,
     ensureStorageAndScan,
     startLocalUpload,
+    cancelJob,
+    retryJob,
   };
 }
