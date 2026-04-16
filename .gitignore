@@ -15,3 +15,8 @@ output/
 # GitNexus
 .gitnexus/
 .claude/skills/generated/
+
+# Sessions and storage
+*.session
+apps/server/storage/
+apps/server/src/scratch_check_jobs.*

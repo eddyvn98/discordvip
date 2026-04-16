@@ -1,59 +1,47 @@
-﻿import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useMemo } from "react";
+import { 
+  Users, 
+  Search, 
+  UserPlus, 
+  Calendar,
+  ShieldCheck,
+  ShieldAlert,
+  Clock,
+  X,
+  Tv,
+  CheckCircle2,
+  AlertCircle
+} from "lucide-react";
 
 import { api } from "../api";
-import { Table } from "../components/common/Table";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { 
+  Table, 
+  TableBody, 
+  TableCell, 
+  TableHead, 
+  TableHeader, 
+  TableRow 
+} from "@/components/ui/table";
+import { 
+  Card, 
+  CardContent, 
+  CardDescription,
+  CardHeader, 
+  CardTitle 
+} from "@/components/ui/card";
 import type { DiscordLookupResult, MembershipItem } from "../types";
 import { datetime, formatPlatformUser } from "../utils/format";
+import { cn } from "@/lib/utils";
 
 const MEMBERSHIP_DESC = "Quản trị thành viên VIP: xem, tìm kiếm, điều chỉnh hạn và thu hồi VIP.";
-const SEARCH_PLACEHOLDER =
-  "Tìm theo ID, tên Discord, trạng thái ACTIVE/EXPIRED, nguồn PAID/TRIAL/MANUAL";
-const MSG_REVOKED = "Đã thu hồi VIP.";
-const MSG_GRANTED = "Đã điều chỉnh hạn VIP.";
-const MSG_LOADING = "Đang tải...";
-const MSG_SEARCH = "Tìm kiếm";
-const MSG_ERROR = "Lỗi";
+const SEARCH_PLACEHOLDER = "Tìm theo ID, tên, trạng thái hoặc nguồn...";
+const MSG_REVOKED = "Đã thu hồi VIP thành công.";
+const MSG_GRANTED = "Đã cấp/điều chỉnh VIP thành công.";
+const MSG_LOADING = "Đang xử lý...";
 const CACHE_PREFIX = "memberships-cache-v1";
-
-type MembershipsMeta = {
-  count: number;
-  latestUpdatedAt: string | null;
-};
-
-type MembershipsCache = {
-  platform: "discord" | "telegram" | "all";
-  meta: MembershipsMeta;
-  items: MembershipItem[];
-};
-
-function cacheKey(platform: "discord" | "telegram" | "all") {
-  return `${CACHE_PREFIX}:${platform}`;
-}
-
-function readCache(platform: "discord" | "telegram" | "all"): MembershipsCache | null {
-  try {
-    const raw = localStorage.getItem(cacheKey(platform));
-    if (!raw) {
-      return null;
-    }
-    return JSON.parse(raw) as MembershipsCache;
-  } catch {
-    return null;
-  }
-}
-
-function writeCache(
-  platform: "discord" | "telegram" | "all",
-  meta: MembershipsMeta,
-  items: MembershipItem[],
-) {
-  try {
-    const payload: MembershipsCache = { platform, meta, items };
-    localStorage.setItem(cacheKey(platform), JSON.stringify(payload));
-  } catch {
-    // Ignore cache write failures.
-  }
-}
 
 export function MembershipsPage() {
   const [items, setItems] = useState<MembershipItem[]>([]);
@@ -64,19 +52,26 @@ export function MembershipsPage() {
   const [platform, setPlatform] = useState<"discord" | "telegram" | "all">("discord");
   const [manualDiscordUserId, setManualDiscordUserId] = useState("");
   const [manualDurationDays, setManualDurationDays] = useState("30");
-  const [lookupResult, setLookupResult] = useState<DiscordLookupResult | null>(null);
-  const [lookupLoading, setLookupLoading] = useState(false);
   const [grantLoading, setGrantLoading] = useState(false);
   const [showManualTools, setShowManualTools] = useState(false);
   const [rowAdjustDays, setRowAdjustDays] = useState<Record<string, string>>({});
   const [editingMembershipId, setEditingMembershipId] = useState<string>("");
   const requestRef = useRef(0);
+
   const editingMembership = items.find((item) => item.id === editingMembershipId) ?? null;
+
+  const stats = useMemo(() => {
+    const active = items.filter(i => i.status === "ACTIVE").length;
+    const expired = items.filter(i => i.status === "EXPIRED").length;
+    return { active, expired, total: items.length };
+  }, [items]);
 
   const load = async (query = "") => {
     setError("");
     setLoading(true);
     const requestId = ++requestRef.current;
+    
+    // API backend checks for names=1 or names=true literal string
     const buildPath = (includeNames: boolean) =>
       query.trim()
         ? `/api/admin/memberships/search?q=${encodeURIComponent(query.trim())}&platform=${platform}&names=${includeNames ? "1" : "0"}`
@@ -84,125 +79,67 @@ export function MembershipsPage() {
 
     try {
       const fastData = await api.get<MembershipItem[]>(buildPath(false));
-      if (requestRef.current !== requestId) {
-        return;
-      }
+      if (requestRef.current !== requestId) return;
       setItems(fastData);
-      setLoading(false);
-
+      
       const namedData = await api.get<MembershipItem[]>(buildPath(true));
-      if (requestRef.current !== requestId) {
-        return;
-      }
+      if (requestRef.current !== requestId) return;
       setItems(namedData);
     } catch (value) {
-      if (requestRef.current === requestId) {
-        setError((value as Error).message);
-      }
+      if (requestRef.current === requestId) setError((value as Error).message);
     } finally {
-      if (requestRef.current === requestId) {
-        setLoading(false);
-      }
+      if (requestRef.current === requestId) setLoading(false);
     }
   };
 
-  const loadWithCache = async () => {
-    setError("");
-    setLoading(true);
-    const requestId = ++requestRef.current;
-    const cached = readCache(platform);
-
-    try {
-      if (cached) {
-        setItems(cached.items);
-      }
-
-      const latestMeta = await api.get<MembershipsMeta>(`/api/admin/memberships/meta?platform=${platform}`);
-      if (requestRef.current !== requestId) {
-        return;
-      }
-
-      const cacheFresh =
-        cached &&
-        cached.meta.count === latestMeta.count &&
-        cached.meta.latestUpdatedAt === latestMeta.latestUpdatedAt;
-
-      if (cacheFresh) {
-        setLoading(false);
-        return;
-      }
-
-      const freshItems = await api.get<MembershipItem[]>(
-        `/api/admin/memberships?platform=${platform}&names=0`,
-      );
-      if (requestRef.current !== requestId) {
-        return;
-      }
-      setItems(freshItems);
-      writeCache(platform, latestMeta, freshItems);
-      setLoading(false);
-
-      const hydrated = await api.get<MembershipItem[]>(
-        `/api/admin/memberships?platform=${platform}&names=1`,
-      );
-      if (requestRef.current !== requestId) {
-        return;
-      }
-      setItems(hydrated);
-      writeCache(platform, latestMeta, hydrated);
-    } catch (value) {
-      if (requestRef.current === requestId) {
-        setError((value as Error).message);
-      }
-    } finally {
-      if (requestRef.current === requestId) {
-        setLoading(false);
+  // Load from cache on mount/platform change
+  useEffect(() => {
+    const cached = localStorage.getItem(`${CACHE_PREFIX}-${platform}`);
+    if (cached) {
+      try {
+        setItems(JSON.parse(cached));
+      } catch (e) {
+        localStorage.removeItem(`${CACHE_PREFIX}-${platform}`);
       }
     }
-  };
+  }, [platform]);
+
+  // Save to cache when items change (and NO search active)
+  useEffect(() => {
+    if (items.length > 0 && !search.trim()) {
+      localStorage.setItem(`${CACHE_PREFIX}-${platform}`, JSON.stringify(items));
+    }
+  }, [items, platform, search]);
 
   useEffect(() => {
-    if (search.trim()) {
-      const timeout = window.setTimeout(() => {
-        void load(search);
-      }, 250);
-      return () => window.clearTimeout(timeout);
-    }
-
-    void loadWithCache();
-    return undefined;
+    const timeout = window.setTimeout(() => {
+      void load(search);
+    }, search.trim() ? 250 : 0);
+    return () => window.clearTimeout(timeout);
   }, [search, platform]);
 
-  const lookupDiscordUser = async () => {
-    setError("");
-    setMessage("");
-    setLookupResult(null);
-    setLookupLoading(true);
-
-    try {
-      const result = await api.post<DiscordLookupResult>("/api/admin/memberships/lookup-discord-user", {
-        discordUserId: manualDiscordUserId.trim(),
-      });
-      setLookupResult(result);
-    } catch (value) {
-      setError((value as Error).message);
-    } finally {
-      setLookupLoading(false);
+  // NEW: Manual grant for NEW users
+  const handleManualGrant = async () => {
+    if (!manualDiscordUserId.trim()) {
+      setError("Vui lòng nhập Discord User ID.");
+      return;
     }
-  };
+    const durationDays = Number(manualDurationDays);
+    if (isNaN(durationDays) || durationDays === 0) {
+      setError("Số ngày không hợp lệ.");
+      return;
+    }
 
-  const grantManualMembership = async () => {
+    setGrantLoading(true);
     setError("");
     setMessage("");
-    setGrantLoading(true);
-
     try {
       await api.post("/api/admin/memberships/manual-grant", {
         discordUserId: manualDiscordUserId.trim(),
-        durationDays: Number(manualDurationDays),
+        durationDays
       });
       setMessage(MSG_GRANTED);
-      await lookupDiscordUser();
+      setManualDiscordUserId("");
       await load(search);
     } catch (value) {
       setError((value as Error).message);
@@ -211,14 +148,13 @@ export function MembershipsPage() {
     }
   };
 
-  const adjustMembership = async (membershipId: string) => {
-    const raw = rowAdjustDays[membershipId] ?? "";
-    const durationDays = Number(raw);
-    if (!Number.isInteger(durationDays) || durationDays === 0) {
-      setError("Số ngày điều chỉnh phải là số nguyên khác 0.");
+  // Adjust EXISTING membership
+  const handleAdjustMembership = async (membershipId: string) => {
+    const durationDays = Number(rowAdjustDays[membershipId] ?? "30");
+    if (isNaN(durationDays) || durationDays === 0) {
+      setError("Số ngày điều chỉnh không hợp lệ.");
       return;
     }
-
     setError("");
     setMessage("");
     try {
@@ -231,10 +167,10 @@ export function MembershipsPage() {
     }
   };
 
-  const revokeMembership = async (membershipId: string) => {
+  const handleRevokeMembership = async (membershipId: string) => {
+    if (!confirm("Bạn có chắc chắn muốn thu hồi quyền VIP của người dùng này?")) return;
     setError("");
     setMessage("");
-
     try {
       await api.post(`/api/admin/memberships/${membershipId}/revoke`);
       setMessage(MSG_REVOKED);
@@ -245,243 +181,281 @@ export function MembershipsPage() {
     }
   };
 
-  const formatSource = (item: MembershipItem) => {
-    if (item.source !== "PAID") {
-      return item.source;
-    }
-
-    if (item.sourceDetail === "PAID_AUTO") {
-      return "PAID (AUTO)";
-    }
-    if (item.sourceDetail === "PAID_MANUAL_ORDER") {
-      return "PAID (ADMIN CONFIRM)";
-    }
-    if (item.sourceDetail === "PAID_ADMIN_GRANT") {
-      return "PAID (ADMIN GRANT)";
-    }
-    return "PAID";
-  };
-
   return (
-    <section className="card">
-      <div className="section-header">
+    <div className="flex flex-col gap-8">
+      {/* Header */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
         <div>
-          <h1>Thành viên VIP</h1>
-          <p>{MEMBERSHIP_DESC}</p>
+          <h1 className="text-3xl font-bold tracking-tight">Thành viên VIP</h1>
+          <p className="text-muted-foreground mt-1">{MEMBERSHIP_DESC}</p>
         </div>
-        <select
-          value={platform}
-          onChange={(event) => setPlatform(event.target.value as "discord" | "telegram" | "all")}
-        >
-          <option value="discord">Discord</option>
-          <option value="telegram">Telegram</option>
-          <option value="all">Tất cả</option>
-        </select>
+        <Button variant="outline" onClick={() => setShowManualTools(!showManualTools)} className="gap-2">
+          <UserPlus size={18} />
+          {showManualTools ? "Ẩn công cụ" : "Cấp VIP thủ công"}
+        </Button>
       </div>
 
-      <div className="section-header" style={{ marginBottom: "12px" }}>
-        <div />
-        <button
-          className="button secondary"
-          type="button"
-          onClick={() => setShowManualTools((current) => !current)}
-        >
-          {showManualTools ? "Ẩn công cụ điều chỉnh" : "Mở công cụ điều chỉnh"}
-        </button>
+      {/* Stats */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Tổng thành viên</CardTitle>
+            <Users className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold font-mono tracking-tight">{stats.total}</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Đang hoạt động</CardTitle>
+            <ShieldCheck className="h-4 w-4 text-primary" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold font-mono tracking-tight">{stats.active}</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Đã hết hạn</CardTitle>
+            <ShieldAlert className="h-4 w-4 text-destructive" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold font-mono tracking-tight text-destructive">{stats.expired}</div>
+          </CardContent>
+        </Card>
       </div>
 
-      {showManualTools ? (
-        <div className="manual-grant-panel">
-          <div>
-            <h2>Điều chỉnh hạn VIP</h2>
-            <p>Nhập Discord user ID, kiểm tra user trong guild, sau đó cộng hoặc trừ số ngày VIP.</p>
-          </div>
-          <div className="manual-grant-form">
-            <input
-              value={manualDiscordUserId}
-              onChange={(event) => {
-                setManualDiscordUserId(event.target.value);
-                setLookupResult(null);
-              }}
-              placeholder="Discord user ID"
-            />
-            <input
-              value={manualDurationDays}
-              onChange={(event) => setManualDurationDays(event.target.value)}
-              placeholder="Số ngày VIP, âm để trừ"
-              inputMode="numeric"
-            />
-            <button
-              className="button secondary"
-              type="button"
-              onClick={() => void lookupDiscordUser()}
-              disabled={lookupLoading || !manualDiscordUserId.trim()}
-            >
-              {lookupLoading ? MSG_LOADING : "Kiểm tra user"}
-            </button>
-            <button
-              className="button"
-              type="button"
-              onClick={() => void grantManualMembership()}
-              disabled={grantLoading || !manualDiscordUserId.trim() || !manualDurationDays.trim()}
-            >
-              {grantLoading ? MSG_LOADING : "Điều chỉnh"}
-            </button>
-          </div>
-          {lookupResult ? (
-            <p className="manual-grant-result">
-              User hợp lệ: <strong>{lookupResult.displayName}</strong> ({lookupResult.id})
-            </p>
-          ) : null}
-        </div>
-      ) : null}
-
-      <form
-        onSubmit={(event) => {
-          event.preventDefault();
-          void load(search);
-        }}
-        style={{ display: "flex", gap: "8px", flexWrap: "wrap", marginBottom: "14px" }}
-      >
-        <input
-          value={search}
-          onChange={(event) => setSearch(event.target.value)}
-          placeholder={SEARCH_PLACEHOLDER}
-          style={{
-            minWidth: "320px",
-            flex: 1,
-            padding: "12px 14px",
-            borderRadius: "12px",
-            border: "1px solid rgba(148, 163, 184, 0.2)",
-            background: "#0f172a",
-            color: "#fff",
-          }}
-        />
-        <button className="button" type="submit" disabled={loading}>
-          {loading ? MSG_LOADING : MSG_SEARCH}
-        </button>
-        <button
-          className="button secondary"
-          type="button"
-          onClick={() => {
-            setSearch("");
-            void load("");
-          }}
-        >
-          Đặt lại
-        </button>
-      </form>
-
-      {message ? <p className="success">{message}</p> : null}
-      {error ? (
-        <p>{`${MSG_ERROR}: ${error}`}</p>
-      ) : (
-        <Table
-          headers={[
-            "Nền tảng",
-            "Người dùng",
-            "Nguồn",
-            "Trạng thái",
-            "Ngày đăng ký",
-            "Hết hạn",
-            "Số lần thử gỡ vai trò",
-            "Lỗi gần nhất (nếu có)",
-            "Hành động",
-          ]}
-          rows={items.map((item) => [
-            item.platform,
-            formatPlatformUser({
-              platform: item.platform,
-              platformUserId: item.platformUserId,
-              discordDisplayName: item.discordDisplayName,
-            }),
-            formatSource(item),
-            item.status,
-            datetime(item.createdAt),
-            datetime(item.expireAt),
-            String(item.removeRetries),
-            item.lastError ?? "Không có",
-            <button
-              className="button secondary"
-              type="button"
-              onClick={() => {
-                setRowAdjustDays((current) => ({ ...current, [item.id]: current[item.id] ?? "30" }));
-                setEditingMembershipId(item.id);
-              }}
-            >
-              Chỉnh sửa
-            </button>,
-          ])}
-        />
+      {/* Tools */}
+      {showManualTools && (
+        <Card className="bg-primary/5 border-primary/20 animate-in fade-in slide-in-from-top-4">
+          <CardContent className="pt-6">
+            <div className="flex flex-col sm:flex-row gap-4">
+              <div className="flex-1 space-y-1">
+                <label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Discord User ID</label>
+                <Input 
+                  placeholder="Nhập ID người dùng..." 
+                  value={manualDiscordUserId}
+                  onChange={e => setManualDiscordUserId(e.target.value)}
+                  className="bg-background"
+                />
+              </div>
+              <div className="w-full sm:w-32 space-y-1">
+                <label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Số ngày</label>
+                <Input 
+                  placeholder="30" 
+                  type="number"
+                  value={manualDurationDays}
+                  onChange={e => setManualDurationDays(e.target.value)}
+                  className="bg-background"
+                />
+              </div>
+              <div className="flex items-end">
+                <Button onClick={handleManualGrant} disabled={grantLoading} className="h-9">
+                  {grantLoading ? MSG_LOADING : "Cấp VIP ngay"}
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       )}
 
-      {editingMembership ? (
-        <div
-          style={{
-            position: "fixed",
-            inset: 0,
-            background: "rgba(2, 6, 23, 0.66)",
-            display: "grid",
-            placeItems: "center",
-            zIndex: 60,
-            padding: "16px",
-          }}
-        >
-          <div
-            style={{
-              width: "min(560px, 100%)",
-              background: "rgba(15, 23, 42, 0.98)",
-              border: "1px solid rgba(148, 163, 184, 0.22)",
-              borderRadius: "16px",
-              padding: "16px",
-              boxShadow: "0 20px 60px rgba(2, 6, 23, 0.55)",
-              display: "grid",
-              gap: "12px",
-            }}
-          >
-            <h3 style={{ margin: 0 }}>Chỉnh sửa VIP</h3>
-            <p style={{ margin: 0, color: "#cbd5e1" }}>
-              {formatPlatformUser({
-                platform: editingMembership.platform,
-                platformUserId: editingMembership.platformUserId,
-                discordDisplayName: editingMembership.discordDisplayName,
-              })}
-            </p>
-            <div style={{ display: "flex", gap: "8px", alignItems: "center", flexWrap: "wrap" }}>
-              <input
-                value={rowAdjustDays[editingMembership.id] ?? "30"}
-                onChange={(event) =>
-                  setRowAdjustDays((current) => ({
-                    ...current,
-                    [editingMembership.id]: event.target.value,
-                  }))
-                }
-                placeholder="Số ngày (+/-)"
-                inputMode="numeric"
-                style={{
-                  width: "120px",
-                  padding: "10px 12px",
-                  borderRadius: "10px",
-                  border: "1px solid rgba(148, 163, 184, 0.2)",
-                  background: "#0f172a",
-                  color: "#fff",
-                }}
+      {/* Content Area */}
+      <Card className="shadow-sm">
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-6">
+           <div className="flex flex-row items-center gap-4 flex-1">
+            <div className="relative flex-1 max-w-sm">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input 
+                placeholder={SEARCH_PLACEHOLDER}
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                className="pl-9 h-9"
               />
-              <button className="button secondary" onClick={() => void adjustMembership(editingMembership.id)}>
-                Gia hạn
-              </button>
-              {editingMembership.status === "ACTIVE" ? (
-                <button className="button secondary" onClick={() => void revokeMembership(editingMembership.id)}>
-                  Thu hồi VIP
-                </button>
-              ) : null}
-              <button className="button secondary" type="button" onClick={() => setEditingMembershipId("")}>
-                Đóng
-              </button>
             </div>
+            <select 
+              className="flex h-9 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+              value={platform}
+              onChange={e => setPlatform(e.target.value as any)}
+            >
+              <option value="discord">Discord</option>
+              <option value="telegram">Telegram</option>
+              <option value="all">Tất cả</option>
+            </select>
           </div>
+          {loading && <RefreshCw size={16} className="animate-spin text-muted-foreground" />}
+        </CardHeader>
+        <CardContent className="p-0">
+          <Table>
+            <TableHeader>
+              <TableRow className="bg-muted/30">
+                <TableHead className="pl-6">Người dùng</TableHead>
+                <TableHead>Nền tảng</TableHead>
+                <TableHead>Trạng thái</TableHead>
+                <TableHead>Thời hạn</TableHead>
+                <TableHead className="text-right pr-6">Thao tác</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {items.map((item) => (
+                <TableRow key={item.id} className="group transition-colors">
+                  <TableCell className="pl-6">
+                    <div className="flex items-center gap-3">
+                      <div className="h-10 w-10 shrink-0 rounded-full bg-accent flex items-center justify-center font-bold text-accent-foreground border shadow-sm">
+                        {item.discordDisplayName?.[0]?.toUpperCase() || item.platform[0].toUpperCase()}
+                      </div>
+                      <div className="min-w-0">
+                        <div className="font-semibold text-sm truncate">{item.discordDisplayName || item.platformUserId}</div>
+                        <div className="text-[10px] font-mono text-muted-foreground truncate italic">ID: {item.platformUserId}</div>
+                      </div>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant="outline" className="text-[10px] uppercase font-bold tracking-wider">{item.platform}</Badge>
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant={item.status === "ACTIVE" ? "default" : "destructive"} className="text-[10px] font-bold">
+                      {item.status}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex flex-col gap-0.5">
+                      <div className="flex items-center gap-1.5 text-xs font-semibold tabular-nums">
+                        <Calendar size={12} className="text-primary/70" />
+                        {datetime(item.expireAt)}
+                      </div>
+                      <div className="text-[10px] text-muted-foreground font-medium">Cấp: {datetime(item.createdAt)}</div>
+                    </div>
+                  </TableCell>
+                  <TableCell className="text-right pr-6">
+                    <Button 
+                      variant="ghost" 
+                      size="sm"
+                      className="opacity-0 group-hover:opacity-100 transition-opacity"
+                      onClick={() => {
+                        setRowAdjustDays(curr => ({ ...curr, [item.id]: "30" }));
+                        setEditingMembershipId(item.id);
+                      }}
+                    >
+                      Chi tiết
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+          
+          {items.length === 0 && !loading && (
+            <div className="py-24 text-center flex flex-col items-center gap-4 grayscale opacity-40">
+              <Users size={64} strokeWidth={1} />
+              <p className="text-sm font-medium">Không tìm thấy thành viên nào phù hợp.</p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Side Panel Overlay */}
+      {editingMembership && (
+        <div className="fixed inset-0 z-50 flex justify-end bg-background/60 backdrop-blur-[2px] animate-in fade-in duration-200" onClick={() => setEditingMembershipId("")}>
+          <Card className="w-full max-w-md h-full rounded-none border-l shadow-2xl animate-in slide-in-from-right duration-300" onClick={e => e.stopPropagation()}>
+            <CardHeader className="flex flex-row items-center justify-between border-b px-6 py-6">
+              <div>
+                <CardTitle className="text-xl">Quản trị Hội viên</CardTitle>
+                <CardDescription>ID: {editingMembership.id}</CardDescription>
+              </div>
+              <Button variant="ghost" size="icon" className="rounded-full" onClick={() => setEditingMembershipId("")}><X size={20} /></Button>
+            </CardHeader>
+            <CardContent className="p-8 space-y-8 overflow-y-auto">
+              {/* User Identity */}
+              <div className="p-6 rounded-xl bg-accent/30 border flex items-center gap-4">
+                 <div className="h-14 w-14 rounded-full bg-primary/10 border-2 border-primary/20 flex items-center justify-center text-xl font-bold text-primary">
+                    {editingMembership.discordDisplayName?.[0]?.toUpperCase() || editingMembership.platform[0].toUpperCase()}
+                 </div>
+                 <div className="min-w-0">
+                    <p className="font-black text-lg truncate leading-tight">{editingMembership.discordDisplayName || "Chưa rõ tên"}</p>
+                    <p className="text-sm text-muted-foreground font-medium">{editingMembership.platform.toUpperCase()} User</p>
+                    <p className="text-[10px] font-mono text-muted-foreground mt-1 tabular-nums">PID: {editingMembership.platformUserId}</p>
+                 </div>
+              </div>
+
+              {/* Stats / Info */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="p-4 rounded-lg bg-card border shadow-sm">
+                  <p className="text-[10px] font-bold uppercase text-muted-foreground mb-1">Nguồn cấp</p>
+                  <p className="text-sm font-bold">{editingMembership.source}</p>
+                </div>
+                <div className="p-4 rounded-lg bg-card border shadow-sm">
+                  <p className="text-[10px] font-bold uppercase text-muted-foreground mb-1">Trạng thái</p>
+                  <Badge variant={editingMembership.status === "ACTIVE" ? "default" : "destructive"}>{editingMembership.status}</Badge>
+                </div>
+              </div>
+
+              {/* Adjust Section */}
+              <div className="space-y-4 pt-4">
+                <h4 className="font-bold text-sm flex items-center gap-2">
+                  <Clock size={16} className="text-primary" />
+                  Gia hạn / Thu hồi ngày VIP
+                </h4>
+                <div className="flex gap-2">
+                  <Input 
+                    type="number" 
+                    value={rowAdjustDays[editingMembership.id] || "30"}
+                    onChange={e => setRowAdjustDays(curr => ({ ...curr, [editingMembership.id]: e.target.value }))}
+                    className="flex-1 h-11 text-lg font-bold"
+                  />
+                  <Button onClick={() => void handleAdjustMembership(editingMembership.id)} className="h-11 px-6 font-bold">Lưu</Button>
+                </div>
+                <p className="text-[11px] text-muted-foreground italic leading-relaxed">
+                   * Nhập số dương (+) để cộng thêm ngày, số âm (-) để trừ bớt ngày VIP hiện tại của người dùng.
+                </p>
+              </div>
+
+              {/* Revoke Section */}
+              <div className="pt-10 mt-10 border-t space-y-4">
+                <h4 className="text-xs font-black text-destructive uppercase tracking-widest">Khu vực nguy hiểm</h4>
+                <Button 
+                  variant="destructive" 
+                  className="w-full h-12 font-bold uppercase tracking-tight"
+                  onClick={() => void handleRevokeMembership(editingMembership.id)}
+                >
+                  Thu hồi toàn bộ quyền VIP
+                </Button>
+                <p className="text-[10px] text-muted-foreground text-center">
+                  Hành động này sẽ hủy hiệu lực VIP ngay lập tức và không thể hoàn tác.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
         </div>
-      ) : null}
-    </section>
+      )}
+
+      {/* Notifications */}
+      {message && <div className="fixed bottom-6 right-6 bg-primary text-primary-foreground px-6 py-4 rounded-xl shadow-2xl z-[100] animate-in fade-in slide-in-from-bottom-6 flex items-center gap-3 font-bold border border-white/20">
+        <CheckCircle2 size={20} />
+        {message}
+      </div>}
+      {error && <div className="fixed bottom-6 right-6 bg-destructive text-destructive-foreground px-6 py-4 rounded-xl shadow-2xl z-[100] animate-in fade-in slide-in-from-bottom-6 flex items-center gap-3 font-bold border border-white/20">
+        <AlertCircle size={20} />
+        {error}
+      </div>}
+    </div>
+  );
+}
+
+// Helper icons missed in copy-paste
+function RefreshCw(props: any) {
+  return (
+    <svg 
+      xmlns="http://www.w3.org/2000/svg" 
+      width="24" height="24" viewBox="0 0 24 24" 
+      fill="none" stroke="currentColor" strokeWidth="2" 
+      strokeLinecap="round" strokeLinejoin="round" 
+      {...props}
+    >
+      <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
+      <path d="M21 3v5h-5" />
+      <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" />
+      <path d="M3 21v-5h5" />
+    </svg>
   );
 }

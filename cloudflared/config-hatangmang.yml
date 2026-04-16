@@ -1,5 +1,5 @@
 tunnel: 5b86d14b-4a6d-4ceb-9af7-942886644006
 ingress:
-  - hostname: discordvip.hatangmang.vn
+  - hostname: localhost
     service: http://web-gateway:8080
   - service: http_status:404
