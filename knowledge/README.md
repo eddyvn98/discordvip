@@ -16,3 +16,4 @@
 - [11-anti-patterns-checklist.md](./11-anti-patterns-checklist.md) - What to avoid
 - [12-performance-playbook.md](./12-performance-playbook.md) - Bottlenecks + optimizations
 - [13-cinema-local-pipeline-automation.md](./13-cinema-local-pipeline-automation.md) - Local folder-to-Telegram automation & Docker isolation
+- [14-startup-and-verification-guide.md](./14-startup-and-verification-guide.md) - Startup & Verification Playbook for AI Maintainers
