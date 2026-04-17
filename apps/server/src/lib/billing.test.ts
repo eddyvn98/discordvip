@@ -16,6 +16,7 @@ describe("billing helpers", () => {
     expect(extractOrderCode("nap vip VIP ABCD1234")).toBe("ABCD1234");
     expect(extractOrderCode("BXAP8VZHRP")).toBe("BXAP8VZHRP");
     expect(extractOrderCode("DONATE R23VOIUMO")).toBe("R23VOIUMO");
+    expect(extractOrderCode("DONATE 8AGCQZUSAO-050426-14:53:00 6095ASCB02YKR9YP")).toBe("8AGCQZUSAO");
     expect(extractOrderCode("hello")).toBeNull();
   });
 

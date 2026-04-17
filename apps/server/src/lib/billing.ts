@@ -25,7 +25,9 @@ export function extractOrderCode(transferContent: string | null | undefined) {
   }
 
   const normalized = transferContent.toUpperCase();
-  const prefixedMatch = normalized.match(/\b(?:VIP|DONATE)\s+([A-Z0-9_-]{6,})\b/);
+  // Banks may append metadata right after the order code (e.g. DONATE ABCD1234XY-050426-...).
+  // We only need the 10-char order code token following VIP/DONATE.
+  const prefixedMatch = normalized.match(/\b(?:VIP|DONATE)\s+([A-Z0-9]{10})(?=[^A-Z0-9]|$)/);
   if (prefixedMatch?.[1]) {
     return prefixedMatch[1];
   }

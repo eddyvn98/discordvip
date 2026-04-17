@@ -296,6 +296,20 @@ export class MembershipService {
     const cooldownStart = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
 
     return prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+      const existingMembership = await tx.membership.findUnique({
+        where: {
+          discordUserId_guildId_roleId: {
+            discordUserId: identity.legacyUserId,
+            guildId: identity.platformChatId,
+            roleId: identity.roleId,
+          },
+        },
+      });
+
+      if (existingMembership && existingMembership.status === MembershipStatus.ACTIVE && existingMembership.expireAt > now) {
+        throw new Error("Tài khoản này đang có VIP còn hạn, không thể dùng trial.");
+      }
+
       const existingClaim = await tx.trialClaim.findFirst({
         where: {
           platform: toPrismaPlatform(scope.platform),
@@ -327,16 +341,6 @@ export class MembershipService {
           },
         });
       }
-
-      const existingMembership = await tx.membership.findUnique({
-        where: {
-          discordUserId_guildId_roleId: {
-            discordUserId: identity.legacyUserId,
-            guildId: identity.platformChatId,
-            roleId: identity.roleId,
-          },
-        },
-      });
 
       return existingMembership
         ? tx.membership.update({
@@ -504,6 +508,23 @@ export class MembershipService {
         expireAt: "asc",
       },
       take: limit,
+    });
+  }
+
+  async listActiveMembershipsForPlatform(input: {
+    platform: PlatformKey;
+    limit?: number;
+  }) {
+    return prisma.membership.findMany({
+      where: {
+        platform: toPrismaPlatform(input.platform),
+        status: MembershipStatus.ACTIVE,
+        expireAt: {
+          gt: new Date(),
+        },
+      },
+      orderBy: [{ updatedAt: "asc" }, { createdAt: "asc" }],
+      take: input.limit ?? 50,
     });
   }
 

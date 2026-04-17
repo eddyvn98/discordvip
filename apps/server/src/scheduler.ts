@@ -16,7 +16,9 @@ export function startSchedulers(
   let timer: NodeJS.Timeout | null = null;
   let lastHealthcheckAt = 0;
   let lastReferralReconcileAt = 0;
+  let lastDiscordAccessReconcileAt = 0;
   const REFERRAL_RECONCILE_INTERVAL_MS = 60 * 60 * 1000;
+  const DISCORD_ACCESS_RECONCILE_INTERVAL_MS = 10 * 60 * 1000;
   const healthState = new Map<
     string,
     {
@@ -111,6 +113,40 @@ export function startSchedulers(
       }
       lastReferralReconcileAt = Date.now();
     }
+    if (Date.now() - lastDiscordAccessReconcileAt >= DISCORD_ACCESS_RECONCILE_INTERVAL_MS) {
+      const discordAdapter = platformRegistry.get("discord");
+      const activeDiscordMemberships = await membershipService.listActiveMembershipsForPlatform({
+        platform: "discord",
+        limit: 100,
+      });
+
+      for (const membership of activeDiscordMemberships) {
+        const target = membershipService.getMembershipTarget(membership);
+
+        try {
+          const hasAccess = discordAdapter.hasAccess
+            ? await discordAdapter.hasAccess(target)
+            : false;
+          if (hasAccess) {
+            continue;
+          }
+
+          await discordAdapter.grantAccess(target);
+          logger.info("Reconciled missing Discord VIP role", {
+            membershipId: membership.id,
+            userId: target.platformUserId,
+          });
+        } catch (error) {
+          logger.warn("Failed to reconcile Discord VIP role", {
+            membershipId: membership.id,
+            userId: target.platformUserId,
+            error,
+          });
+        }
+      }
+
+      lastDiscordAccessReconcileAt = Date.now();
+    }
 
     const expiredOrders = await orderService.markExpiredOrders();
     for (const order of expiredOrders) {
@@ -151,6 +187,22 @@ export function startSchedulers(
       for (const membership of membershipsToRemind) {
         const target = membershipService.getMembershipTarget(membership);
         const adapter = platformRegistry.get(target.platform);
+        const latestMembership = await membershipService.getLatestActiveMembershipForPlatformUser({
+          platform: target.platform,
+          platformUserId: target.platformUserId,
+        });
+
+        if (latestMembership && latestMembership.id !== membership.id) {
+          logger.info("Skip stale VIP expiry reminder membership", {
+            membershipId: membership.id,
+            latestMembershipId: latestMembership.id,
+            platform: target.platform,
+            userId: target.platformUserId,
+            thresholdDays,
+          });
+          await membershipService.markReminderSent(membership.id, thresholdDays);
+          continue;
+        }
 
         try {
           await adapter.sendVipExpiryReminder(target, membership.expireAt, thresholdDays);

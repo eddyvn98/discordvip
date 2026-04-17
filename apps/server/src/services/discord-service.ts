@@ -133,6 +133,23 @@ export class DiscordService {
     await member.roles.add(env.DISCORD_VIP_ROLE_ID);
   }
 
+  async hasVipRole(discordUserId: string) {
+    try {
+      const member = await this.getGuildMember(discordUserId);
+      return member.roles.cache.has(env.DISCORD_VIP_ROLE_ID);
+    } catch (error) {
+      if (
+        typeof error === "object" &&
+        error !== null &&
+        "code" in error &&
+        (error as { code?: unknown }).code === 10007
+      ) {
+        return false;
+      }
+      throw error;
+    }
+  }
+
   async sendVipActivatedNotice(discordUserId: string, expireAt: Date) {
     await sendDiscordVipActivatedNotice(this.client, discordUserId, expireAt);
   }

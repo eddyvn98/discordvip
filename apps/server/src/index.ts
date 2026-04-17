@@ -27,7 +27,7 @@ const orderService = new OrderService();
 const membershipService = new MembershipService();
 const paymentService = new PaymentService(orderService, membershipService, platformRegistry);
 const adminService = new AdminService(membershipService, discordService, platformRegistry);
-const promoCodeService = new PromoCodeService(membershipService, platformRegistry);
+const promoCodeService = new PromoCodeService();
 const authService = new AuthService(discordService);
 const referralService = new ReferralService(membershipService);
 

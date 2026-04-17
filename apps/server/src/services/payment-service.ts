@@ -481,11 +481,29 @@ export class PaymentService {
         }),
       ]);
 
+    const normalizedRecentPayments = recentPayments.map((payment) => {
+      if (!payment.order) {
+        return payment;
+      }
+
+      const target = this.getOrderTarget(payment.order);
+      return {
+        ...payment,
+        order: {
+          ...payment.order,
+          platform: target.platform,
+          platformUserId: target.platformUserId,
+          platformChatId: payment.order.platformChatId ?? payment.order.guildId,
+          discordDisplayName: null,
+        },
+      };
+    });
+
     return {
       revenue: matchedRevenue,
       pendingCount: env.PAYMENT_MODE === "manual" ? pendingOrders : pendingPayments,
       activeMemberships,
-      recentPayments,
+      recentPayments: normalizedRecentPayments,
       guildId: platform === "telegram" ? "TELEGRAM" : platform === "all" ? "ALL" : env.DISCORD_GUILD_ID,
       platform,
     };

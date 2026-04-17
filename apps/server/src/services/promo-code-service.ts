@@ -1,9 +1,7 @@
-import { MembershipStatus, Prisma } from "@prisma/client";
+import { Prisma, ReferralPointSource } from "@prisma/client";
 
 import { prisma } from "../prisma.js";
-import { PlatformRegistry } from "./platform-registry.js";
 import { PlatformKey, legacyUserIdFor, toPrismaPlatform } from "./platform.js";
-import { MembershipService } from "./membership-service.js";
 
 function normalizePromoCode(code: string) {
   return code.trim().toUpperCase();
@@ -65,10 +63,7 @@ export function validatePromoCodeUpdateInput(input: {
 }
 
 export class PromoCodeService {
-  constructor(
-    private readonly membershipService: MembershipService,
-    private readonly platformRegistry: PlatformRegistry,
-  ) {}
+  constructor() {}
 
   async listPromoCodes() {
     const items = await prisma.promoCode.findMany({
@@ -226,13 +221,6 @@ export class PromoCodeService {
         throw new Error("Bạn đã sử dụng mã khuyến mãi này rồi.");
       }
 
-      const membership = await this.membershipService.adjustManualMembershipInTransaction(tx, {
-        platform: input.platform,
-        platformUserId: input.platformUserId,
-        platformChatId: input.platformChatId,
-        durationDays: promoCode.durationDays,
-      });
-
       await tx.promoCodeRedemption.create({
         data: {
           promoCodeId: promoCode.id,
@@ -241,6 +229,16 @@ export class PromoCodeService {
           platformChatId: input.platformChatId,
           discordUserId: legacyUserId,
           durationDaysApplied: promoCode.durationDays,
+        },
+      });
+
+      await tx.referralPointLedger.create({
+        data: {
+          platform: toPrismaPlatform(input.platform),
+          userId: input.platformUserId,
+          source: ReferralPointSource.PROMO_CODE,
+          deltaPoints: promoCode.durationDays,
+          note: `Promo code ${promoCode.code}`,
         },
       });
 
@@ -253,32 +251,21 @@ export class PromoCodeService {
         },
       });
 
-      return { membership, promoCode: updatedPromoCode };
+      return { promoCode: updatedPromoCode };
     });
 
-    const target = this.membershipService.getMembershipTarget(applied.membership);
+    const balance = await prisma.referralPointLedger.aggregate({
+      where: {
+        platform: toPrismaPlatform(input.platform),
+        userId: input.platformUserId,
+      },
+      _sum: { deltaPoints: true },
+    });
 
-    try {
-      if (
-        applied.membership.status === MembershipStatus.ACTIVE &&
-        applied.membership.expireAt.getTime() > Date.now()
-      ) {
-        await this.platformRegistry.get(input.platform).grantAccess(target);
-      }
-    } catch (error) {
-      await prisma.membership.update({
-        where: { id: applied.membership.id },
-        data: {
-          lastError: error instanceof Error ? error.message : "Grant access failed",
-        },
-      });
-      throw new Error(
-        error instanceof Error
-          ? `Đã cộng VIP nhưng không thể cấp role: ${error.message}`
-          : "Đã cộng VIP nhưng không thể cấp role.",
-      );
-    }
-
-    return applied;
+    return {
+      promoCode: applied.promoCode,
+      pointsAdded: applied.promoCode.durationDays,
+      balanceAfter: balance._sum.deltaPoints ?? 0,
+    };
   }
 }

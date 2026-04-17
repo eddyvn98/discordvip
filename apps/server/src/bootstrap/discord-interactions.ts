@@ -35,7 +35,7 @@ export function registerDiscordInteractions(input: {
   input.discordService.client.on(Events.InteractionCreate, async (interaction) => {
     try {
       if (interaction.isButton()) {
-        await handleDiscordButton({
+        const handled = await handleDiscordButton({
           interaction,
           discordService: input.discordService,
           discordAdapter: input.discordAdapter,
@@ -46,17 +46,41 @@ export function registerDiscordInteractions(input: {
           buildOrderMessage: input.buildOrderMessage,
           buildVipAccessTitle: input.buildVipAccessTitle,
         });
+        if (!handled) {
+          logger.warn("Unhandled Discord button interaction", {
+            customId: interaction.customId,
+            userId: interaction.user.id,
+            channelId: interaction.channelId,
+            guildId: interaction.guildId,
+          });
+          await interaction.reply({
+            flags: MessageFlags.Ephemeral,
+            content: "Nút này đã hết hiệu lực. Vui lòng mở lại menu và thử lại.",
+          });
+        }
         return;
       }
 
       if (interaction.isModalSubmit()) {
-        await handleDiscordModal({
+        const handled = await handleDiscordModal({
           interaction,
           promoCodeService: input.promoCodeService,
           referralService: input.referralService,
           adminService: input.adminService,
           discordAdapter: input.discordAdapter,
         });
+        if (!handled) {
+          logger.warn("Unhandled Discord modal interaction", {
+            customId: interaction.customId,
+            userId: interaction.user.id,
+            channelId: interaction.channelId,
+            guildId: interaction.guildId,
+          });
+          await interaction.reply({
+            flags: MessageFlags.Ephemeral,
+            content: "Mẫu nhập này đã hết hiệu lực. Vui lòng thao tác lại từ menu.",
+          });
+        }
         return;
       }
 
@@ -69,7 +93,7 @@ export function registerDiscordInteractions(input: {
         return;
       }
 
-      await handleDiscordChatCommand({
+      const handled = await handleDiscordChatCommand({
         interaction,
         discordService: input.discordService,
         discordAdapter: input.discordAdapter,
@@ -80,6 +104,18 @@ export function registerDiscordInteractions(input: {
         buildOrderMessage: input.buildOrderMessage,
         buildVipAccessTitle: input.buildVipAccessTitle,
       });
+      if (!handled) {
+        logger.warn("Unhandled Discord chat command", {
+          commandName: interaction.commandName,
+          userId: interaction.user.id,
+          channelId: interaction.channelId,
+          guildId: interaction.guildId,
+        });
+        await interaction.reply({
+          flags: MessageFlags.Ephemeral,
+          content: "Lệnh này chưa được hỗ trợ ở phiên bản hiện tại.",
+        });
+      }
     } catch (error) {
       logger.error("Interaction handling failed", { error });
       if (interaction.isRepliable() && (interaction.deferred || interaction.replied)) {

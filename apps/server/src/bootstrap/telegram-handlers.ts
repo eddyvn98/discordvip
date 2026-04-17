@@ -164,8 +164,8 @@ export async function registerTelegramHandlers(input: {
           chatId,
           [
             `Đã sử dụng mã ${result.promoCode.code} thành công.`,
-            `Cộng thêm ${result.promoCode.durationDays} ngày VIP.`,
-            `Hạn mới: ${result.membership.expireAt.toLocaleString("vi-VN")}.`,
+            `Cộng thêm ${result.pointsAdded} diểm referral.`,
+            `Điểm hiện có: ${result.balanceAfter}.`,
           ].join("\n"),
         );
       } catch (error) {

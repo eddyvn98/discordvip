@@ -53,6 +53,7 @@ enum ReferralPointSource {
   INVITE_SUCCESS
   REDEEM_VIP
   ADMIN_ADJUST
+  PROMO_CODE
 }
 
 model Plan {

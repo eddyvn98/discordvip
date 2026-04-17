@@ -25,6 +25,7 @@ export interface PlatformAdapter {
   readonly platform: PlatformKey;
   start(): Promise<void>;
   grantAccess(target: AccessTarget): Promise<void>;
+  hasAccess?(target: AccessTarget): Promise<boolean>;
   revokeAccess(target: AccessTarget): Promise<void>;
   sendVipActivatedNotice(target: AccessTarget, expireAt: Date): Promise<void>;
   sendTrialExpiredNotice?(target: AccessTarget): Promise<void>;

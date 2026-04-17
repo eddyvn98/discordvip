@@ -22,6 +22,9 @@ export class TelegramService implements PlatformAdapter {
   private readonly adminCommandsSynced = new Set<string>();
   private readonly userCommandsSynced = new Set<string>();
   private handlers: TelegramHandlers | null = null;
+  private consecutivePollFailures = 0;
+  private lastPollErrorMessage = "";
+  private lastPollErrorLoggedAt = 0;
   private channelVerificationHandler:
     | ((input: {
         token: string;
@@ -129,12 +132,32 @@ export class TelegramService implements PlatformAdapter {
           timeout: 25,
           allowed_updates: ["message", "callback_query", "chat_join_request", "channel_post"],
         });
+        if (this.consecutivePollFailures > 0) {
+          logger.info("Telegram polling recovered", {
+            failuresBeforeRecovery: this.consecutivePollFailures,
+          });
+          this.consecutivePollFailures = 0;
+          this.lastPollErrorMessage = "";
+          this.lastPollErrorLoggedAt = 0;
+        }
         for (const update of updates) {
           this.offset = update.update_id + 1;
           await this.handleUpdate(update);
         }
       } catch (error) {
-        logger.warn("Telegram polling failed", { error });
+        this.consecutivePollFailures += 1;
+        const message = error instanceof Error ? error.message : String(error);
+        const now = Date.now();
+        const shouldLog =
+          message !== this.lastPollErrorMessage || now - this.lastPollErrorLoggedAt >= 60_000;
+        if (shouldLog) {
+          logger.warn("Telegram polling failed", {
+            error,
+            consecutiveFailures: this.consecutivePollFailures,
+          });
+          this.lastPollErrorMessage = message;
+          this.lastPollErrorLoggedAt = now;
+        }
         await new Promise((resolve) => setTimeout(resolve, 1500));
       }
     }

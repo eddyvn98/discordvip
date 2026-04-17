@@ -14,6 +14,10 @@ export class DiscordPlatformAdapter implements PlatformAdapter {
     await this.discordService.addVipRole(target.platformUserId);
   }
 
+  async hasAccess(target: AccessTarget) {
+    return this.discordService.hasVipRole(target.platformUserId);
+  }
+
   async revokeAccess(target: AccessTarget) {
     await this.discordService.removeVipRole(target.platformUserId);
   }
