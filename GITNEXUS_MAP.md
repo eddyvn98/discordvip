@@ -3,11 +3,11 @@
 Dá»± Ã¡n nÃ y Ä‘Ã£ Ä‘Æ°á»£c láº­p báº£n Ä‘á»“ tri thá»©c báº±ng **GitNexus**. Báº£n Ä‘á»“ nÃ y cung cáº¥p cÃ¡i nhÃ¬n 360 Ä‘á»™ vá» kiáº¿n trÃºc dá»± Ã¡n, cÃ¡c luá»“ng xá»­ lÃ½ vÃ  cÃ¡c vÃ¹ng chá»©c nÄƒng quan trá»ng.
 
 ## ðŸ“Š Overview
-- **Symbols**: 1914
-- **Relationships**: 4768
+- **Symbols**: 1913
+- **Relationships**: 4767
 - **Execution Flows**: 143
 - **Clusters (Areas)**: 20 chÃ­nh
-- **Cáº­p nháº­t lÃºc**: 17:42 17/04/2026
+- **Cáº­p nháº­t lÃºc**: 18:45 17/04/2026
 
 ## ðŸ§© CÃ¡c vÃ¹ng chá»©c nÄƒng chÃ­nh (Functional Areas)
 
@@ -38,5 +38,7 @@ ThÃ´ng tin chi tiáº¿t vá» cÃ¡ch sá»­ dá»¥ng cÃ´ng cá»¥ Git
 > ```bash
 > npx gitnexus analyze --skills
 > ```
+
+
 
 
