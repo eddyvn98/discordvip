@@ -43,6 +43,17 @@ export const api = {
       body: body ? JSON.stringify(body) : undefined,
     });
   },
+  patch<T>(path: string, body?: unknown) {
+    return request<T>(path, {
+      method: "PATCH",
+      body: body ? JSON.stringify(body) : undefined,
+    });
+  },
+  delete<T>(path: string) {
+    return request<T>(path, {
+      method: "DELETE",
+    });
+  },
   loginUrl() {
     return `${API_BASE_URL}/api/auth/discord/login?returnTo=${encodeURIComponent(window.location.origin)}`;
   },

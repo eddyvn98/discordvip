@@ -1,4 +1,5 @@
 import type { Request } from "express";
+import { prisma } from "../prisma.js";
 import { MembershipService } from "./membership-service.js";
 import { CinemaAuthService } from "./cinema/cinema-auth-service.js";
 import { CinemaChannelService } from "./cinema/cinema-channel-service.js";
@@ -56,6 +57,12 @@ export class CinemaService {
   async listAllChannels() {
     return this.channelService.listAllChannels();
   }
+  async getChannelDetailWithMovies(id: string) {
+    return this.channelService.getChannelDetailWithMovies(id);
+  }
+  async renameChannel(id: string, displayName: string) {
+    return this.channelService.renameChannel(id, displayName);
+  }
   async deleteChannel(id: string) {
     return this.channelService.deleteChannel(id);
   }
@@ -66,6 +73,15 @@ export class CinemaService {
   // --- Items ---
   async listItems(channelId: string) {
     return this.itemService.listItems(channelId);
+  }
+  async listWebMoviesForAdmin() {
+    return this.itemService.listWebMoviesForAdmin();
+  }
+  async renameMovie(itemId: string, title: string) {
+    return this.itemService.renameMovie(itemId, title);
+  }
+  async deleteMovie(itemId: string) {
+    return this.itemService.deleteMovie(itemId);
   }
   async listItemsForWeb(channelId: string, options?: ListItemsForWebInput) {
     return this.itemService.listItemsForWeb(channelId, options);
@@ -119,5 +135,51 @@ export class CinemaService {
   // --- Media & Assets ---
   async refreshTelegramFullAssetFileIdByItemId(itemId: string) {
     return this.mediaService.refreshTelegramFullAssetFileIdByItemId(itemId);
+  }
+  async verifyTelegramChannelStatus(channelId: string) {
+    await this.channelService.verifyTelegramChannelStatus(channelId);
+    
+    // Background task: verify all items in the channel so deleted Telegram clips are hidden from the web
+    this.itemService.listItems(channelId).then((items) => {
+      if (items.length === 0) return;
+      setTimeout(() => {
+        void (async () => {
+          for (const item of items) {
+            try {
+              // Minimal delay to prevent Telegram rate limit flooding
+              await new Promise(r => setTimeout(r, 100));
+              await this.verifyTelegramItemStatus(item.id);
+            } catch (err) {
+              console.error(`[CinemaService] Failed to verify item ${item.id}`, err);
+            }
+          }
+        })();
+      }, 500);
+    }).catch((err) => {
+      console.error(`[CinemaService] Failed to start item verification logic for channel ${channelId}`, err);
+    });
+  }
+
+  async verifyTelegramItemStatus(itemId: string) {
+    const storageChatId = await this.mediaService.findTelegramStorageChatIdByItemId(itemId);
+    return this.itemService.verifyTelegramItemStatus(itemId, storageChatId);
+  }
+
+  async getGlobalStats() {
+    const [totalUniqueMovies, totalChannels] = await Promise.all([
+      prisma.cinemaItem.count({
+        where: {
+          remoteStatus: { notIn: ["MISSING_REMOTE", "DELETED_REMOTE"] },
+        },
+      }),
+      prisma.cinemaChannel.count({
+        where: { role: "FULL_SOURCE" },
+      }),
+    ]);
+
+    return {
+      totalUniqueMovies,
+      totalChannels,
+    };
   }
 }

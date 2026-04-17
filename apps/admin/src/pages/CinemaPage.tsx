@@ -6,8 +6,7 @@ import { CinemaChannel, CinemaScanJob } from "./cinema/cinema.types";
 // Helpers
 import { 
   getLatestJobByChannel, 
-  getActiveJobsCount, 
-  getTotalDetectedMovies 
+  getActiveJobsCount
 } from "./cinema/cinema.helpers";
 
 // Hooks
@@ -18,36 +17,31 @@ import { useCinemaPageData } from "./cinema/hooks/useCinemaPageData";
 // Components
 import { CinemaHeader } from "./cinema/components/CinemaHeader";
 import { CinemaStats } from "./cinema/components/CinemaStats";
-import { CinemaChannelList } from "./cinema/components/CinemaChannelList";
 import { CinemaLocalSyncCard } from "./cinema/components/CinemaLocalSyncCard";
-import { CinemaChannelDetails } from "./cinema/components/CinemaChannelDetails";
 import { CinemaRecentJobsTable } from "./cinema/components/CinemaRecentJobsTable";
 import { CinemaFeedbackPopups } from "./cinema/components/CinemaFeedbackPopups";
 
 export function CinemaPage() {
   const [localPath, setLocalPath] = useState("");
 
-  const { message, setMessage, error, setError } = useCinemaFeedback();
+  const { message, setMessage, error, setError, clearFeedback } = useCinemaFeedback();
 
   const {
     channels,
     jobs,
     loading,
-    selectedChannelId,
-    setSelectedChannelId,
-    selectedChannel,
+    stats,
     reload,
   } = useCinemaPageData({ setError });
 
   const {
-    runningByChannel,
     localUploading,
     cancellingJobs,
-    ensureStorageAndScan,
-    startLocalUpload,
     cancelJob,
     retryJob,
-  } = useCinemaActions({ reload, setMessage, setError });
+    startLocalUpload,
+  } = useCinemaActions({ reload, reloadSelectedChannelDetail: async () => {}, selectedChannelId: null, setMessage, setError });
+
 
   const fullSourceChannels = useMemo(
     () => channels.filter((channel) => channel.isEnabled && channel.role === "FULL_SOURCE"),
@@ -61,11 +55,6 @@ export function CinemaPage() {
 
   const activeJobsCount = useMemo(
     () => getActiveJobsCount(jobs),
-    [jobs]
-  );
-
-  const totalDetectedMovies = useMemo(
-    () => getTotalDetectedMovies(jobs),
     [jobs]
   );
 
@@ -84,45 +73,31 @@ export function CinemaPage() {
       <CinemaStats
         fullSourceChannelsCount={fullSourceChannels.length}
         activeJobsCount={activeJobsCount}
-        totalDetectedMovies={totalDetectedMovies}
+        totalUniqueMovies={stats?.totalUniqueMovies ?? 0}
       />
 
-      <div className="grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-8 items-start">
-        <div className="flex flex-col gap-6">
-          <CinemaChannelList
-            channels={fullSourceChannels}
-            latestJobByChannel={latestJobByChannel}
-            selectedChannelId={selectedChannelId}
-            onSelect={setSelectedChannelId}
-          />
+      <div className="flex flex-col gap-6">
+        <CinemaLocalSyncCard
+          localPath={localPath}
+          onLocalPathChange={setLocalPath}
+          onStartUpload={() => startLocalUpload(localPath)}
+          localUploading={localUploading}
+        />
 
-          <CinemaLocalSyncCard
-            localPath={localPath}
-            onLocalPathChange={setLocalPath}
-            onStartUpload={() => startLocalUpload(localPath)}
-            localUploading={localUploading}
-          />
-        </div>
-
-        <div className="flex flex-col gap-8">
-          <CinemaChannelDetails
-            channel={selectedChannel}
-            activeJob={selectedChannel ? latestJobByChannel.get(selectedChannel.id) : undefined}
-            onScan={ensureStorageAndScan}
-            isScanning={selectedChannel ? !!runningByChannel[selectedChannel.id] : false}
-          />
-
-          <CinemaRecentJobsTable 
-            jobs={jobs} 
-            channels={channels} 
-            onCancel={cancelJob}
-            onRetry={retryJob}
-            cancellingJobs={cancellingJobs}
-          />
-        </div>
+        <CinemaRecentJobsTable 
+          jobs={jobs} 
+          channels={channels} 
+          onCancel={cancelJob}
+          onRetry={retryJob}
+          cancellingJobs={cancellingJobs}
+        />
       </div>
 
-      <CinemaFeedbackPopups message={message} error={error} />
+      <CinemaFeedbackPopups 
+        message={message} 
+        error={error} 
+        onClose={clearFeedback} 
+      />
     </div>
   );
 }

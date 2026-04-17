@@ -51,41 +51,163 @@ export class CinemaChannelService {
     displayName: string;
     slug: string;
     isEnabled: boolean;
+    localPath?: string;
+    remoteStatus?: string;
   }) {
     const platform = input.platform === "discord" ? CinemaSourcePlatform.DISCORD : CinemaSourcePlatform.TELEGRAM;
+    const data = {
+      platform,
+      sourceChannelId: input.sourceChannelId.trim(),
+      role: input.role,
+      displayName: input.displayName.trim(),
+      slug: input.slug.trim().toLowerCase(),
+      isEnabled: input.isEnabled,
+      localPath: input.localPath?.trim() || null,
+      remoteStatus: input.remoteStatus || "ACTIVE",
+    };
+
     if (input.id) {
       return prisma.cinemaChannel.update({
         where: { id: input.id },
-        data: {
-          platform,
-          sourceChannelId: input.sourceChannelId.trim(),
-          role: input.role,
-          displayName: input.displayName.trim(),
-          slug: input.slug.trim().toLowerCase(),
-          isEnabled: input.isEnabled,
-        },
+        data,
       });
     }
     return prisma.cinemaChannel.create({
-      data: {
-        platform,
-        sourceChannelId: input.sourceChannelId.trim(),
-        role: input.role,
-        displayName: input.displayName.trim(),
-        slug: input.slug.trim().toLowerCase(),
-        isEnabled: input.isEnabled,
-      },
+      data,
     });
   }
 
+  async findByLocalPath(localPath: string) {
+    if (!localPath) return null;
+    return prisma.cinemaChannel.findUnique({
+      where: { localPath: localPath.trim() },
+    });
+  }
+
+
   async listAllChannels() {
-    return prisma.cinemaChannel.findMany({
+    const channels = await prisma.cinemaChannel.findMany({
       orderBy: [{ updatedAt: "desc" }],
-      include: { _count: { select: { items: true, scanJobs: true } } },
+      include: {
+        items: {
+          orderBy: [{ createdAt: "desc" }],
+          take: 1,
+          include: {
+            assets: {
+              where: { kind: "POSTER" },
+              take: 1,
+              orderBy: [{ createdAt: "desc" }],
+            },
+          },
+        },
+        _count: {
+          select: { scanJobs: true },
+        },
+      },
+    });
+
+    // Map channels with item counts
+    return await Promise.all(
+      channels.map(async (channel) => {
+        const [totalItems, syncedItems] = await Promise.all([
+          prisma.cinemaItem.count({ where: { channelId: channel.id } }),
+          prisma.cinemaItem.count({
+            where: {
+              channelId: channel.id,
+              remoteStatus: { notIn: ["MISSING_REMOTE", "DELETED_REMOTE"] },
+            },
+          }),
+        ]);
+
+        return {
+          ...channel,
+          _count: {
+            ...channel._count,
+            items: totalItems,
+          },
+          syncedItemsCount: syncedItems,
+          posterUrl: toWebAssetRef(channel.items[0]?.assets[0]?.fileRef ?? null),
+        };
+      })
+    );
+  }
+
+  async getChannelDetailWithMovies(id: string) {
+    const channel = await prisma.cinemaChannel.findUnique({
+      where: { id },
+      include: {
+        items: {
+          orderBy: [{ createdAt: "desc" }],
+          include: {
+            assets: {
+              where: { kind: "POSTER" },
+              take: 1,
+              orderBy: [{ createdAt: "desc" }],
+            },
+          },
+        },
+        _count: {
+          select: {
+            items: true,
+          },
+        },
+      },
+    });
+    if (!channel) {
+      throw new Error("Channel not found.");
+    }
+    return {
+      id: channel.id,
+      displayName: channel.displayName,
+      role: channel.role,
+      platform: channel.platform,
+      sourceChannelId: channel.sourceChannelId,
+      isEnabled: channel.isEnabled,
+      remoteStatus: channel.remoteStatus,
+      movieCount: channel._count.items,
+      movies: channel.items.map((item) => ({
+        id: item.id,
+        title: item.title,
+        remoteStatus: item.remoteStatus,
+        createdAt: item.createdAt,
+        posterUrl: toWebAssetRef(item.assets[0]?.fileRef ?? null),
+      })),
+    };
+  }
+
+  async renameChannel(id: string, displayName: string) {
+    const nextName = displayName.trim();
+    if (!nextName) {
+      throw new Error("displayName is required.");
+    }
+    return prisma.cinemaChannel.update({
+      where: { id },
+      data: { displayName: nextName },
     });
   }
 
   async deleteChannel(id: string) {
+    const channel = await prisma.cinemaChannel.findUnique({
+      where: { id },
+      select: { id: true, role: true },
+    });
+    if (!channel) {
+      throw new Error("Channel not found.");
+    }
+    if (channel.role !== CinemaChannelRole.FULL_SOURCE) {
+      throw new Error("Only FULL_SOURCE channels can be deleted in admin.");
+    }
+
+    const runningJobsCount = await prisma.cinemaScanJob.count({
+      where: {
+        channelId: id,
+        status: { in: ["QUEUED", "RUNNING"] },
+      },
+    });
+    if (runningJobsCount > 0) {
+      throw new Error("Channel has running scan jobs. Please stop jobs before deleting.");
+    }
+
     return prisma.cinemaChannel.delete({ where: { id } });
   }
 
@@ -121,5 +243,40 @@ export class CinemaChannelService {
         displayName: "Telegram Storage Preview",
       },
     });
+  }
+
+  async verifyTelegramChannelStatus(id: string) {
+
+    const channel = await prisma.cinemaChannel.findUnique({ where: { id } });
+    if (!channel || channel.platform !== CinemaSourcePlatform.TELEGRAM) return;
+
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 8000);
+      const res = await fetch(`http://telethon-stream:8090/check_channel/${channel.sourceChannelId}`, {
+        method: "GET",
+        signal: controller.signal,
+      });
+      clearTimeout(timeoutId);
+      
+      if (!res.ok) {
+        throw new Error("chat not found");
+      }
+      
+      await prisma.cinemaChannel.update({
+        where: { id },
+        data: { remoteStatus: "ACTIVE" },
+      });
+    } catch (error) {
+      const msg = error instanceof Error ? error.message : String(error);
+      if (msg.includes("chat not found") || msg.includes("forbidden") || msg.includes("Not Found")) {
+        await prisma.cinemaChannel.update({
+          where: { id },
+          data: { remoteStatus: "DELETED_REMOTE" },
+        });
+      } else {
+        console.error(`[CinemaChannelService] Unknown verify status for ${channel.id}:`, error);
+      }
+    }
   }
 }

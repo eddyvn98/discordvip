@@ -1,6 +1,7 @@
 import type { Express, NextFunction, Request, Response } from "express";
 import { z } from "zod";
 
+import { prisma } from "../prisma.js";
 import { CinemaService } from "../services/cinema-service.js";
 import type { PlatformKey } from "../services/platform.js";
 
@@ -12,7 +13,18 @@ const channelSchema = z.object({
   displayName: z.string().trim().min(1),
   slug: z.string().trim().min(1).regex(/^[a-z0-9-]+$/u, "slug must match [a-z0-9-]+"),
   isEnabled: z.coerce.boolean().default(true),
+  localPath: z.string().trim().optional(),
+  remoteStatus: z.string().trim().default("ACTIVE"),
 });
+
+const renameChannelSchema = z.object({
+  displayName: z.string().trim().min(1),
+});
+
+const renameMovieSchema = z.object({
+  title: z.string().trim().min(1),
+});
+
 
 function requireAdmin(req: Request, res: Response, next: NextFunction) {
   if (!req.session.adminUser) {
@@ -36,6 +48,50 @@ export function registerAdminCinemaRoutes(app: Express, cinemaService: CinemaSer
     res.json(await cinemaService.listAllChannels());
   });
 
+  app.get("/api/admin/cinema/channels/:id", requireAdmin, async (req, res) => {
+    try {
+      const channelId = String(req.params.id ?? "");
+      if (!channelId) {
+        res.status(400).json({ error: "channel id is required" });
+        return;
+      }
+      res.json(await cinemaService.getChannelDetailWithMovies(channelId));
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Cannot load channel detail";
+      res.status(message.toLowerCase().includes("not found") ? 404 : 400).json({ error: message });
+    }
+  });
+
+  app.patch("/api/admin/cinema/channels/:id", requireAdmin, async (req, res) => {
+    try {
+      const body = renameChannelSchema.parse(req.body);
+      const channelId = String(req.params.id ?? "");
+      if (!channelId) {
+        res.status(400).json({ error: "channel id is required" });
+        return;
+      }
+      res.json(await cinemaService.renameChannel(channelId, body.displayName));
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Cannot rename channel";
+      res.status(message.toLowerCase().includes("not found") ? 404 : 400).json({ error: message });
+    }
+  });
+
+  app.delete("/api/admin/cinema/channels/:id", requireAdmin, async (req, res) => {
+    try {
+      const channelId = String(req.params.id ?? "");
+      if (!channelId) {
+        res.status(400).json({ error: "channel id is required" });
+        return;
+      }
+      await cinemaService.deleteChannel(channelId);
+      res.status(204).end();
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Cannot delete cinema channel";
+      res.status(message.toLowerCase().includes("not found") ? 404 : 400).json({ error: message });
+    }
+  });
+
   app.post("/api/admin/cinema/channels", requireAdmin, async (req, res) => {
     try {
       const body = channelSchema.parse(req.body);
@@ -54,9 +110,82 @@ export function registerAdminCinemaRoutes(app: Express, cinemaService: CinemaSer
     }
   });
 
+  app.get("/api/admin/cinema/movies/web", requireAdmin, async (_req, res) => {
+    try {
+      res.json(await cinemaService.listWebMoviesForAdmin());
+    } catch (error) {
+      res.status(400).json({ error: error instanceof Error ? error.message : "Cannot load web movies" });
+    }
+  });
+
+  app.patch("/api/admin/cinema/movies/:id", requireAdmin, async (req, res) => {
+    try {
+      const body = renameMovieSchema.parse(req.body);
+      const movieId = String(req.params.id ?? "");
+      if (!movieId) {
+        res.status(400).json({ error: "movie id is required" });
+        return;
+      }
+      res.json(await cinemaService.renameMovie(movieId, body.title));
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Cannot rename movie";
+      res.status(message.toLowerCase().includes("not found") ? 404 : 400).json({ error: message });
+    }
+  });
+
+  app.delete("/api/admin/cinema/movies/:id", requireAdmin, async (req, res) => {
+    try {
+      const movieId = String(req.params.id ?? "");
+      if (!movieId) {
+        res.status(400).json({ error: "movie id is required" });
+        return;
+      }
+      await cinemaService.deleteMovie(movieId);
+      res.status(204).end();
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Cannot delete movie";
+      res.status(message.toLowerCase().includes("not found") ? 404 : 400).json({ error: message });
+    }
+  });
+
   app.get("/api/admin/cinema/jobs", requireAdmin, async (req, res) => {
     const limit = Number(req.query.limit ?? 50);
     res.json(await cinemaService.listScanJobs(Number.isFinite(limit) ? limit : 50));
+  });
+
+  app.get("/api/admin/cinema/stats", requireAdmin, async (_req, res) => {
+    try {
+      res.json(await cinemaService.getGlobalStats());
+    } catch (error) {
+      res.status(400).json({ error: error instanceof Error ? error.message : "Cannot fetch stats" });
+    }
+  });
+
+  app.get("/api/admin/cinema/channels/:id/remote-stats", requireAdmin, async (req, res) => {
+    try {
+      const channelId = String(req.params.id ?? "");
+      const channel = await prisma.cinemaChannel.findUnique({ where: { id: channelId } });
+      if (!channel || channel.platform !== "TELEGRAM") {
+        res.status(404).json({ error: "Channel not found or not Telegram" });
+        return;
+      }
+      
+      const response = await fetch(`http://telethon-stream:8090/channel_stats/${channel.sourceChannelId}`);
+      if (!response.ok) throw new Error("Failed to fetch remote stats");
+      const data = await response.json();
+      res.json(data);
+    } catch (error) {
+      res.status(400).json({ error: error instanceof Error ? error.message : "Cannot fetch remote stats" });
+    }
+  });
+
+  app.get("/api/admin/cinema/channels/:id/sync", requireAdmin, async (req, res) => {
+    try {
+      await cinemaService.verifyTelegramChannelStatus(String(req.params.id ?? ""));
+      res.json({ ok: true });
+    } catch (error) {
+      res.status(400).json({ error: error instanceof Error ? error.message : "Cannot sync channel status" });
+    }
   });
 
   app.post("/api/admin/cinema/upload-local", requireAdmin, async (req, res) => {
@@ -67,15 +196,19 @@ export function registerAdminCinemaRoutes(app: Express, cinemaService: CinemaSer
         res.status(400).json({ error: "directoryPath is required" });
         return;
       }
+      
       const job = await cinemaService.createScanJob({
         requestedBy: req.session.adminUser?.id ?? "admin",
       });
+      
+      // The service now handles checking existing mapping and locking
       void cinemaService.runLocalUploadJob(job.id, directoryPath);
       res.json(job);
     } catch (error) {
       res.status(400).json({ error: error instanceof Error ? error.message : "Cannot start local upload job" });
     }
   });
+
 
   app.post("/api/admin/cinema/jobs/scan", requireAdmin, async (req, res) => {
     try {

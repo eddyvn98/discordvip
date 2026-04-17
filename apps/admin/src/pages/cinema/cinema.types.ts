@@ -5,7 +5,54 @@ export type CinemaChannel = {
   platform: "TELEGRAM" | "DISCORD";
   sourceChannelId: string;
   isEnabled: boolean;
+  remoteStatus?: string;
+  syncedItemsCount?: number;
+  posterUrl?: string | null;
+  _count?: {
+    items: number;
+    scanJobs: number;
+  };
 };
+
+export type CinemaChannelMovie = {
+  id: string;
+  title: string;
+  remoteStatus: string;
+  createdAt: string;
+  posterUrl?: string | null;
+};
+
+export type CinemaChannelDetail = {
+  id: string;
+  displayName: string;
+  role: "FULL_SOURCE" | "PREVIEW_STORAGE" | "POSTER_STORAGE";
+  platform: "TELEGRAM" | "DISCORD";
+  sourceChannelId: string;
+  isEnabled: boolean;
+  remoteStatus?: string;
+  movieCount: number;
+  movies: CinemaChannelMovie[];
+};
+
+export type CinemaWebMovie = {
+  id: string;
+  title: string;
+  remoteStatus: string;
+  createdAt: string;
+  channelId: string;
+  channel: {
+    id: string;
+    displayName: string;
+    sourceChannelId: string;
+    platform: "TELEGRAM" | "DISCORD";
+  };
+};
+
+export type CinemaStats = {
+  totalUniqueMovies: number;
+  totalChannels: number;
+};
+
 
 export type CinemaScanJob = {
   id: string;
