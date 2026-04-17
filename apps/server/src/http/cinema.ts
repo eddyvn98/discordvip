@@ -266,7 +266,7 @@ export function registerCinemaRoutes(app: Express, cinemaService: CinemaService,
         res.status(400).json({ error: "Invalid media path." });
         return;
       }
-      const root = path.resolve(process.cwd(), "storage", "cinema-media");
+      const root = path.resolve(env.CINEMA_MEDIA_ROOT);
       const fullPath = path.resolve(root, rel);
       if (!fullPath.startsWith(root)) {
         res.status(400).json({ error: "Invalid media path." });

@@ -8,6 +8,18 @@ import { getCinemaPublicOrigin, isTryCloudflareOrigin } from "../lib/public-base
 
 export function isSameOriginPlaybackRequest(req: Request): boolean {
   const expectedOrigin = getCinemaPublicOrigin();
+  const adminOrigin = (() => {
+    try {
+      return new URL(env.ADMIN_APP_URL).origin;
+    } catch {
+      return "";
+    }
+  })();
+  const allowedFirstPartyOrigins = new Set<string>([expectedOrigin, adminOrigin, "http://localhost:13002"]);
+
+  if (env.DEV_BYPASS_ADMIN_AUTH) {
+    allowedFirstPartyOrigins.add("http://127.0.0.1:13002");
+  }
   const origin = String(req.headers.origin ?? "").trim();
   const referer = String(req.headers.referer ?? "").trim();
   const telegramHosts = new Set(["web.telegram.org", "t.me"]);
@@ -23,11 +35,11 @@ export function isSameOriginPlaybackRequest(req: Request): boolean {
   if (!origin && !referer) return true;
   if (isTelegramOrigin(origin) || isTelegramOrigin(referer)) return true;
   if ((origin && isTryCloudflareOrigin(origin)) || (referer && isTryCloudflareOrigin(referer))) return true;
-  if (origin && origin !== expectedOrigin) return false;
+  if (origin && !allowedFirstPartyOrigins.has(origin)) return false;
   if (referer) {
     try {
       const refererOrigin = new URL(referer).origin;
-      if (refererOrigin !== expectedOrigin) return false;
+      if (!allowedFirstPartyOrigins.has(refererOrigin)) return false;
     } catch {
       return false;
     }

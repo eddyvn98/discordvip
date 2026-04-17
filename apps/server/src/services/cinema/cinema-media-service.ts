@@ -8,7 +8,7 @@ import { prisma } from "../../prisma.js";
 import { callTelegramApi, pickTelegramMessageFileId } from "./cinema-utils.js";
 
 export class CinemaMediaService {
-  public readonly localMediaRoot = path.resolve(process.cwd(), "storage", "cinema-media");
+  public readonly localMediaRoot = path.resolve(env.CINEMA_MEDIA_ROOT);
 
   async runFfmpeg(args: string[], signal?: AbortSignal) {
     if (signal?.aborted) throw new Error("AbortError");
@@ -136,6 +136,13 @@ export class CinemaMediaService {
     }
     return storage.sourceChannelId;
   }
+
+  async findTelegramStorageChatIdByItemId(itemId: string) {
+    const item = await prisma.cinemaItem.findUnique({ where: { id: itemId }, select: { channelId: true } });
+    if (!item) throw new Error("Item not found.");
+    return this.findTelegramStorageChatId(item.channelId);
+  }
+
 
   async refreshTelegramFullAssetFileIdByItemId(itemId: string) {
     const item = await prisma.cinemaItem.findUnique({

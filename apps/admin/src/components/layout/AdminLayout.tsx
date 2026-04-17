@@ -10,11 +10,13 @@ import {
   Menu, 
   X,
   Bell,
-  Search as SearchIcon
+  Search as SearchIcon,
+  MonitorPlay
 } from "lucide-react";
 
 import type { AdminUser } from "../../types";
 import { CinemaPage } from "../../pages/CinemaPage";
+import { CinemaChannelsPage } from "../../pages/CinemaChannelsPage";
 import { MembershipsPage } from "../../pages/MembershipsPage";
 import { TelegramChannelsPage } from "../../pages/TelegramChannelsPage";
 import { Button } from "@/components/ui/button";
@@ -35,6 +37,7 @@ export function AdminLayout({ user, onLogout }: AdminLayoutProps) {
       case "/memberships": return "Thành viên VIP";
       case "/telegram-channels": return "Kênh Telegram";
       case "/cinema": return "Cinema Workspace";
+      case "/cinema-channels": return "Kênh Phim";
       default: return "Dashboard";
     }
   };
@@ -44,6 +47,7 @@ export function AdminLayout({ user, onLogout }: AdminLayoutProps) {
     { to: "/memberships", label: "Thành viên VIP", icon: Users },
     { to: "/telegram-channels", label: "Kênh Telegram", icon: Tv },
     { to: "/cinema", label: "Cinema Workspace", icon: Film },
+    { to: "/cinema-channels", label: "Kênh Phim", icon: MonitorPlay },
   ];
 
   return (
@@ -144,6 +148,7 @@ export function AdminLayout({ user, onLogout }: AdminLayoutProps) {
             <Route path="/memberships" element={<MembershipsPage />} />
             <Route path="/telegram-channels" element={<TelegramChannelsPage />} />
             <Route path="/cinema" element={<CinemaPage />} />
+            <Route path="/cinema-channels" element={<CinemaChannelsPage />} />
           </Routes>
         </main>
       </div>

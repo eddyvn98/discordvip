@@ -3,11 +3,15 @@ import { promises as fs } from "node:fs";
 import path from "node:path";
 import { CinemaAssetKind, CinemaChannelRole, CinemaScanJobStatus, CinemaSourcePlatform } from "@prisma/client";
 import { prisma } from "../../prisma.js";
+import { callTelegramApi, resolveContainerPath } from "./cinema-utils.js";
+
 import type { CinemaChannelService } from "./cinema-channel-service.js";
+
 import type { CinemaMediaService } from "./cinema-media-service.js";
 
 export class CinemaScanJobService {
   private readonly activeJobs = new Map<string, AbortController>();
+  private readonly runningPaths = new Set<string>();
 
   constructor(
     private readonly mediaService: CinemaMediaService,
@@ -27,13 +31,23 @@ export class CinemaScanJobService {
       },
     });
   }
-
   async runLocalUploadJob(jobId: string, directoryPath: string) {
     const job = await prisma.cinemaScanJob.findUnique({ where: { id: jobId } });
     if (!job) throw new Error("Upload job not found.");
 
+    // Translate Windows paths to Linux mounts if needed
+    const resolvedPath = resolveContainerPath(directoryPath);
+    const absolutePath = path.resolve(resolvedPath);
+
+    console.log(`[CinemaScanJobService] Starting local sync: Original="${directoryPath}", Resolved="${absolutePath}"`);
+
+    if (this.runningPaths.has(absolutePath)) {
+      throw new Error(`Folder "${directoryPath}" đang được sync rồi (resolved: ${absolutePath}).`);
+    }
+
     const controller = new AbortController();
     this.activeJobs.set(jobId, controller);
+    this.runningPaths.add(absolutePath);
 
     await prisma.cinemaScanJob.update({
       where: { id: job.id },
@@ -41,15 +55,30 @@ export class CinemaScanJobService {
     });
 
     try {
+      // Basic accessibility check
+      try {
+        await fs.access(absolutePath);
+      } catch (err) {
+        throw new Error(`Không tìm thấy thư mục: ${absolutePath} (Kiểm tra lại mapping Docker nếu dùng ổ đĩa khác)`);
+      }
+
       const folderName = path.basename(directoryPath);
-      // Slugify simple
+      // slugify simple
       const slug = folderName.toLowerCase().replace(/[^a-z0-9]+/gu, "-").replace(/^-+|-+$/gu, "") || "local-upload";
 
+      // 1. Check if we already have a channel for this path
+      const existingChannel = await this.channelService.findByLocalPath(absolutePath);
+      
       const pythonArgs = [
         path.join(process.cwd(), "../../scripts", "telegram_large_uploader.py"),
-        "--folder", directoryPath,
+        "--folder", absolutePath,
         "--post-title", folderName,
       ];
+
+
+      if (existingChannel?.sourceChannelId && existingChannel.platform === CinemaSourcePlatform.TELEGRAM) {
+        pythonArgs.push("--channel-id", existingChannel.sourceChannelId);
+      }
 
       const pythonOutput = await new Promise<string>((resolve, reject) => {
         const child = spawn("python3", pythonArgs, { env: process.env, signal: controller.signal });
@@ -83,16 +112,22 @@ export class CinemaScanJobService {
         videos: Array<{ fileName: string; messageId: number; sizeBytes: number }>;
       };
 
-      // 1. Create CinemaChannel
+      // 1. Create/Update CinemaChannel with localPath mapping
       const channel = await prisma.cinemaChannel.upsert({
         where: { platform_sourceChannelId: { platform: CinemaSourcePlatform.TELEGRAM, sourceChannelId: result.channelId } },
-        update: { displayName: result.channelTitle, isEnabled: true },
+        update: { 
+          displayName: result.channelTitle, 
+          isEnabled: true,
+          localPath: absolutePath, // Ensure mapping is saved
+          remoteStatus: "ACTIVE"
+        },
         create: {
           platform: CinemaSourcePlatform.TELEGRAM,
           sourceChannelId: result.channelId,
           role: CinemaChannelRole.FULL_SOURCE,
           displayName: result.channelTitle,
           slug: `${slug}-${Date.now().toString(36)}`,
+          localPath: absolutePath,
         },
       });
 
@@ -149,7 +184,9 @@ export class CinemaScanJobService {
       });
     } finally {
       this.activeJobs.delete(jobId);
+      this.runningPaths.delete(absolutePath);
     }
+
   }
 
   async runScanJob(jobId: string, options?: { forceRegenerate?: boolean; autoEnsureStorage?: boolean }) {
@@ -177,7 +214,7 @@ export class CinemaScanJobService {
         where: { channelId },
         include: {
           assets: true,
-          channel: { select: { sourceChannelId: true, platform: true } },
+          channel: { select: { sourceChannelId: true, platform: true, localPath: true } },
         },
         orderBy: [{ createdAt: "desc" }],
       });
@@ -206,19 +243,37 @@ export class CinemaScanJobService {
         const fullAsset = item.assets.find((asset) => asset.kind === CinemaAssetKind.FULL);
         const fullRef = String(fullAsset?.fileRef ?? "");
         let sourceUrl = "";
-        if (/^https?:\/\//u.test(fullRef)) {
-          sourceUrl = fullRef;
-        } else if (fullRef.startsWith("tgfile://")) {
-          const sourceChannelId = String(item.channel?.sourceChannelId ?? "").trim();
-          const sourceMessageId = String(item.sourceMessageId ?? "").trim();
-          if (
-            item.channel?.platform === CinemaSourcePlatform.TELEGRAM &&
-            /^-100\d+$/u.test(sourceChannelId) &&
-            /^\d+$/u.test(sourceMessageId)
-          ) {
-            sourceUrl = `http://telethon-stream:8090/stream/${encodeURIComponent(sourceChannelId)}/${encodeURIComponent(sourceMessageId)}`;
+
+        // Efficiency optimization: If channel has a local path and we are on the same server, 
+        // use the local file directly for ffmpeg instead of streaming from Telegram.
+        if (item.channel?.localPath) {
+          const resolvedChannelPath = resolveContainerPath(item.channel.localPath);
+          const localFilePath = path.join(resolvedChannelPath, item.title);
+          try {
+            await fs.access(localFilePath);
+            sourceUrl = localFilePath;
+            console.log(`[CinemaScanJobService] Using local file for thumb generation: ${sourceUrl}`);
+          } catch {
+            // Fallback to remote
           }
         }
+
+        if (!sourceUrl) {
+          if (/^https?:\/\//u.test(fullRef)) {
+            sourceUrl = fullRef;
+          } else if (fullRef.startsWith("tgfile://")) {
+            const sourceChannelId = String(item.channel?.sourceChannelId ?? "").trim();
+            const sourceMessageId = String(item.sourceMessageId ?? "").trim();
+            if (
+              item.channel?.platform === CinemaSourcePlatform.TELEGRAM &&
+              /^-100\d+$/u.test(sourceChannelId) &&
+              /^\d+$/u.test(sourceMessageId)
+            ) {
+              sourceUrl = `http://telethon-stream:8090/stream/${encodeURIComponent(sourceChannelId)}/${encodeURIComponent(sourceMessageId)}`;
+            }
+          }
+        }
+
         if (!sourceUrl) {
           totalFailed += 1;
           continue;

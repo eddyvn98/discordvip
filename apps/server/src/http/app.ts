@@ -76,11 +76,16 @@ export function createApp({
   app.use(
     cors({
       origin: (origin, callback) => {
-        callback(null, isAllowedOrigin(origin));
+        if (isAllowedOrigin(origin)) {
+          callback(null, origin || true);
+        } else {
+          callback(null, false);
+        }
       },
       credentials: true,
     }),
   );
+
 
   app.use(
     "/api/webhooks/sepay",

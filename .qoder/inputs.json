@@ -1,0 +1,10 @@
+{
+  "inputs": [
+    {
+      "id": "github_token",
+      "type": "promptString",
+      "description": "GitHub Personal Access Token (scopes: repo, read:org, read:packages)",
+      "password": true
+    }
+  ]
+}

@@ -73,6 +73,7 @@ const envSchema = z.object({
   CINEMA_PUBLIC_BASE_URL: z.string().url().optional().default("http://localhost:3000"),
   CINEMA_PUBLIC_BASE_URL_FILE: z.string().optional().default(""),
   CINEMA_PUBLIC_BASE_URL_LOG_FILE: z.string().optional().default(""),
+  CINEMA_MEDIA_ROOT: z.string().optional().default("/app/storage/cinema-media"),
   TELEFILM_BACKEND_URL: z.string().url().optional().default("http://127.0.0.1:9999"),
   CINEMA_ENTRY_TICKET_TTL_SECONDS: z.coerce.number().int().positive().default(90),
   CINEMA_STREAM_TOKEN_TTL_SECONDS: z.coerce.number().int().positive().default(300),

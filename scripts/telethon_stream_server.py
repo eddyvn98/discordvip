@@ -51,6 +51,38 @@ async def health():
     return {"ok": True}
 
 
+@app.get("/check_channel/{channel_id}")
+async def check_channel(channel_id: int):
+    tg = await get_client()
+    try:
+        entity = await tg.get_entity(channel_id)
+        if entity:
+            return {"ok": True}
+        raise HTTPException(status_code=404, detail="Channel not found")
+    except Exception as e:
+        raise HTTPException(status_code=404, detail=str(e))
+
+@app.get("/channel_stats/{channel_id}")
+async def get_channel_stats(channel_id: int):
+    tg = await get_client()
+    try:
+        # Get total number of messages in the channel efficiently
+        result = await tg.get_messages(channel_id, limit=0)
+        return {"ok": True, "total": result.total}
+    except Exception as e:
+        raise HTTPException(status_code=404, detail=str(e))
+
+@app.get("/check_message/{channel_id}/{message_id}")
+async def check_message(channel_id: int, message_id: int):
+    tg = await get_client()
+    try:
+        message = await tg.get_messages(channel_id, ids=message_id)
+        if not message or not message.file:
+            raise HTTPException(status_code=404, detail="Media not found")
+        return {"ok": True}
+    except Exception as e:
+        raise HTTPException(status_code=404, detail=str(e))
+
 @app.get("/stream/{channel_id}/{message_id}")
 async def stream_by_message(
     channel_id: int,

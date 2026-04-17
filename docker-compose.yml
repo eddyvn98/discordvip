@@ -47,15 +47,15 @@ services:
     depends_on:
       - postgres
     volumes:
-      - .:/app:delegated
       - ./storage:/app/storage
       - /var/run/docker.sock:/var/run/docker.sock
       - E:\:/mnt/e:ro
       - ./runtime:/runtime
     expose:
       - "3000"
-    cpus: 1.25
-    mem_limit: 384m
+    cpus: 1.0
+    mem_limit: 1024m
+
   telethon-stream:
     image: python:3.11-slim
     restart: unless-stopped

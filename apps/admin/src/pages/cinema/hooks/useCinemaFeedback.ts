@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 
 export function useCinemaFeedback() {
   const [message, setMessage] = useState("");
@@ -8,6 +8,16 @@ export function useCinemaFeedback() {
     setMessage("");
     setError("");
   }, []);
+
+  // Auto-clear feedback after 5 seconds
+  useEffect(() => {
+    if (message || error) {
+      const timer = setTimeout(() => {
+        clearFeedback();
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [message, error, clearFeedback]);
 
   return {
     message,

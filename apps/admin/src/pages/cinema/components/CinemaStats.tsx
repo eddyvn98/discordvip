@@ -9,13 +9,13 @@ import { cn } from "@/lib/utils";
 interface CinemaStatsProps {
   fullSourceChannelsCount: number;
   activeJobsCount: number;
-  totalDetectedMovies: number;
+  totalUniqueMovies: number;
 }
 
 export function CinemaStats({
   fullSourceChannelsCount,
   activeJobsCount,
-  totalDetectedMovies,
+  totalUniqueMovies,
 }: CinemaStatsProps) {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -46,12 +46,12 @@ export function CinemaStats({
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium text-muted-foreground">
-            Phim đã quét
+            Tổng phim
           </CardTitle>
           <FileVideo className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">{totalDetectedMovies}</div>
+          <div className="text-2xl font-bold">{totalUniqueMovies}</div>
         </CardContent>
       </Card>
     </div>

@@ -98,9 +98,11 @@ export async function callTelegramApi<T = any>(method: string, body: Record<stri
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
   });
-  if (!response.ok) throw new Error(`Telegram ${method} failed: ${response.status}`);
-  const data = (await response.json()) as { ok: boolean; result?: T; description?: string };
-  if (!data.ok) throw new Error(data.description || `Telegram ${method} returned error`);
+  
+  const data = (await response.json().catch(() => ({}))) as { ok: boolean; result?: T; description?: string };
+  if (!response.ok || !data.ok) {
+    throw new Error(data.description || `Telegram ${method} failed: ${response.status}`);
+  }
   return data.result as T;
 }
 
@@ -117,3 +119,20 @@ export function pickTelegramMessageFileId(message: any) {
   }
   return null;
 }
+
+export function resolveContainerPath(directoryPath: string): string {
+  let p = String(directoryPath ?? "").trim();
+  if (!p) return p;
+
+  // Handle Windows drive mapping: E:\foo -> /mnt/e/foo
+  const driveMatch = p.match(/^([a-zA-Z]):([/\\]?)/u);
+  if (driveMatch) {
+    const drive = driveMatch[1].toLowerCase();
+    const rest = p.slice(driveMatch[0].length);
+    p = `/mnt/${drive}/${rest}`;
+  }
+
+  // Normalize slashes
+  return p.replace(/\\/gu, "/").replace(/\/+/gu, "/");
+}
+
