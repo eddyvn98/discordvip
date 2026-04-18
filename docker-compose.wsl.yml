@@ -1,0 +1,24 @@
+services:
+  app-server:
+    volumes:
+      - /mnt/e:/mnt/e:ro
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  cloudflared:
+    volumes:
+      - /mnt/c/Users/eddyvn/.cloudflared/214e0dc2-0c10-427a-9060-74fe09b52486.json:/etc/cloudflared/credentials.json:ro
+
+  cloudflared-hatangmang:
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  telethon-stream:
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  telethon-bot-manager:
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  # We rely on the ports in the main file but keep the other WSL-specific overrides.
