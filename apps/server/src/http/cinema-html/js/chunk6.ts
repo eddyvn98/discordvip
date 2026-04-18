@@ -324,6 +324,9 @@ export const jsChunk6 = `
             }
             if (sideCloseBtn) sideCloseBtn.addEventListener('click', closeSidebar);
             if (sidebarBackdrop) sidebarBackdrop.addEventListener('click', closeSidebar);
+            [...document.querySelectorAll('[data-side-view]')].forEach((btn) => {
+                btn.addEventListener('click', closeSidebar);
+            });
 
             if (logoBtn) {
                 logoBtn.addEventListener('click', () => {

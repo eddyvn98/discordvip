@@ -38,10 +38,11 @@ export const getCinemaHtmlBody = () => `
         <button id="sideUpgradeBtn" class="side-tier-btn" type="button">Nâng cấp VIP</button>
       </div>
       <nav class="side-nav-links">
-        <a href="#" class="side-nav-link active">Trang chủ</a>
-        <a href="#" class="side-nav-link">Thịnh hành</a>
-        <a href="#" class="side-nav-link">Kênh đăng ký</a>
-        <a href="#" class="side-nav-link">Xem sau</a>
+        <button id="sideNavHomeBtn" class="side-nav-link active" type="button" data-side-view="home">Trang chủ</button>
+        <button id="sideNavLatestBtn" class="side-nav-link" type="button" data-side-view="latest">Mới nhất</button>
+        <button id="sideNavTrendingBtn" class="side-nav-link" type="button" data-side-view="trending">Thịnh hành</button>
+        <button id="sideNavWatchedBtn" class="side-nav-link" type="button" data-side-view="watched">Đã xem</button>
+        <button id="sideNavFavoritesBtn" class="side-nav-link" type="button" data-side-view="favorites">Yêu thích</button>
       </nav>
       <div class="side-footer">
         <a href="#">Cài đặt</a>
@@ -78,37 +79,42 @@ export const getCinemaHtmlBody = () => `
     </div>
 
     <section id="playerWrap" class="player hide">
-      <div id="playerMedia" class="player-media sticky-player">
-        <video id="player" controls playsinline webkit-playsinline x5-playsinline x5-video-player-type="h5" x5-video-orientation="landscape"></video>
-        <img id="imageViewer" class="viewer-image hide" alt="Cinema media" />
-        <div class="player-overlay-actions">
-          <button id="pipToggleBtn" class="btn">Thu nhỏ</button>
-        </div>
-        <div id="feedNextStage" class="feed-next-stage">
-          <div class="feed-next-card">
-            <video id="feedNextVideo" class="feed-next-video hide" muted playsinline preload="auto"></video>
-            <img id="feedNextThumb" class="feed-next-thumb" alt="" />
-            <div class="feed-next-fade"></div>
-            <div class="feed-next-label">
-              <div class="kicker">Phim tiếp theo</div>
-              <div id="feedNextTitle"></div>
+      <div id="playerStickyHeader" class="sticky-player">
+        <div id="playerMedia" class="player-media">
+          <video id="player" controls playsinline webkit-playsinline x5-playsinline x5-video-player-type="h5" x5-video-orientation="landscape"></video>
+          <img id="imageViewer" class="viewer-image hide" alt="Cinema media" />
+          <div class="player-overlay-actions">
+            <button id="pipToggleBtn" class="btn">Thu nhỏ</button>
+          </div>
+          <div id="feedNextStage" class="feed-next-stage">
+            <div class="feed-next-card">
+              <video id="feedNextVideo" class="feed-next-video hide" muted playsinline preload="auto"></video>
+              <img id="feedNextThumb" class="feed-next-thumb" alt="" />
+              <div class="feed-next-fade"></div>
+              <div class="feed-next-label">
+                <div class="kicker">Phim tiếp theo</div>
+                <div id="feedNextTitle"></div>
+              </div>
             </div>
           </div>
+          <div class="pip-resize-zone left" data-pip-edge="left"></div>
+          <div class="pip-resize-zone right" data-pip-edge="right"></div>
+          <div class="pip-resize-zone bottom" data-pip-edge="bottom"></div>
+          <div class="pip-resize-zone corner" data-pip-edge="corner"></div>
+          <button id="pipMiniPlayBtn" class="pip-mini-play" aria-label="Phát hoặc tạm dừng">Phát</button>
+          <button id="feedHomeBtn" class="feed-home-btn hide">Home</button>
+          <button id="feedChannelBtn" class="feed-channel-btn hide" aria-label="Phim trong kênh">K</button>
+          <div id="swipeHintLeft" class="swipe-hint left">Độ sáng</div>
+          <div id="swipeHintRight" class="swipe-hint right">Âm lượng</div>
+          <div id="swipeHintCenter" class="swipe-hint center">Vuốt lên/xuống để chuyển phim</div>
         </div>
-        <div class="pip-resize-zone left" data-pip-edge="left"></div>
-        <div class="pip-resize-zone right" data-pip-edge="right"></div>
-        <div class="pip-resize-zone bottom" data-pip-edge="bottom"></div>
-        <div class="pip-resize-zone corner" data-pip-edge="corner"></div>
-        <button id="pipMiniPlayBtn" class="pip-mini-play" aria-label="Phát hoặc tạm dừng">Phát</button>
-        <button id="feedHomeBtn" class="feed-home-btn hide">Home</button>
-        <button id="feedChannelBtn" class="feed-channel-btn hide" aria-label="Phim trong kênh">K</button>
-        <div id="swipeHintLeft" class="swipe-hint left">Độ sáng</div>
-        <div id="swipeHintRight" class="swipe-hint right">Âm lượng</div>
-        <div id="swipeHintCenter" class="swipe-hint center">Vuốt lên/xuống để chuyển phim</div>
+        <div class="player-info-sticky">
+          <h3 id="playerTitle"></h3>
+          <p id="playerDesc" class="status"></p>
+        </div>
       </div>
-      <h3 id="playerTitle"></h3>
-      <p id="playerDesc" class="status"></p>
       <div class="player-nav">
+        <button id="playerFavoriteBtn" class="btn player-favorite-btn" type="button">♡ Yêu thích</button>
         <button id="prevItemBtn" class="btn">Trước</button>
         <button id="nextItemBtn" class="btn">Sau</button>
         <span id="fullscreenFabBtn" class="fullscreen-fab hide" aria-label="Toàn màn hình">FS</span>

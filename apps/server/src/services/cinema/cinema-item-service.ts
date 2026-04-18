@@ -7,7 +7,66 @@ import { extractActorsAndGenres, inferMediaTypeFromMime, toPrettyMovieTitle, toW
 import type { ListItemsForWebInput, TelegramChannelPostInput } from "./types.js";
 
 export class CinemaItemService {
-  constructor(private readonly viewService: CinemaViewService) {}
+  constructor(private readonly viewService: CinemaViewService) { }
+
+  private async toWebRows<
+    T extends {
+      id: string;
+      channelId: string;
+      title: string;
+      description: string | null;
+      createdAt: Date;
+      sourceMessageId?: string | null;
+      assets: Array<{ kind: CinemaAssetKind; fileRef: string; mimeType: string | null }>;
+    },
+  >(items: T[], userKey?: string) {
+    const viewStats = await this.viewService.getViewStatsMap(items.map((item) => item.id), userKey);
+    return items.map((item) => {
+      const displayTitle = toPrettyMovieTitle(item.title, item.sourceMessageId ?? item.id);
+      const entities = extractActorsAndGenres({ title: displayTitle, description: item.description });
+      const fullAsset = item.assets.find((asset) => asset.kind === CinemaAssetKind.FULL);
+      const stats = viewStats.get(item.id) ?? { viewCount: 0, viewedByCurrentUser: false, favoritedByCurrentUser: false };
+      return {
+        id: item.id,
+        channelId: item.channelId,
+        title: displayTitle,
+        description: item.description,
+        createdAt: item.createdAt,
+        posterUrl: toWebAssetRef(item.assets.find((asset) => asset.kind === CinemaAssetKind.POSTER)?.fileRef ?? null),
+        previewUrl: toWebAssetRef(item.assets.find((asset) => asset.kind === CinemaAssetKind.PREVIEW)?.fileRef ?? null),
+        hasFull: item.assets.some((asset) => asset.kind === CinemaAssetKind.FULL),
+        mediaType: inferMediaTypeFromMime(fullAsset?.mimeType),
+        actors: entities.actors,
+        genres: entities.genres,
+        viewCount: stats.viewCount,
+        viewedByCurrentUser: stats.viewedByCurrentUser,
+        favoritedByCurrentUser: stats.favoritedByCurrentUser,
+      };
+    });
+  }
+
+  private sortWebRows<T extends { id: string; createdAt: Date; viewCount: number; viewedByCurrentUser: boolean }>(
+    rows: T[],
+    sort: ListItemsForWebInput["sort"] = "newest",
+  ) {
+    if (sort === "oldest") {
+      rows.sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
+    } else if (sort === "most_viewed") {
+      rows.sort((a, b) => b.viewCount - a.viewCount || b.createdAt.getTime() - a.createdAt.getTime());
+    } else if (sort === "least_viewed") {
+      rows.sort((a, b) => a.viewCount - b.viewCount || b.createdAt.getTime() - a.createdAt.getTime());
+    } else if (sort === "unseen") {
+      return rows.filter((item) => !item.viewedByCurrentUser);
+    } else if (sort === "random") {
+      return rows
+        .map((item) => ({ item, rand: crypto.randomInt(0, 1_000_000_000) }))
+        .sort((a, b) => a.rand - b.rand)
+        .map((entry) => entry.item);
+    } else {
+      rows.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+    }
+    return rows;
+  }
 
   async listWebMoviesForAdmin() {
     const items = await prisma.cinemaItem.findMany({
@@ -94,8 +153,8 @@ export class CinemaItemService {
   async listItemsForWeb(channelId: string, options: ListItemsForWebInput = {}) {
     await this.viewService.ensureViewTables();
     const items = await prisma.cinemaItem.findMany({
-      where: { 
-        channelId, 
+      where: {
+        channelId,
         remoteStatus: { notIn: ["MISSING_REMOTE", "DELETED_REMOTE"] }
       },
       orderBy: [{ createdAt: "desc" }],
@@ -107,48 +166,45 @@ export class CinemaItemService {
       },
     });
 
-    const viewStats = await this.viewService.getViewStatsMap(items.map((item) => item.id), options.userKey);
-    let rows = items.map((item) => {
-      const displayTitle = toPrettyMovieTitle(item.title, item.sourceMessageId ?? item.id);
-      const entities = extractActorsAndGenres({ title: displayTitle, description: item.description });
-      const fullAsset = item.assets.find((asset) => asset.kind === CinemaAssetKind.FULL);
-      const stats = viewStats.get(item.id) ?? { viewCount: 0, viewedByCurrentUser: false };
-      return {
-        id: item.id,
-        channelId: item.channelId,
-        title: displayTitle,
-        description: item.description,
-        createdAt: item.createdAt,
-        posterUrl: toWebAssetRef(item.assets.find((asset) => asset.kind === CinemaAssetKind.POSTER)?.fileRef ?? null),
-        previewUrl: toWebAssetRef(item.assets.find((asset) => asset.kind === CinemaAssetKind.PREVIEW)?.fileRef ?? null),
-        hasFull: item.assets.some((asset) => asset.kind === CinemaAssetKind.FULL),
-        mediaType: inferMediaTypeFromMime(fullAsset?.mimeType),
-        actors: entities.actors,
-        genres: entities.genres,
-        viewCount: stats.viewCount,
-        viewedByCurrentUser: stats.viewedByCurrentUser,
-      };
-    });
+    const rows = await this.toWebRows(items, options.userKey);
+    return this.sortWebRows(rows, options.sort ?? "newest");
+  }
 
-    const sort = options.sort ?? "newest";
-    if (sort === "oldest") {
-      rows.sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
-    } else if (sort === "most_viewed") {
-      rows.sort((a, b) => b.viewCount - a.viewCount || b.createdAt.getTime() - a.createdAt.getTime());
-    } else if (sort === "least_viewed") {
-      rows.sort((a, b) => a.viewCount - b.viewCount || b.createdAt.getTime() - a.createdAt.getTime());
-    } else if (sort === "unseen") {
-      rows = rows.filter((item) => !item.viewedByCurrentUser);
-    } else if (sort === "random") {
-      rows = rows
-        .map((item) => ({ item, rand: crypto.randomInt(0, 1_000_000_000) }))
-        .sort((a, b) => a.rand - b.rand)
-        .map((entry) => entry.item);
-    } else {
-      rows.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+  async listLibraryItemsForWeb(input: { view: "latest" | "trending" | "watched" | "favorites"; userKey: string; limit?: number }) {
+    await this.viewService.ensureViewTables();
+    const limit = Math.max(20, Math.min(Number(input.limit ?? 260), 400));
+    const where = { remoteStatus: { notIn: ["MISSING_REMOTE", "DELETED_REMOTE"] } };
+
+    if (input.view === "watched" || input.view === "favorites") {
+      const orderedIds =
+        input.view === "watched"
+          ? await this.viewService.listViewedItemIds(input.userKey, limit)
+          : await this.viewService.listFavoriteItemIds(input.userKey, limit);
+      if (!orderedIds.length) return [];
+      const items = await prisma.cinemaItem.findMany({
+        where: { ...where, id: { in: orderedIds } },
+        include: {
+          assets: {
+            orderBy: [{ createdAt: "desc" }],
+          },
+        },
+      });
+      const rows = await this.toWebRows(items, input.userKey);
+      const orderMap = new Map(orderedIds.map((id, index) => [id, index]));
+      return rows.sort((a, b) => (orderMap.get(a.id) ?? Number.MAX_SAFE_INTEGER) - (orderMap.get(b.id) ?? Number.MAX_SAFE_INTEGER));
     }
 
-    return rows;
+    const items = await prisma.cinemaItem.findMany({
+      where,
+      include: {
+        assets: {
+          orderBy: [{ createdAt: "desc" }],
+        },
+      },
+    });
+    const rows = await this.toWebRows(items, input.userKey);
+    const sorted = this.sortWebRows(rows, input.view === "trending" ? "most_viewed" : "newest");
+    return sorted.slice(0, limit);
   }
 
   async listFeedItemsForWeb(input: { userKey?: string; limit?: number }) {
@@ -186,7 +242,7 @@ export class CinemaItemService {
       .filter((item): item is NonNullable<typeof item> => item !== null);
   }
 
-  async getItemForWeb(itemId: string) {
+  async getItemForWeb(itemId: string, userKey?: string) {
     const item = await prisma.cinemaItem.findUnique({
       where: { id: itemId },
       include: {
@@ -212,6 +268,12 @@ export class CinemaItemService {
       },
     });
 
+    const statsMap = await this.viewService.getViewStatsMap(
+      [item.id, ...related.map((row) => row.id)],
+      userKey,
+    );
+    const itemStats = statsMap.get(item.id) ?? { viewCount: 0, viewedByCurrentUser: false, favoritedByCurrentUser: false };
+
     return {
       id: item.id,
       channel: item.channel,
@@ -219,12 +281,32 @@ export class CinemaItemService {
       description: item.description,
       posterUrl: toWebAssetRef(item.assets.find((asset) => asset.kind === CinemaAssetKind.POSTER)?.fileRef ?? null),
       mediaType: inferMediaTypeFromMime(item.assets.find((asset) => asset.kind === CinemaAssetKind.FULL)?.mimeType),
+      viewCount: itemStats.viewCount,
+      viewedByCurrentUser: itemStats.viewedByCurrentUser,
+      favoritedByCurrentUser: itemStats.favoritedByCurrentUser,
       related: related.map((row) => ({
         id: row.id,
         title: toPrettyMovieTitle(row.title, row.sourceMessageId ?? row.id),
         posterUrl: toWebAssetRef(row.assets[0]?.fileRef ?? null),
+        viewCount: statsMap.get(row.id)?.viewCount ?? 0,
+        viewedByCurrentUser: statsMap.get(row.id)?.viewedByCurrentUser ?? false,
+        favoritedByCurrentUser: statsMap.get(row.id)?.favoritedByCurrentUser ?? false,
       })),
     };
+  }
+
+  async setItemFavorite(itemId: string, userKey: string, favorited: boolean) {
+    const item = await prisma.cinemaItem.findFirst({
+      where: {
+        id: itemId,
+        remoteStatus: { notIn: ["MISSING_REMOTE", "DELETED_REMOTE"] },
+      },
+      select: { id: true },
+    });
+    if (!item) {
+      throw new Error("Item not found.");
+    }
+    return this.viewService.setFavorite(itemId, userKey, favorited);
   }
 
   async getTelegramSourceForItem(itemId: string) {
@@ -341,40 +423,72 @@ export class CinemaItemService {
   }
 
   async verifyTelegramItemStatus(id: string, storageChatId: string) {
+    // ... existing verify logic ...
+  }
 
-    const item = await prisma.cinemaItem.findUnique({
-      where: { id },
-      include: { channel: { select: { sourceChannelId: true, platform: true } } },
+  async importTelegramItem(channelId: string, sourceMessageId: string) {
+    const channel = await prisma.cinemaChannel.findUnique({
+      where: { id: channelId },
     });
-    if (!item || item.channel?.platform !== CinemaSourcePlatform.TELEGRAM) return;
-
-    try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 8000);
-      const res = await fetch(`http://telethon-stream:8090/check_message/${item.channel.sourceChannelId}/${item.sourceMessageId}`, {
-        method: "GET",
-        signal: controller.signal,
-      });
-      clearTimeout(timeoutId);
-      
-      if (!res.ok) {
-        throw new Error("message to forward not found");
-      }
-
-      await prisma.cinemaItem.update({
-        where: { id },
-        data: { remoteStatus: "SYNCED" },
-      });
-    } catch (error) {
-      const msg = error instanceof Error ? error.message : String(error);
-      if (msg.includes("message to forward not found") || msg.includes("forbidden") || msg.includes("chat not found") || msg.includes("Not Found")) {
-        await prisma.cinemaItem.update({
-          where: { id },
-          data: { remoteStatus: "MISSING_REMOTE" },
-        });
-      } else {
-        console.error(`[CinemaItemService] Unknown verify status for ${item.id}:`, error);
-      }
+    if (!channel || channel.platform !== CinemaSourcePlatform.TELEGRAM) {
+      throw new Error("Channel not found or not Telegram.");
     }
+
+    const sourceChannelId = channel.sourceChannelId;
+    const res = await fetch(`http://telethon-stream:8090/message_info/${sourceChannelId}/${sourceMessageId}`);
+    if (!res.ok) {
+      throw new Error(`Failed to fetch message info from Telegram: ${await res.text()}`);
+    }
+
+    const data = (await res.json()) as {
+      ok: boolean;
+      id: number;
+      date: number;
+      message: string;
+      caption: string;
+      video?: { file_id: string; mime_type: string; duration: number };
+      document?: { file_id: string; mime_type: string };
+      photo_ids: string[];
+    };
+
+    if (!data.ok) throw new Error("Failed to fetch message info.");
+
+    const titleBase = (data.caption || data.message || "").trim();
+    const title = toPrettyMovieTitle(titleBase || `Telegram post #${sourceMessageId}`, sourceMessageId);
+    const description = (data.caption || data.message || "").trim() || null;
+    const createdAt = new Date(data.date * 1000);
+
+    const item = await prisma.cinemaItem.upsert({
+      where: { channelId_sourceMessageId: { channelId: channel.id, sourceMessageId } },
+      update: { title, description, remoteStatus: "SYNCED" },
+      create: {
+        channelId: channel.id,
+        sourceMessageId,
+        title,
+        description,
+        createdAt,
+        remoteStatus: "SYNCED",
+      },
+    });
+
+    if (data.video) {
+      await prisma.cinemaItem.update({
+        where: { id: item.id },
+        data: { durationSeconds: data.video.duration },
+      });
+      await prisma.cinemaAsset.upsert({
+        where: { itemId_kind: { itemId: item.id, kind: CinemaAssetKind.FULL } },
+        update: { provider: "telegram", fileRef: `tgfile://${sourceChannelId}:${sourceMessageId}`, mimeType: data.video.mime_type },
+        create: { itemId: item.id, kind: CinemaAssetKind.FULL, provider: "telegram", fileRef: `tgfile://${sourceChannelId}:${sourceMessageId}`, mimeType: data.video.mime_type },
+      });
+    } else if (data.document) {
+      await prisma.cinemaAsset.upsert({
+        where: { itemId_kind: { itemId: item.id, kind: CinemaAssetKind.FULL } },
+        update: { provider: "telegram", fileRef: `tgfile://${sourceChannelId}:${sourceMessageId}`, mimeType: data.document.mime_type },
+        create: { itemId: item.id, kind: CinemaAssetKind.FULL, provider: "telegram", fileRef: `tgfile://${sourceChannelId}:${sourceMessageId}`, mimeType: data.document.mime_type },
+      });
+    }
+
+    return item;
   }
 }

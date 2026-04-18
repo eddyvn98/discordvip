@@ -66,6 +66,48 @@ export class CinemaService {
   async deleteChannel(id: string) {
     return this.channelService.deleteChannel(id);
   }
+  async ensureTelegramChannelReady(id: string) {
+    return this.channelService.ensureTelegramChannelReady(id);
+  }
+  async createNewTelegramChannel(title: string) {
+    return this.channelService.createNewTelegramChannel(title);
+  }
+
+  async adminCopyToChannel(input: {
+    fromChatId: string;
+    messageId: string;
+    targetChannelId: string;
+  }) {
+    // 1. Get Admin info
+    const meRes = await fetch("http://telethon-stream:8090/me");
+    if (!meRes.ok) throw new Error("Failed to get Admin user info");
+    const me = (await meRes.json()) as { id: number };
+
+    // 2. Get Target Channel info
+    const channel = await prisma.cinemaChannel.findUnique({ where: { id: input.targetChannelId } });
+    if (!channel || channel.platform !== "TELEGRAM") throw new Error("Target channel not found");
+
+    // 3. Command Telethon Admin to COPY the message
+    const copyRes = await fetch("http://telethon-stream:8090/copy_message", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        from_chat_id: Number(input.fromChatId),
+        message_id: Number(input.messageId),
+        to_chat_id: Number(channel.sourceChannelId),
+      }),
+    });
+
+    if (!copyRes.ok) {
+      throw new Error(`Admin copy failed: ${await copyRes.text()}`);
+    }
+
+    const copyData = (await copyRes.json()) as { message_id: number };
+
+    // 4. Import via service wrapper so background scan job generates poster/preview assets
+    return this.importTelegramItem(channel.id, String(copyData.message_id));
+  }
+
   async ensureTelegramStorageChannels() {
     return this.channelService.ensureTelegramStorageChannels();
   }
@@ -86,17 +128,32 @@ export class CinemaService {
   async listItemsForWeb(channelId: string, options?: ListItemsForWebInput) {
     return this.itemService.listItemsForWeb(channelId, options);
   }
+  async listLibraryItemsForWeb(input: { view: "latest" | "trending" | "watched" | "favorites"; userKey: string; limit?: number }) {
+    return this.itemService.listLibraryItemsForWeb(input);
+  }
   async listFeedItemsForWeb(input: { userKey?: string; limit?: number }) {
     return this.itemService.listFeedItemsForWeb(input);
   }
-  async getItemForWeb(itemId: string) {
-    return this.itemService.getItemForWeb(itemId);
+  async getItemForWeb(itemId: string, userKey?: string) {
+    return this.itemService.getItemForWeb(itemId, userKey);
   }
   async getTelegramSourceForItem(itemId: string) {
     return this.itemService.getTelegramSourceForItem(itemId);
   }
   async importTelegramChannelPost(input: TelegramChannelPostInput) {
     return this.itemService.importTelegramChannelPost(input);
+  }
+  async importTelegramItem(channelId: string, sourceMessageId: string) {
+    const item = await this.itemService.importTelegramItem(channelId, sourceMessageId);
+
+    // Trigger background process for thumbnail/preview
+    const job = await this.createScanJob({
+      channelId: item.channelId,
+      requestedBy: "telegram-bot",
+    });
+    void this.runScanJob(job.id, { autoEnsureStorage: true });
+
+    return item;
   }
 
   // --- Views ---
@@ -105,6 +162,9 @@ export class CinemaService {
   }
   async getDailyViewedCount(userKey: string, timezone: string) {
     return this.viewService.getDailyViewedCount(userKey, timezone);
+  }
+  async setItemFavorite(itemId: string, userKey: string, favorited: boolean) {
+    return this.itemService.setItemFavorite(itemId, userKey, favorited);
   }
 
   // --- Streaming & Links ---
@@ -138,7 +198,7 @@ export class CinemaService {
   }
   async verifyTelegramChannelStatus(channelId: string) {
     await this.channelService.verifyTelegramChannelStatus(channelId);
-    
+
     // Background task: verify all items in the channel so deleted Telegram clips are hidden from the web
     this.itemService.listItems(channelId).then((items) => {
       if (items.length === 0) return;

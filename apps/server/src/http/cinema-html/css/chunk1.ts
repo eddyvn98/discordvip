@@ -265,6 +265,31 @@ export const cssChunk1 = `
     .preview{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:#000;opacity:0;transition:opacity .24s ease}
     .card:hover .preview{opacity:1}
     .card::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.1) 0%,rgba(0,0,0,.05) 38%,rgba(0,0,0,.86) 100%);pointer-events:none}
+    .favorite-btn{
+      position:absolute;
+      top:10px;
+      right:10px;
+      z-index:3;
+      width:34px;
+      height:34px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.18);
+      background:rgba(9,12,18,.72);
+      color:#f7fbff;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:18px;
+      font-weight:700;
+      cursor:pointer;
+      transition:transform .18s ease, background .18s ease, border-color .18s ease, color .18s ease;
+    }
+    .favorite-btn:hover{transform:scale(1.06);border-color:rgba(255,122,154,.45)}
+    .favorite-btn.active{
+      background:rgba(255,84,122,.18);
+      border-color:rgba(255,112,146,.56);
+      color:#ff7a9a;
+    }
     .meta{position:absolute;left:0;right:0;bottom:0;z-index:2;padding:10px;display:flex;flex-direction:column;gap:5px;min-height:0}
     .name{font-size:12px;font-weight:700;line-height:1.24;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;text-transform:uppercase;letter-spacing:.02em}
     .sub{color:#c5cada;font-size:10px;min-height:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -315,6 +340,11 @@ export const cssChunk1 = `
     .swipe-hint.right{right:10px}
     .swipe-hint.center{left:50%;transform:translate(-50%,-50%)}
     .player-nav{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+    .player-favorite-btn.active{
+      border-color:rgba(255,112,146,.56);
+      background:rgba(255,84,122,.16);
+      color:#ff8cab;
+    }
     .player-overlay-actions{position:absolute;top:10px;right:10px;z-index:10011;display:flex;gap:8px;pointer-events:auto}
     .player-overlay-actions .btn{padding:7px 10px;font-size:12px;background:rgba(15,20,32,.82);backdrop-filter:blur(2px)}
     .fullscreen-fab{border:1px solid var(--line);background:#14151a;color:var(--text);border-radius:10px;padding:10px 12px;font-size:12px;line-height:1;pointer-events:auto}
@@ -543,6 +573,11 @@ export const cssChunk1 = `
       }
       .side-nav-link{
         display:block;
+        width:100%;
+        border:none;
+        background:none;
+        text-align:left;
+        cursor:pointer;
         text-decoration:none;
         color:#79869f;
         font-size:13px;
@@ -875,6 +910,11 @@ export const cssChunk1 = `
       }
       .side-nav-link{
         display:block;
+        width:100%;
+        border:none;
+        background:none;
+        text-align:left;
+        cursor:pointer;
         text-decoration:none;
         color:#79869f;
         font-size:13px;

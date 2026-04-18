@@ -1,8 +1,8 @@
 export const stateJs = `
 
     const state={channels:[],itemsByChannel:new Map(),currentChannel:null,currentItem:null,currentMediaType:'video',query:'',channelRows:[],visibleCount:20,pageSize:20,tg:null,pseudoFullscreen:false,mainBtnBound:false,autoCinemaByLandscape:false,orientTimer:null,fullscreenControlsTimer:null,itemFilters:{sort:'newest'},randomMode:false,viewCounts:{},brightness:1,playbackRate:1,feedMode:false,feedRows:[],feedControlsTimer:null,feedSkipCount:0,feedSkipAt:0,feedWheelAt:0,feedAnimTimer:null,currentDetailChannel:null,lastTapAt:0,lastTapSide:'none',suppressTapUntil:0,isPip:false,pipRect:null,pipDrag:null,pipResize:null,touch:{active:false,startX:0,startY:0,lastX:0,lastY:0,startVolume:0,startBrightness:1,startCurrentTime:0,seekTime:0,isSeeking:false,isBoosting:false,mode:'pending',longPressTimer:null,rightBoostTimer:null,seekArmed:false,feedDirection:0,feedTargetIndex:-1}};
-    const \$=(id)=>document.getElementById(id);
-    const dom={status:\$('sessionStatus'),search:\$('search'),bottomSearchInput:\$('bottomSearchInput'),searchPanel:\$('searchPanel'),sortPanel:\$('sortPanel'),navHomeBtn:\$('navHomeBtn'),navFeedBtn:\$('navFeedBtn'),navSearchBtn:\$('navSearchBtn'),navSortBtn:\$('navSortBtn'),navBackBtn:\$('navBackBtn'),playbackDock:\$('playbackDock'),dockPlayBtn:\$('dockPlayBtn'),dockPrevBtn:\$('dockPrevBtn'),dockNextBtn:\$('dockNextBtn'),dockMuteBtn:\$('dockMuteBtn'),dockTime:\$('dockTime'),dockTimeline:\$('dockTimeline'),dockSpeedBtn:\$('dockSpeedBtn'),dockRotateBtn:\$('dockRotateBtn'),dockMinBtn:\$('dockMinBtn'),volumePanel:\$('volumePanel'),volumeVertical:\$('volumeVertical'),feedHomeBtn:\$('feedHomeBtn'),feedChannelBtn:\$('feedChannelBtn'),feedChannelDrawer:\$('feedChannelDrawer'),feedDrawerBackBtn:\$('feedDrawerBackBtn'),feedDrawerTitle:\$('feedDrawerTitle'),feedChannelList:\$('feedChannelList'),feedPreloadVideo:\$('feedPreloadVideo'),back:\$('backHomeBtn'),retry:\$('retryBtn'),crumb:\$('crumb'),hero:\$('hero'),state:\$('state'),grid:\$('grid'),loadMoreWrap:\$('loadMoreWrap'),loadMoreBtn:\$('loadMoreBtn'),backFab:\$('backFabBtn'),fullscreenFab:\$('fullscreenFabBtn'),playerWrap:\$('playerWrap'),playerMedia:\$('playerMedia'),playerTitle:\$('playerTitle'),playerDesc:\$('playerDesc'),player:\$('player'),image:\$('imageViewer'),related:\$('relatedGrid'),itemControls:\$('itemControls'),sortSelect:\$('sortSelect'),randomPickBtn:\$('randomPickBtn'),prevItemBtn:\$('prevItemBtn'),nextItemBtn:\$('nextItemBtn'),pipToggleBtn:\$('pipToggleBtn'),pipMiniPlayBtn:\$('pipMiniPlayBtn'),swipeHintLeft:\$('swipeHintLeft'),swipeHintRight:\$('swipeHintRight'),swipeHintCenter:\$('swipeHintCenter'),feedNextStage:\$('feedNextStage'),feedNextThumb:\$('feedNextThumb'),feedNextTitle:\$('feedNextTitle')};
+    const $=(id)=>document.getElementById(id);
+    const dom={status:$('sessionStatus'),search:$('search'),bottomSearchInput:$('bottomSearchInput'),searchPanel:$('searchPanel'),sortPanel:$('sortPanel'),navHomeBtn:$('navHomeBtn'),navFeedBtn:$('navFeedBtn'),navSearchBtn:$('navSearchBtn'),navSortBtn:$('navSortBtn'),navBackBtn:$('navBackBtn'),playbackDock:$('playbackDock'),dockPlayBtn:$('dockPlayBtn'),dockPrevBtn:$('dockPrevBtn'),dockNextBtn:$('dockNextBtn'),dockMuteBtn:$('dockMuteBtn'),dockTime:$('dockTime'),dockTimeline:$('dockTimeline'),dockSpeedBtn:$('dockSpeedBtn'),dockRotateBtn:$('dockRotateBtn'),dockMinBtn:$('dockMinBtn'),volumePanel:$('volumePanel'),volumeVertical:$('volumeVertical'),feedHomeBtn:$('feedHomeBtn'),feedChannelBtn:$('feedChannelBtn'),feedChannelDrawer:$('feedChannelDrawer'),feedDrawerBackBtn:$('feedDrawerBackBtn'),feedDrawerTitle:$('feedDrawerTitle'),feedChannelList:$('feedChannelList'),feedPreloadVideo:$('feedPreloadVideo'),back:$('backHomeBtn'),retry:$('retryBtn'),crumb:$('crumb'),hero:$('hero'),state:$('state'),grid:$('grid'),loadMoreWrap:$('loadMoreWrap'),loadMoreBtn:$('loadMoreBtn'),backFab:$('backFabBtn'),fullscreenFab:$('fullscreenFabBtn'),playerWrap:$('playerWrap'),playerStickyHeader:$('playerStickyHeader'),playerMedia:$('playerMedia'),playerTitle:$('playerTitle'),playerDesc:$('playerDesc'),player:$('player'),image:$('imageViewer'),related:$('relatedGrid'),itemControls:$('itemControls'),sortSelect:$('sortSelect'),randomPickBtn:$('randomPickBtn'),prevItemBtn:$('prevItemBtn'),nextItemBtn:$('nextItemBtn'),pipToggleBtn:$('pipToggleBtn'),pipMiniPlayBtn:$('pipMiniPlayBtn'),swipeHintLeft:$('swipeHintLeft'),swipeHintRight:$('swipeHintRight'),swipeHintCenter:$('swipeHintCenter'),feedNextStage:$('feedNextStage'),feedNextThumb:$('feedNextThumb'),feedNextTitle:$('feedNextTitle')};
 
     function showState(msg,isError=false){
       dom.state.textContent=msg; dom.state.className=isError?'error':'empty';
@@ -389,7 +389,7 @@ export const stateJs = `
       state.isPip=true;
       dom.playerMedia.classList.remove('pip-exit');
       dom.playerMedia.classList.add('pip-active');
-      dom.playerMedia.classList.remove('sticky-player');
+      dom.playerStickyHeader.classList.remove('sticky-player');
       dom.player.removeAttribute('controls');
       if(!state.pipRect){
         const width=clamp(Math.floor(window.innerWidth*0.46),pipMinWidth(),pipMaxWidth());
@@ -409,7 +409,7 @@ export const stateJs = `
       state.pipResize=null;
       dom.playerMedia.classList.remove('pip-active');
       setTimeout(()=>dom.playerMedia.classList.remove('pip-exit'),180);
-      dom.playerMedia.classList.add('sticky-player');
+      dom.playerStickyHeader.classList.add('sticky-player');
       dom.player.setAttribute('controls','');
       dom.playerMedia.style.left='';
       dom.playerMedia.style.top='';

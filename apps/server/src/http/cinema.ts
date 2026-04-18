@@ -173,6 +173,24 @@ export function registerCinemaRoutes(app: Express, cinemaService: CinemaService,
     );
   });
 
+  app.get("/api/cinema/library/items", async (req: Request, res: Response) => {
+    const session = requireCinemaSession(cinemaService, req, res);
+    if (!session) return;
+    const viewRaw = String(req.query.view ?? "").trim().toLowerCase();
+    const view =
+      viewRaw === "latest" || viewRaw === "trending" || viewRaw === "watched" || viewRaw === "favorites"
+        ? viewRaw
+        : "latest";
+    const limit = Math.max(20, Math.min(Number(req.query.limit ?? 260), 400));
+    res.json(
+      await cinemaService.listLibraryItemsForWeb({
+        view,
+        limit,
+        userKey: `${session.platform}:${session.platformUserId}`,
+      }),
+    );
+  });
+
   app.post("/api/cinema/items/:itemId/view", async (req: Request, res: Response) => {
     const session = requireCinemaSession(cinemaService, req, res);
     if (!session) return;
@@ -202,9 +220,33 @@ export function registerCinemaRoutes(app: Express, cinemaService: CinemaService,
     try {
       const session = requireCinemaSession(cinemaService, req, res);
       if (!session) return;
-      res.json(await cinemaService.getItemForWeb(String(req.params.itemId ?? "")));
+      res.json(await cinemaService.getItemForWeb(String(req.params.itemId ?? ""), `${session.platform}:${session.platformUserId}`));
     } catch (error) {
       res.status(404).json({ error: error instanceof Error ? error.message : "Item not found." });
+    }
+  });
+
+  app.post("/api/cinema/items/:itemId/favorite", async (req: Request, res: Response) => {
+    try {
+      const session = requireCinemaSession(cinemaService, req, res);
+      if (!session) return;
+      const userKey = `${session.platform}:${session.platformUserId}`;
+      const favorited = await cinemaService.setItemFavorite(String(req.params.itemId ?? ""), userKey, true);
+      res.json({ ok: true, favorited });
+    } catch (error) {
+      res.status(404).json({ error: error instanceof Error ? error.message : "Failed to favorite item." });
+    }
+  });
+
+  app.delete("/api/cinema/items/:itemId/favorite", async (req: Request, res: Response) => {
+    try {
+      const session = requireCinemaSession(cinemaService, req, res);
+      if (!session) return;
+      const userKey = `${session.platform}:${session.platformUserId}`;
+      const favorited = await cinemaService.setItemFavorite(String(req.params.itemId ?? ""), userKey, false);
+      res.json({ ok: true, favorited });
+    } catch (error) {
+      res.status(404).json({ error: error instanceof Error ? error.message : "Failed to remove favorite." });
     }
   });
 

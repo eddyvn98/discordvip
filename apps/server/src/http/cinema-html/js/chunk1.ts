@@ -1,8 +1,59 @@
 export const jsChunk1 = `
 
-    const state={channels:[],itemsByChannel:new Map(),currentChannel:null,currentItem:null,currentMediaType:'video',query:'',channelRows:[],visibleCount:20,pageSize:20,tg:null,pseudoFullscreen:false,mainBtnBound:false,autoCinemaByLandscape:false,orientTimer:null,fullscreenControlsTimer:null,itemFilters:{sort:'newest'},randomMode:false,viewCounts:{},brightness:1,playbackRate:1,feedMode:false,feedRows:[],feedControlsTimer:null,feedSkipCount:0,feedSkipAt:0,feedWheelAt:0,feedAnimTimer:null,feedNavLocked:false,feedPreparedItemId:'',feedPreparedUrl:'',feedPreparedMediaType:'',currentDetailChannel:null,lastTapAt:0,lastTapSide:'none',suppressTapUntil:0,isPip:false,pipRect:null,pipDrag:null,pipResize:null,touch:{active:false,startX:0,startY:0,lastX:0,lastY:0,startVolume:0,startBrightness:1,startCurrentTime:0,seekTime:0,isSeeking:false,isBoosting:false,mode:'pending',longPressTimer:null,rightBoostTimer:null,seekArmed:false,feedDirection:0,feedTargetIndex:-1}};
-    const \$=(id)=>document.getElementById(id);
-    const dom={status:\$('sessionStatus'),search:\$('search'),bottomSearchInput:\$('bottomSearchInput'),searchPanel:\$('searchPanel'),sortPanel:\$('sortPanel'),navHomeBtn:\$('navHomeBtn'),navFeedBtn:\$('navFeedBtn'),navSearchBtn:\$('navSearchBtn'),navSortBtn:\$('navSortBtn'),navBackBtn:\$('navBackBtn'),playbackDock:\$('playbackDock'),dockPlayBtn:\$('dockPlayBtn'),dockPrevBtn:\$('dockPrevBtn'),dockNextBtn:\$('dockNextBtn'),dockMuteBtn:\$('dockMuteBtn'),dockTime:\$('dockTime'),dockTimeline:\$('dockTimeline'),dockSpeedBtn:\$('dockSpeedBtn'),dockRotateBtn:\$('dockRotateBtn'),dockMinBtn:\$('dockMinBtn'),volumePanel:\$('volumePanel'),volumeVertical:\$('volumeVertical'),feedHomeBtn:\$('feedHomeBtn'),feedChannelBtn:\$('feedChannelBtn'),feedChannelDrawer:\$('feedChannelDrawer'),feedDrawerBackBtn:\$('feedDrawerBackBtn'),feedDrawerTitle:\$('feedDrawerTitle'),feedChannelList:\$('feedChannelList'),feedPreloadVideo:\$('feedPreloadVideo'),back:\$('backHomeBtn'),retry:\$('retryBtn'),crumb:\$('crumb'),hero:\$('hero'),state:\$('state'),grid:\$('grid'),loadMoreWrap:\$('loadMoreWrap'),loadMoreBtn:\$('loadMoreBtn'),backFab:\$('backFabBtn'),fullscreenFab:\$('fullscreenFabBtn'),playerWrap:\$('playerWrap'),playerMedia:\$('playerMedia'),playerTitle:\$('playerTitle'),playerDesc:\$('playerDesc'),player:\$('player'),image:\$('imageViewer'),related:\$('relatedGrid'),relatedGrid:\$('relatedGrid'),itemControls:\$('itemControls'),sortSelect:\$('sortSelect'),randomPickBtn:\$('randomPickBtn'),prevItemBtn:\$('prevItemBtn'),nextItemBtn:\$('nextItemBtn'),pipToggleBtn:\$('pipToggleBtn'),pipMiniPlayBtn:\$('pipMiniPlayBtn'),swipeHintLeft:\$('swipeHintLeft'),swipeHintRight:\$('swipeHintRight'),swipeHintCenter:\$('swipeHintCenter'),feedNextStage:\$('feedNextStage'),feedNextVideo:\$('feedNextVideo'),feedNextThumb:\$('feedNextThumb'),feedNextTitle:\$('feedNextTitle')};
+    const state={channels:[],itemsByChannel:new Map(),libraryItemsByView:new Map(),currentView:'home',currentChannel:null,currentItem:null,currentMediaType:'video',query:'',channelRows:[],visibleCount:20,pageSize:20,tg:null,pseudoFullscreen:false,mainBtnBound:false,autoCinemaByLandscape:false,orientTimer:null,fullscreenControlsTimer:null,itemFilters:{sort:'newest'},randomMode:false,viewCounts:{},brightness:1,playbackRate:1,feedMode:false,feedRows:[],feedControlsTimer:null,feedSkipCount:0,feedSkipAt:0,feedWheelAt:0,feedAnimTimer:null,feedNavLocked:false,feedPreparedItemId:'',feedPreparedUrl:'',feedPreparedMediaType:'',currentDetailChannel:null,lastTapAt:0,lastTapSide:'none',suppressTapUntil:0,isPip:false,pipRect:null,pipDrag:null,pipResize:null,touch:{active:false,startX:0,startY:0,lastX:0,lastY:0,startVolume:0,startBrightness:1,startCurrentTime:0,seekTime:0,isSeeking:false,isBoosting:false,mode:'pending',longPressTimer:null,rightBoostTimer:null,seekArmed:false,feedDirection:0,feedTargetIndex:-1}};
+    const $=(id)=>document.getElementById(id);
+    const dom={status:$('sessionStatus'),search:$('search'),bottomSearchInput:$('bottomSearchInput'),searchPanel:$('searchPanel'),sortPanel:$('sortPanel'),navHomeBtn:$('navHomeBtn'),navFeedBtn:$('navFeedBtn'),navSearchBtn:$('navSearchBtn'),navSortBtn:$('navSortBtn'),navBackBtn:$('navBackBtn'),playbackDock:$('playbackDock'),dockPlayBtn:$('dockPlayBtn'),dockPrevBtn:$('dockPrevBtn'),dockNextBtn:$('dockNextBtn'),dockMuteBtn:$('dockMuteBtn'),dockTime:$('dockTime'),dockTimeline:$('dockTimeline'),dockSpeedBtn:$('dockSpeedBtn'),dockRotateBtn:$('dockRotateBtn'),dockMinBtn:$('dockMinBtn'),volumePanel:$('volumePanel'),volumeVertical:$('volumeVertical'),feedHomeBtn:$('feedHomeBtn'),feedChannelBtn:$('feedChannelBtn'),feedChannelDrawer:$('feedChannelDrawer'),feedDrawerBackBtn:$('feedDrawerBackBtn'),feedDrawerTitle:$('feedDrawerTitle'),feedChannelList:$('feedChannelList'),feedPreloadVideo:$('feedPreloadVideo'),back:$('backHomeBtn'),retry:$('retryBtn'),crumb:$('crumb'),hero:$('hero'),state:$('state'),grid:$('grid'),loadMoreWrap:$('loadMoreWrap'),loadMoreBtn:$('loadMoreBtn'),backFab:$('backFabBtn'),fullscreenFab:$('fullscreenFabBtn'),playerWrap:$('playerWrap'),playerStickyHeader:$('playerStickyHeader'),playerMedia:$('playerMedia'),playerTitle:$('playerTitle'),playerDesc:$('playerDesc'),playerFavoriteBtn:$('playerFavoriteBtn'),player:$('player'),image:$('imageViewer'),related:$('relatedGrid'),relatedGrid:$('relatedGrid'),itemControls:$('itemControls'),sortSelect:$('sortSelect'),randomPickBtn:$('randomPickBtn'),prevItemBtn:$('prevItemBtn'),nextItemBtn:$('nextItemBtn'),pipToggleBtn:$('pipToggleBtn'),pipMiniPlayBtn:$('pipMiniPlayBtn'),swipeHintLeft:$('swipeHintLeft'),swipeHintRight:$('swipeHintRight'),swipeHintCenter:$('swipeHintCenter'),feedNextStage:$('feedNextStage'),feedNextVideo:$('feedNextVideo'),feedNextThumb:$('feedNextThumb'),feedNextTitle:$('feedNextTitle')};
+
+    const LIBRARY_VIEW_META={
+      latest:{crumb:'M\u1edbi nh\u1ea5t',title:'M\u1edbi nh\u1ea5t',description:'C\u00e1c phim m\u1edbi c\u1eadp nh\u1eadt g\u1ea7n \u0111\u00e2y nh\u1ea5t.',empty:'Ch\u01b0a c\u00f3 phim m\u1edbi n\u00e0o.'},
+      trending:{crumb:'Th\u1ecbnh h\u00e0nh',title:'Th\u1ecbnh h\u00e0nh',description:'C\u00e1c phim \u0111\u01b0\u1ee3c xem nhi\u1ec1u nh\u1ea5t to\u00e0n h\u1ec7 th\u1ed1ng.',empty:'Ch\u01b0a c\u00f3 phim th\u1ecbnh h\u00e0nh.'},
+      watched:{crumb:'\u0110\u00e3 xem',title:'\u0110\u00e3 xem',description:'Nh\u1eefng phim b\u1ea1n \u0111\u00e3 m\u1edf xem g\u1ea7n \u0111\u00e2y.',empty:'B\u1ea1n ch\u01b0a xem phim n\u00e0o.'},
+      favorites:{crumb:'Y\u00eau th\u00edch',title:'Y\u00eau th\u00edch',description:'Danh s\u00e1ch phim b\u1ea1n \u0111\u00e3 l\u01b0u b\u1eb1ng n\u00fat tim.',empty:'B\u1ea1n ch\u01b0a l\u01b0u phim y\u00eau th\u00edch n\u00e0o.'}
+    };
+    function getSideNavButtons(){ return [...document.querySelectorAll('[data-side-view]')]; }
+    function syncSideNavActive(){
+      const current=state.currentChannel?'channel':state.currentView;
+      getSideNavButtons().forEach((btn)=>{
+        const active=(btn.getAttribute('data-side-view')||'')===current;
+        btn.classList.toggle('active',active);
+      });
+    }
+    function syncPlayerFavoriteButton(){
+      if(!dom.playerFavoriteBtn) return;
+      const active=!!(state.currentItem&&state.currentItem.favoritedByCurrentUser);
+      dom.playerFavoriteBtn.classList.toggle('active',active);
+      dom.playerFavoriteBtn.textContent=active?'\u0110\u00e3 l\u01b0u':'Y\u00eau th\u00edch';
+    }
+    function mergeFavoriteState(list,itemId,favorited){
+      if(!Array.isArray(list)) return list;
+      for(const row of list){
+        if(row&&row.id===itemId){ row.favoritedByCurrentUser=favorited; }
+      }
+      return list;
+    }
+    function invalidateLibraryCache(view){
+      if(state.libraryItemsByView&&state.libraryItemsByView.delete){ state.libraryItemsByView.delete(view); }
+    }
+    function applyFavoriteState(itemId,favorited){
+      state.channelRows=mergeFavoriteState(state.channelRows,itemId,favorited)||state.channelRows;
+      state.feedRows=mergeFavoriteState(state.feedRows,itemId,favorited)||state.feedRows;
+      if(state.currentItem&&state.currentItem.id===itemId){ state.currentItem.favoritedByCurrentUser=favorited; }
+      state.itemsByChannel.forEach((rows,key)=>{ state.itemsByChannel.set(key,mergeFavoriteState(rows,itemId,favorited)); });
+      state.libraryItemsByView.forEach((rows,key)=>{
+        let next=mergeFavoriteState(rows,itemId,favorited)||rows;
+        if(key==='favorites' && !favorited){ next=(next||[]).filter((row)=>row&&row.id!==itemId); }
+        state.libraryItemsByView.set(key,next);
+      });
+      syncPlayerFavoriteButton();
+    }
+    async function toggleFavorite(item,force){
+      const target=item||state.currentItem;
+      if(!target||!target.id) return;
+      const next=typeof force==='boolean'?force:!target.favoritedByCurrentUser;
+      await api('/api/cinema/items/'+target.id+'/favorite',{method:next?'POST':'DELETE'});
+      applyFavoriteState(target.id,next);
+      if(state.currentView==='favorites'){ invalidateLibraryCache('favorites'); }
+    }
 
     function showState(msg,isError=false){
       dom.state.textContent=msg; dom.state.className=isError?'error':'empty';
@@ -68,7 +119,7 @@ export const jsChunk1 = `
         dom.player.setAttribute('controls','');
         dom.playerWrap.classList.add('pseudo-fullscreen'); document.body.classList.add('no-scroll'); dom.grid.classList.add('hide'); dom.loadMoreWrap.classList.add('hide');        syncFullscreenMainButton(true);
         try{ const tg=state.tg; if(tg&&tg.requestFullscreen){ tg.requestFullscreen(); } }catch(_e){}
-        /* Luôn unlock để user xoay thiết bị tự do - KHÔNG lock landscape */
+        /* Lu\u00f4n unlock \u0111\u1ec3 ng\u01b0\u1eddi d\u00f9ng xoay thi\u1ebft b\u1ecb t\u1ef1 do, kh\u00f4ng kh\u00f3a landscape */
         try{ const tg=state.tg; if(tg&&tg.unlockOrientation) tg.unlockOrientation(); }catch(_e){}
         try{ if(screen&&screen.orientation&&screen.orientation.unlock) screen.orientation.unlock(); }catch(_e){}
         showFullscreenControls();
@@ -148,7 +199,7 @@ export const jsChunk1 = `
       }
     }
     function updateMiniPlayIcon(){
-      dom.pipMiniPlayBtn.textContent=dom.player.paused?'▶':'❚❚';
+      dom.pipMiniPlayBtn.textContent=dom.player.paused?'\u25b6':'\u275a\u275a';
     }
     function actionPulse(){
       dom.playerMedia.classList.remove('action-flash');
@@ -202,3 +253,4 @@ export const jsChunk1 = `
       dom.feedNextStage.classList.add('show');
     }
 `;
+

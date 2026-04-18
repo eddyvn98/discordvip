@@ -3,11 +3,22 @@ export const jsChunk4 = `
       state.query=val||'';
       dom.search.value=state.query;
       dom.bottomSearchInput.value=state.query;
-      state.currentChannel?openChannel(state.currentChannel):renderChannels();
+      if(state.currentChannel){
+        openChannel(state.currentChannel);
+        return;
+      }
+      if(state.currentView!=='home'){
+        renderCurrentCollection();
+        return;
+      }
+      renderChannels();
     }
     dom.search.addEventListener('input',()=>{ applySearchInput(dom.search.value); });
     dom.bottomSearchInput.addEventListener('input',()=>{ applySearchInput(dom.bottomSearchInput.value); });
-    dom.sortSelect.addEventListener('change',()=>{ state.itemFilters.sort=dom.sortSelect.value||'newest'; if(state.currentChannel) openChannel(state.currentChannel); });
+    dom.sortSelect.addEventListener('change',()=>{
+      state.itemFilters.sort=dom.sortSelect.value||'newest';
+      if(state.currentChannel) openChannel(state.currentChannel);
+    });
     dom.pipToggleBtn.addEventListener('click',()=>{ enterPip(); });
     dom.pipMiniPlayBtn.addEventListener('click',(e)=>{ e.stopPropagation(); if(dom.player.paused) dom.player.play().catch(()=>{}); else dom.player.pause(); updateMiniPlayIcon(); });
     dom.dockPrevBtn.addEventListener('click',()=>{ if(!swipeItem(-1)) showState('Đang ở phim đầu tiên.'); });
@@ -45,12 +56,31 @@ export const jsChunk4 = `
     });
     dom.dockRotateBtn.addEventListener('click',()=>{ togglePseudoFullscreen(true); });
     dom.dockMinBtn.addEventListener('click',()=>{ enterPip(); });
-    dom.navHomeBtn.addEventListener('click',()=>{ closePanels(); state.currentItem=null; state.currentChannel=null; state.query=''; dom.sortSelect.value='newest'; state.itemFilters.sort='newest'; renderChannels(); });
+    dom.navHomeBtn.addEventListener('click',()=>{ closePanels(); state.currentItem=null; state.currentChannel=null; state.query=''; dom.search.value=''; dom.bottomSearchInput.value=''; dom.sortSelect.value='newest'; state.itemFilters.sort='newest'; renderChannels(); });
     dom.navFeedBtn.addEventListener('click',()=>{ if(state.feedMode){ exitFeedMode(); }else{ enterFeedMode(); } });
     dom.navBackBtn.addEventListener('click',()=>{ closePanels(); navBack(); });
     dom.feedHomeBtn.addEventListener('click',()=>{ exitFeedMode(); });
     dom.feedChannelBtn.addEventListener('click',()=>{ openFeedChannelDrawer(); });
     dom.feedDrawerBackBtn.addEventListener('click',()=>{ closeFeedDrawer(); });
+    if(dom.playerFavoriteBtn){
+      dom.playerFavoriteBtn.addEventListener('click',async ()=>{
+        if(!state.currentItem) return;
+        try{
+          await toggleFavorite(state.currentItem);
+          syncPlayerFavoriteButton();
+        }catch(e){
+          showState((e&&e.message)?e.message:'Không thể lưu yêu thích.',true);
+        }
+      });
+    }
+    getSideNavButtons().forEach((btn)=>{
+      btn.addEventListener('click',()=>{
+        closePanels();
+        const view=btn.getAttribute('data-side-view')||'home';
+        if(view==='home') renderChannels();
+        else openLibraryView(view);
+      });
+    });
     dom.navSearchBtn.addEventListener('click',()=>{
       const willOpen=!dom.searchPanel.classList.contains('show');
       closePanels();
@@ -77,7 +107,6 @@ export const jsChunk4 = `
         if(state.currentChannel) openChannel(state.currentChannel);
       });
     });
-
     if(dom.randomPickBtn){ dom.randomPickBtn.addEventListener('click',()=>{
       state.randomMode=!state.randomMode;
       dom.randomPickBtn.classList.toggle('active',state.randomMode);
@@ -91,9 +120,9 @@ export const jsChunk4 = `
     dom.back.addEventListener('click',()=>navBack());
     dom.backFab.addEventListener('click',()=>navBack());
     dom.loadMoreBtn.addEventListener('click',()=>{
-      if(!state.currentChannel) return;
+      if(!state.currentChannel && state.currentView==='home') return;
       state.visibleCount=Math.min(state.visibleCount+state.pageSize,state.channelRows.length);
-      renderChannelItems();
+      renderCurrentCollection();
     });
     dom.retry.addEventListener('click',()=>location.reload());
     dom.player.addEventListener('ended',()=>{ playNextAuto(); });
@@ -130,8 +159,6 @@ export const jsChunk4 = `
       e.preventDefault();
       swipeItem(primary>0?1:-1);
     },{passive:false});
-    
-    
     function swipeItem(direction){
       if(!state.currentItem || !state.channelRows.length) return false;
       if(state.feedMode && state.feedNavLocked) return false;

@@ -10,7 +10,7 @@
 <!-- gitnexus:start -->
 # GitNexus — Code Intelligence
 
-This project is indexed by GitNexus as **discordvip-cinema-web** (1925 symbols, 4818 relationships, 144 execution flows). Use the GitNexus MCP tools to understand code, assess impact, and navigate safely.
+This project is indexed by GitNexus as **discordvip-cinema-web** (1998 symbols, 4992 relationships, 150 execution flows). Use the GitNexus MCP tools to understand code, assess impact, and navigate safely.
 
 > If any GitNexus tool warns the index is stale, run `npx gitnexus analyze` in terminal first.
 
@@ -106,24 +106,24 @@ To check whether embeddings exist, inspect `.gitnexus/meta.json` — the `stats.
 | Rename / extract / split / refactor | `.claude/skills/gitnexus/gitnexus-refactoring/SKILL.md` |
 | Tools, resources, schema reference | `.claude/skills/gitnexus/gitnexus-guide/SKILL.md` |
 | Index, status, clean, wiki CLI commands | `.claude/skills/gitnexus/gitnexus-cli/SKILL.md` |
-| Work in the Services area (234 symbols) | `.claude/skills/generated/services/SKILL.md` |
+| Work in the Services area (253 symbols) | `.claude/skills/generated/services/SKILL.md` |
 | Work in the Pages area (106 symbols) | `.claude/skills/generated/pages/SKILL.md` |
-| Work in the Cinema area (80 symbols) | `.claude/skills/generated/cinema/SKILL.md` |
-| Work in the Http area (48 symbols) | `.claude/skills/generated/http/SKILL.md` |
+| Work in the Cinema area (78 symbols) | `.claude/skills/generated/cinema/SKILL.md` |
+| Work in the Scripts area (42 symbols) | `.claude/skills/generated/scripts/SKILL.md` |
+| Work in the Http area (38 symbols) | `.claude/skills/generated/http/SKILL.md` |
 | Work in the Telegram area (30 symbols) | `.claude/skills/generated/telegram/SKILL.md` |
 | Work in the Hooks area (22 symbols) | `.claude/skills/generated/hooks/SKILL.md` |
-| Work in the Scripts area (22 symbols) | `.claude/skills/generated/scripts/SKILL.md` |
 | Work in the Cluster_4 area (17 symbols) | `.claude/skills/generated/cluster-4/SKILL.md` |
 | Work in the Cluster_1 area (14 symbols) | `.claude/skills/generated/cluster-1/SKILL.md` |
-| Work in the Cluster_100 area (13 symbols) | `.claude/skills/generated/cluster-100/SKILL.md` |
+| Work in the Cluster_106 area (13 symbols) | `.claude/skills/generated/cluster-106/SKILL.md` |
 | Work in the Cluster_3 area (12 symbols) | `.claude/skills/generated/cluster-3/SKILL.md` |
 | Work in the Components area (12 symbols) | `.claude/skills/generated/components/SKILL.md` |
-| Work in the Cluster_81 area (10 symbols) | `.claude/skills/generated/cluster-81/SKILL.md` |
-| Work in the Cluster_121 area (10 symbols) | `.claude/skills/generated/cluster-121/SKILL.md` |
+| Work in the Cluster_43 area (10 symbols) | `.claude/skills/generated/cluster-43/SKILL.md` |
+| Work in the Cluster_125 area (10 symbols) | `.claude/skills/generated/cluster-125/SKILL.md` |
 | Work in the Auth area (10 symbols) | `.claude/skills/generated/auth/SKILL.md` |
-| Work in the Cluster_32 area (9 symbols) | `.claude/skills/generated/cluster-32/SKILL.md` |
+| Work in the Cluster_37 area (9 symbols) | `.claude/skills/generated/cluster-37/SKILL.md` |
 | Work in the Cluster_5 area (7 symbols) | `.claude/skills/generated/cluster-5/SKILL.md` |
-| Work in the Cluster_30 area (6 symbols) | `.claude/skills/generated/cluster-30/SKILL.md` |
+| Work in the Cluster_35 area (6 symbols) | `.claude/skills/generated/cluster-35/SKILL.md` |
 | Work in the Cluster_7 area (5 symbols) | `.claude/skills/generated/cluster-7/SKILL.md` |
 | Work in the Cluster_8 area (5 symbols) | `.claude/skills/generated/cluster-8/SKILL.md` |
 

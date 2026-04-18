@@ -10,7 +10,7 @@
     function applyBrightness(value){
       state.brightness=Math.max(0.3,Math.min(1.7,value));
       dom.playerMedia.style.filter='brightness('+state.brightness.toFixed(2)+')';
-      dom.swipeHintLeft.textContent='Äá»™ sÃ¡ng '+Math.round(state.brightness*100)+'%';
+      dom.swipeHintLeft.textContent='Độ sáng '+Math.round(state.brightness*100)+'%';
       dom.swipeHintLeft.style.opacity='1';
     }
     function applyVolume(value){
@@ -18,7 +18,7 @@
       const next=Math.max(0,Math.min(1,value));
       dom.player.muted=false;
       dom.player.volume=next;
-      dom.swipeHintRight.textContent='Ã‚m lÆ°á»£ng '+Math.round(next*100)+'%';
+      dom.swipeHintRight.textContent='Âm lượng '+Math.round(next*100)+'%';
       dom.swipeHintRight.style.opacity='1';
     }
     dom.playerMedia.addEventListener('pointerdown',(e)=>{
@@ -131,7 +131,7 @@
       state.touch.longPressTimer=setTimeout(()=>{
         if(!state.touch.active || state.currentMediaType!=='video') return;
         state.touch.seekArmed=true;
-        dom.swipeHintCenter.textContent='Giá»¯ vÃ  vuá»‘t Ä‘á»ƒ tua';
+        dom.swipeHintCenter.textContent='Giữ và vuốt để tua';
         dom.swipeHintCenter.style.opacity='1';
       },220);
       if(state.currentMediaType==='video' && (relX>=rect.width*0.75 || relX<=rect.width*0.25)){
@@ -139,7 +139,7 @@
           if(!state.touch.active || state.touch.isSeeking) return;
           state.touch.isBoosting=true;
           dom.player.playbackRate=2;
-          dom.swipeHintCenter.textContent='Tá»‘c Ä‘á»™ x2';
+          dom.swipeHintCenter.textContent='Tốc độ x2';
           dom.swipeHintCenter.style.opacity='1';
         },280);
       }
@@ -216,7 +216,7 @@
         e.stopPropagation();
       }
     },true);
-    dom.prevItemBtn.addEventListener('click',()=>{ if(!swipeItem(-1)) showState('Äang á»Ÿ phim Ä‘áº§u tiÃªn.'); });
-    dom.nextItemBtn.addEventListener('click',()=>{ if(!swipeItem(1)) showState('Äang á»Ÿ phim cuá»‘i cÃ¹ng.'); });
+    dom.prevItemBtn.addEventListener('click',()=>{ if(!swipeItem(-1)) showState('Đang ở phim đầu tiên.'); });
+    dom.nextItemBtn.addEventListener('click',()=>{ if(!swipeItem(1)) showState('Đang ở phim cuối cùng.'); });
 `;
 

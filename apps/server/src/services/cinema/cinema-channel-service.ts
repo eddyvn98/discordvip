@@ -246,7 +246,6 @@ export class CinemaChannelService {
   }
 
   async verifyTelegramChannelStatus(id: string) {
-
     const channel = await prisma.cinemaChannel.findUnique({ where: { id } });
     if (!channel || channel.platform !== CinemaSourcePlatform.TELEGRAM) return;
 
@@ -258,11 +257,11 @@ export class CinemaChannelService {
         signal: controller.signal,
       });
       clearTimeout(timeoutId);
-      
+
       if (!res.ok) {
         throw new Error("chat not found");
       }
-      
+
       await prisma.cinemaChannel.update({
         where: { id },
         data: { remoteStatus: "ACTIVE" },
@@ -278,5 +277,68 @@ export class CinemaChannelService {
         console.error(`[CinemaChannelService] Unknown verify status for ${channel.id}:`, error);
       }
     }
+  }
+
+  async ensureTelegramChannelReady(id: string) {
+    const channel = await prisma.cinemaChannel.findUnique({ where: { id } });
+    if (!channel || channel.platform !== CinemaSourcePlatform.TELEGRAM) {
+      throw new Error("Channel not found or not Telegram");
+    }
+
+    try {
+      // 1. Check if bot is admin
+      // We can try to setup bot admin regardless to ensure permissions
+      const botId = process.env.TELEGRAM_BOT_TOKEN?.split(":")[0];
+      if (!botId) throw new Error("TELEGRAM_BOT_TOKEN is missing in server env");
+
+      const res = await fetch(`http://telethon-stream:8090/setup_bot_admin`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          channel_id: Number(channel.sourceChannelId), // This should be numeric
+          bot_id: botId,
+        }),
+      });
+
+      if (!res.ok) {
+        const err = await res.text();
+        console.error(`[CinemaChannelService] Failed to setup bot admin for ${channel.id}:`, err);
+        // We don't throw yet, as it might already be admin
+      }
+
+      return { ok: true };
+    } catch (error) {
+      console.error(`[CinemaChannelService] Error in ensureTelegramChannelReady:`, error);
+      throw error;
+    }
+  }
+
+  async createNewTelegramChannel(title: string) {
+    const res = await fetch(`http://telethon-stream:8090/create_channel`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ title }),
+    });
+
+    if (!res.ok) {
+      throw new Error(`Failed to create channel: ${await res.text()}`);
+    }
+
+    const data = await res.json() as { channel_id: number; id: number };
+
+    // Register in DB
+    const channel = await this.createOrUpdateChannel({
+      platform: "telegram",
+      sourceChannelId: String(data.channel_id),
+      role: "FULL_SOURCE",
+      displayName: title,
+      slug: `tg-${Date.now()}`,
+      isEnabled: true,
+    });
+
+    // Setup bot as admin
+    await this.ensureTelegramChannelReady(channel.id);
+
+    return channel;
   }
 }

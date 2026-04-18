@@ -225,7 +225,7 @@ export const feed_uiJs = `
       state.isPip=true;
       dom.playerMedia.classList.remove('pip-exit');
       dom.playerMedia.classList.add('pip-active');
-      dom.playerMedia.classList.remove('sticky-player');
+      dom.playerStickyHeader.classList.remove('sticky-player');
       dom.player.removeAttribute('controls');
       if(!state.pipRect){
         const width=clamp(Math.floor(window.innerWidth*0.46),pipMinWidth(),pipMaxWidth());
@@ -245,7 +245,7 @@ export const feed_uiJs = `
       state.pipResize=null;
       dom.playerMedia.classList.remove('pip-active');
       setTimeout(()=>dom.playerMedia.classList.remove('pip-exit'),180);
-      dom.playerMedia.classList.add('sticky-player');
+      dom.playerStickyHeader.classList.add('sticky-player');
       dom.player.setAttribute('controls','');
       dom.playerMedia.style.left='';
       dom.playerMedia.style.top='';
