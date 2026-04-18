@@ -14,9 +14,18 @@ backups/
 output/
 # GitNexus
 .gitnexus/
-.claude/skills/generated/
 
 # Sessions and storage
 *.session
+storage/
 apps/server/storage/
 apps/server/src/scratch_check_jobs.*
+
+# Temporary files and logs
+tmp_*
+untracked_files.txt
+*.log
+
+# Python
+__pycache__/
+*.pyc
