@@ -221,6 +221,32 @@ model CinemaItem {
   @@index([channelId, createdAt])
 }
 
+model CinemaItemViewStat {
+  itemId     String   @id @map("item_id")
+  viewCount  BigInt   @default(0) @map("view_count")
+  updatedAt  DateTime @default(now()) @updatedAt @map("updated_at")
+
+  @@map("cinema_item_view_stats")
+}
+
+model CinemaUserItemView {
+  itemId        String   @map("item_id")
+  userKey       String   @map("user_key")
+  firstViewedAt DateTime @default(now()) @map("first_viewed_at")
+
+  @@id([itemId, userKey])
+  @@map("cinema_user_item_views")
+}
+
+model CinemaUserItemFavorite {
+  itemId       String   @map("item_id")
+  userKey      String   @map("user_key")
+  favoritedAt  DateTime @default(now()) @map("favorited_at")
+
+  @@id([itemId, userKey])
+  @@map("cinema_user_item_favorites")
+}
+
 
 model CinemaAsset {
   id        String          @id @default(cuid())
