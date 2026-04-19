@@ -66,6 +66,39 @@ export function makeTelefilmInitData(telegramUserId: string): string {
   return params.toString();
 }
 
+export function pipeWebReadableToResponse(stream: ReadableStream<Uint8Array>, res: Response): void {
+  const nodeStream = Readable.fromWeb(stream as any);
+  let finalized = false;
+
+  const finalize = (error?: unknown) => {
+    if (finalized) return;
+    finalized = true;
+    nodeStream.removeAllListeners();
+    if (error) {
+      if (!res.headersSent) {
+        res.status(502).end();
+      } else if (!res.writableEnded) {
+        res.destroy(error as Error);
+      }
+      return;
+    }
+    if (!res.writableEnded) {
+      res.end();
+    }
+  };
+
+  nodeStream.on("error", (error) => {
+    finalize(error);
+  });
+  res.on("close", () => {
+    if (!nodeStream.destroyed) {
+      nodeStream.destroy();
+    }
+    finalize();
+  });
+  nodeStream.pipe(res).on("finish", () => finalize());
+}
+
 export async function proxyStaticFile(path: string, res: Response): Promise<void> {
   const url = new URL(`/static/${path}`, env.TELEFILM_BACKEND_URL);
   const upstream = await fetch(url.toString());
@@ -78,7 +111,7 @@ export async function proxyStaticFile(path: string, res: Response): Promise<void
   if (contentType) res.setHeader("content-type", contentType);
   if (contentLength) res.setHeader("content-length", contentLength);
   res.status(upstream.status);
-  Readable.fromWeb(upstream.body as any).pipe(res);
+  pipeWebReadableToResponse(upstream.body as ReadableStream<Uint8Array>, res);
 }
 
 const STREAM_PASS_HEADERS = [
@@ -119,5 +152,5 @@ export async function proxyTelefilmStream(
     if (value) res.setHeader(header, value);
   }
   res.status(upstream.status);
-  Readable.fromWeb(upstream.body as any).pipe(res);
+  pipeWebReadableToResponse(upstream.body as ReadableStream<Uint8Array>, res);
 }

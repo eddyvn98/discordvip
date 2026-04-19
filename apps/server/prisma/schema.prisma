@@ -185,6 +185,36 @@ model Session {
   @@map("session")
 }
 
+model AdminPrincipal {
+  id             String                  @id @default(cuid())
+  platform       Platform
+  platformUserId String
+  displayName    String?
+  isActive       Boolean                 @default(true)
+  createdAt      DateTime                @default(now())
+  updatedAt      DateTime                @updatedAt
+  permissions    CinemaAdminPermission[]
+
+  @@unique([platform, platformUserId])
+}
+
+model CinemaAdminPermission {
+  id         String         @id @default(cuid())
+  adminId    String
+  channelId  String?
+  canView    Boolean        @default(true)
+  canUpload  Boolean        @default(false)
+  canForward Boolean        @default(false)
+  canManage  Boolean        @default(false)
+  canDelete  Boolean        @default(false)
+  createdAt  DateTime       @default(now())
+  updatedAt  DateTime       @updatedAt
+  admin      AdminPrincipal @relation(fields: [adminId], references: [id], onDelete: Cascade)
+  channel    CinemaChannel? @relation(fields: [channelId], references: [id], onDelete: Cascade)
+
+  @@unique([adminId, channelId])
+}
+
 model CinemaChannel {
   id              String               @id @default(cuid())
   platform        CinemaSourcePlatform
@@ -199,6 +229,7 @@ model CinemaChannel {
   updatedAt       DateTime             @updatedAt
   items           CinemaItem[]
   scanJobs        CinemaScanJob[]
+  permissions     CinemaAdminPermission[]
 
   @@unique([platform, sourceChannelId])
 }

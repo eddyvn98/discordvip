@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback, useMemo } from "react";
 import { api } from "../../../api";
-import { CinemaChannel, CinemaChannelDetail, CinemaScanJob, CinemaStats, CinemaWebMovie } from "../cinema.types";
+import { CinemaAccessMeResponse, CinemaChannel, CinemaChannelDetail, CinemaScanJob, CinemaStats, CinemaWebMovie } from "../cinema.types";
 import { getDefaultSelectedChannelId } from "../cinema.helpers";
 
 interface UseCinemaPageDataProps {
@@ -46,6 +46,7 @@ export function useCinemaPageData({ setError, forceSelectedChannelId }: UseCinem
   const [loading, setLoading] = useState(false);
   const [loadingChannelDetail, setLoadingChannelDetail] = useState(false);
   const [selectedChannelId, setSelectedChannelId] = useState<string | null>(null);
+  const [accessMe, setAccessMe] = useState<CinemaAccessMeResponse | null>(null);
 
   const loadSelectedChannelDetail = useCallback(async (channelId: string | null) => {
     if (!channelId) {
@@ -66,17 +67,19 @@ export function useCinemaPageData({ setError, forceSelectedChannelId }: UseCinem
 
   const load = useCallback(async () => {
     try {
-      const [channelRows, jobRows, statsData, webMovieRows] = await Promise.all([
+      const [channelRows, jobRows, statsData, webMovieRows, access] = await Promise.all([
         api.get<CinemaChannel[]>("/api/admin/cinema/channels"),
         api.get<CinemaScanJob[]>("/api/admin/cinema/jobs?limit=50"),
         api.get<CinemaStats>("/api/admin/cinema/stats"),
         api.get<CinemaWebMovie[]>("/api/admin/cinema/movies/web"),
+        api.get<CinemaAccessMeResponse>("/api/admin/cinema/access/me"),
       ]);
       const normalizedChannels = channelRows.map(normalizeChannelPoster);
       setChannels(normalizedChannels);
       setJobs(jobRows);
       setStats(statsData);
       setWebMovies(webMovieRows);
+      setAccessMe(access);
 
       // Nếu có forceSelectedChannelId, dùng nó; ngược lại auto-select
       if (forceSelectedChannelId !== undefined) {
@@ -137,6 +140,7 @@ export function useCinemaPageData({ setError, forceSelectedChannelId }: UseCinem
     selectedChannel,
     selectedChannelDetail,
     stats,
+    accessMe,
     reload: load,
     reloadSelectedChannelDetail: loadSelectedChannelDetail,
   };

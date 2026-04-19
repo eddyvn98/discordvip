@@ -3,6 +3,7 @@ import crypto from "node:crypto";
 import type { Session, SessionData } from "express-session";
 
 import { env } from "../config.js";
+import { prisma } from "../prisma.js";
 import { DiscordService } from "./discord-service.js";
 
 type DiscordTokenResponse = {
@@ -19,6 +20,7 @@ type DiscordUser = {
 type AdminSession = Session &
   Partial<SessionData> & {
     oauthState?: string;
+    oauthMode?: "login" | "request";
     returnTo?: string;
     adminUser?: {
       id: string;
@@ -63,6 +65,7 @@ export class AuthService {
 
     const state = crypto.randomUUID();
     session.oauthState = state;
+    session.oauthMode = "login";
     session.returnTo = this.getSafeReturnTo(returnTo);
 
     const params = new URLSearchParams({
@@ -124,10 +127,74 @@ export class AuthService {
     }
 
     const user = (await userResponse.json()) as DiscordUser;
-    const canAccess = await this.discordService.memberHasAdminAccess(user.id);
+    const mode = session.oauthMode === "request" ? "request" : "login";
+    const canAccessByDiscord = await this.discordService.memberHasAdminAccess(user.id);
+    const approvedPrincipal = await prisma.adminPrincipal.findUnique({
+      where: {
+        platform_platformUserId: {
+          platform: "DISCORD",
+          platformUserId: user.id,
+        },
+      },
+    });
+    const canAccessByPrincipal = Boolean(approvedPrincipal?.isActive);
 
-    if (!canAccess) {
-      throw new Error("Discord account khong co quyen truy cap admin panel.");
+    if (mode === "request") {
+      await prisma.adminPrincipal.upsert({
+        where: {
+          platform_platformUserId: {
+            platform: "DISCORD",
+            platformUserId: user.id,
+          },
+        },
+        update: {
+          displayName: user.username,
+          isActive: approvedPrincipal?.isActive ?? false,
+        },
+        create: {
+          platform: "DISCORD",
+          platformUserId: user.id,
+          displayName: user.username,
+          isActive: false,
+        },
+      });
+
+      delete session.adminUser;
+      delete session.oauthState;
+      delete session.oauthMode;
+
+      return {
+        redirectTo: this.withQuery(this.getSafeReturnTo(session.returnTo), "adminRequest", "submitted_discord"),
+        adminUser: undefined,
+      };
+    }
+
+    if (!canAccessByDiscord && !canAccessByPrincipal) {
+      await prisma.adminPrincipal.upsert({
+        where: {
+          platform_platformUserId: {
+            platform: "DISCORD",
+            platformUserId: user.id,
+          },
+        },
+        update: {
+          displayName: user.username,
+          isActive: false,
+        },
+        create: {
+          platform: "DISCORD",
+          platformUserId: user.id,
+          displayName: user.username,
+          isActive: false,
+        },
+      });
+      delete session.adminUser;
+      delete session.oauthState;
+      delete session.oauthMode;
+      return {
+        redirectTo: this.withQuery(this.getSafeReturnTo(session.returnTo), "adminRequest", "pending_approval"),
+        adminUser: undefined,
+      };
     }
 
     session.adminUser = {
@@ -139,11 +206,73 @@ export class AuthService {
     };
 
     delete session.oauthState;
+    delete session.oauthMode;
 
     return {
       redirectTo: this.getSafeReturnTo(session.returnTo),
       adminUser: session.adminUser,
     };
+  }
+
+  createRequestLoginUrl(session: AdminSession, returnTo?: string) {
+    if (env.DEV_BYPASS_ADMIN_AUTH) {
+      session.returnTo = this.getSafeReturnTo(returnTo);
+      return this.withQuery(session.returnTo, "adminRequest", "dev_mode_no_request");
+    }
+    const state = crypto.randomUUID();
+    session.oauthState = state;
+    session.oauthMode = "request";
+    session.returnTo = this.getSafeReturnTo(returnTo);
+    const params = new URLSearchParams({
+      client_id: env.DISCORD_CLIENT_ID,
+      redirect_uri: env.DISCORD_REDIRECT_URI,
+      response_type: "code",
+      scope: "identify",
+      state,
+    });
+    return `https://discord.com/oauth2/authorize?${params.toString()}`;
+  }
+
+  async createTelegramAdminRequest(input: { telegramUserId: string; displayName?: string | null }) {
+    const telegramUserId = input.telegramUserId.trim();
+    if (!telegramUserId) {
+      throw new Error("telegramUserId is required.");
+    }
+    const existed = await prisma.adminPrincipal.findUnique({
+      where: {
+        platform_platformUserId: {
+          platform: "TELEGRAM",
+          platformUserId: telegramUserId,
+        },
+      },
+    });
+    if (existed?.isActive) {
+      throw new Error("Telegram account da la admin.");
+    }
+    return prisma.adminPrincipal.upsert({
+      where: {
+        platform_platformUserId: {
+          platform: "TELEGRAM",
+          platformUserId: telegramUserId,
+        },
+      },
+      update: {
+        displayName: input.displayName?.trim() || existed?.displayName || null,
+        isActive: false,
+      },
+      create: {
+        platform: "TELEGRAM",
+        platformUserId: telegramUserId,
+        displayName: input.displayName?.trim() || null,
+        isActive: false,
+      },
+    });
+  }
+
+  private withQuery(url: string, key: string, value: string) {
+    const u = new URL(url);
+    u.searchParams.set(key, value);
+    return u.toString();
   }
 
   canUseDebugLogin() {

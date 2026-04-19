@@ -27,6 +27,9 @@ interface CinemaMovieGridProps {
   renamingMovies: Record<string, boolean>;
   deletingMovies: Record<string, boolean>;
   isScanning: boolean;
+  canScan: boolean;
+  canManage: boolean;
+  canDelete: boolean;
 }
 
 const movieGradients = [
@@ -55,6 +58,9 @@ export function CinemaMovieGrid({
   renamingMovies,
   deletingMovies,
   isScanning,
+  canScan,
+  canManage,
+  canDelete,
 }: CinemaMovieGridProps) {
   const [remoteCount, setRemoteCount] = useState<number | null>(null);
   const [loadingRemote, setLoadingRemote] = useState(false);
@@ -129,13 +135,18 @@ export function CinemaMovieGrid({
             </div>
 
             <div className="flex gap-2 shrink-0">
-              <Button variant="outline" onClick={() => onSyncStatus && onSyncStatus(channel.id)} className="gap-2">
+              <Button
+                variant="outline"
+                onClick={() => onSyncStatus && onSyncStatus(channel.id)}
+                className="gap-2"
+                disabled={!canManage}
+              >
                 <RefreshCw size={16} />
                 Check Sync
               </Button>
-              <Button onClick={() => onScan(channel.id)} disabled={isScanning} className="gap-2">
+              <Button onClick={() => onScan(channel.id)} disabled={isScanning || !canScan} className="gap-2">
                 <RefreshCw size={18} className={cn(isScanning && "animate-spin")} />
-                {isScanning ? "Dang chuan bi..." : "Chay quet & Tao preview"}
+                {isScanning ? "Dang chuan bi..." : canScan ? "Chay quet & Tao preview" : "Khong du quyen quet"}
               </Button>
             </div>
           </div>
@@ -157,7 +168,7 @@ export function CinemaMovieGrid({
               <Button
                 variant="outline"
                 className="gap-2"
-                disabled={!!renamingChannels[channel.id]}
+                disabled={!!renamingChannels[channel.id] || !canManage}
                 onClick={() => onRenameChannel(channel.id, channel.displayName, channelNameDraft)}
               >
                 <Pencil size={14} />
@@ -166,7 +177,7 @@ export function CinemaMovieGrid({
               <Button
                 variant="destructive"
                 className="gap-2"
-                disabled={!!deletingChannels[channel.id]}
+                disabled={!!deletingChannels[channel.id] || !canDelete}
                 onClick={() => onDeleteChannel(channel.id, channel.displayName)}
               >
                 <Trash2 size={14} />
@@ -231,7 +242,7 @@ export function CinemaMovieGrid({
                       variant="outline"
                       size="icon"
                       className="w-8 h-8 shrink-0"
-                      disabled={!!renamingMovies[movie.id]}
+                      disabled={!!renamingMovies[movie.id] || !canManage}
                       onClick={() => {
                         const nextTitle = window.prompt("Nhap ten phim moi", movie.title);
                         if (nextTitle === null) return;
@@ -244,7 +255,7 @@ export function CinemaMovieGrid({
                       variant="destructive"
                       size="icon"
                       className="w-8 h-8 shrink-0"
-                      disabled={!!deletingMovies[movie.id]}
+                      disabled={!!deletingMovies[movie.id] || !canDelete}
                       onClick={() => onDeleteMovie(movie.id, movie.title)}
                     >
                       <Trash2 size={14} />

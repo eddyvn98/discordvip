@@ -2,7 +2,6 @@ import type { Express, Request, Response } from "express";
 import { createReadStream } from "node:fs";
 import { stat } from "node:fs/promises";
 import path from "node:path";
-import { Readable } from "node:stream";
 
 import { env } from "../config.js";
 import { CinemaService } from "../services/cinema-service.js";
@@ -15,6 +14,7 @@ import {
   isSameOriginPlaybackRequest,
   makeTelefilmInitData,
   proxyStaticFile,
+  pipeWebReadableToResponse,
   proxyTelefilmStream,
 } from "./cinema-stream-utils.js";
 
@@ -52,7 +52,7 @@ export function registerCinemaRoutes(app: Express, cinemaService: CinemaService,
     if (contentRange) res.setHeader("Content-Range", contentRange);
     if (acceptRanges) res.setHeader("Accept-Ranges", acceptRanges);
     res.setHeader("Cache-Control", "public, max-age=3600");
-    Readable.fromWeb(upstream.body as any).pipe(res);
+    pipeWebReadableToResponse(upstream.body as ReadableStream<Uint8Array>, res);
   };
 
   const renderCinemaWithDevBypass = (req: Request, res: Response) => {
@@ -403,7 +403,7 @@ export function registerCinemaRoutes(app: Express, cinemaService: CinemaService,
         res.setHeader("Accept-Ranges", media.acceptRanges);
       }
       res.setHeader("Cache-Control", media.cacheControl);
-      Readable.fromWeb(media.stream as any).pipe(res);
+      pipeWebReadableToResponse(media.stream as ReadableStream<Uint8Array>, res);
     } catch {
       res.status(404).end();
     }

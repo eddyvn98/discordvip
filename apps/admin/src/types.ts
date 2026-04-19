@@ -215,3 +215,13 @@ export type PlanItem = {
   createdAt: string;
   updatedAt: string;
 };
+
+export type AdminRequestItem = {
+  id: string;
+  platform: "DISCORD" | "TELEGRAM";
+  platformUserId: string;
+  displayName: string | null;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+};

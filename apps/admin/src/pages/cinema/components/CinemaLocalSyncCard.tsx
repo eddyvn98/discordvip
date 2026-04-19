@@ -1,12 +1,12 @@
 import { FolderSync, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { 
-  Card, 
-  CardContent, 
-  CardHeader, 
-  CardTitle, 
-  CardDescription 
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
 } from "@/components/ui/card";
 
 interface CinemaLocalSyncCardProps {
@@ -14,6 +14,7 @@ interface CinemaLocalSyncCardProps {
   onLocalPathChange: (path: string) => void;
   onStartUpload: () => void;
   localUploading: boolean;
+  canUpload: boolean;
 }
 
 export function CinemaLocalSyncCard({
@@ -21,6 +22,7 @@ export function CinemaLocalSyncCard({
   onLocalPathChange,
   onStartUpload,
   localUploading,
+  canUpload,
 }: CinemaLocalSyncCardProps) {
   return (
     <Card className="border-primary/20 bg-primary/5">
@@ -35,7 +37,7 @@ export function CinemaLocalSyncCard({
       </CardHeader>
       <CardContent className="space-y-3">
         <Input
-          placeholder="E:\Movies\New"
+          placeholder="E:\\Movies\\New"
           value={localPath}
           onChange={(e) => onLocalPathChange(e.target.value)}
           className="bg-background/50 h-9"
@@ -43,14 +45,14 @@ export function CinemaLocalSyncCard({
         <Button
           className="w-full h-9"
           onClick={onStartUpload}
-          disabled={localUploading}
+          disabled={localUploading || !canUpload}
         >
           {localUploading ? (
             <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
           ) : (
             <FolderSync className="mr-2 h-4 w-4" />
           )}
-          {localUploading ? "Đang Sync..." : "Bắt đầu Sync"}
+          {localUploading ? "Đang Sync..." : canUpload ? "Bắt đầu Sync" : "Không đủ quyền sync"}
         </Button>
       </CardContent>
     </Card>

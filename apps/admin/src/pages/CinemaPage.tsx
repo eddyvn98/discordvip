@@ -31,6 +31,7 @@ export function CinemaPage() {
     jobs,
     loading,
     stats,
+    accessMe,
     reload,
   } = useCinemaPageData({ setError });
 
@@ -40,7 +41,14 @@ export function CinemaPage() {
     cancelJob,
     retryJob,
     startLocalUpload,
-  } = useCinemaActions({ reload, reloadSelectedChannelDetail: async () => {}, selectedChannelId: null, setMessage, setError });
+  } = useCinemaActions({
+    reload,
+    reloadSelectedChannelDetail: async () => {},
+    selectedChannelId: null,
+    accessCapabilities: accessMe?.capabilities,
+    setMessage,
+    setError,
+  });
 
 
   const fullSourceChannels = useMemo(
@@ -82,6 +90,7 @@ export function CinemaPage() {
           onLocalPathChange={setLocalPath}
           onStartUpload={() => startLocalUpload(localPath)}
           localUploading={localUploading}
+          canUpload={Boolean(accessMe?.capabilities.globalUpload)}
         />
 
         <CinemaRecentJobsTable 

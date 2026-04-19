@@ -54,8 +54,15 @@ export const api = {
       method: "DELETE",
     });
   },
-  loginUrl() {
-    return `${API_BASE_URL}/api/auth/discord/login?returnTo=${encodeURIComponent(window.location.origin)}`;
+  loginUrl(mode: "login" | "request" = "login") {
+    const endpoint = mode === "request" ? "/api/auth/discord/request" : "/api/auth/discord/login";
+    return `${API_BASE_URL}${endpoint}?returnTo=${encodeURIComponent(window.location.href)}`;
+  },
+  requestTelegramAdmin(body: { telegramUserId: string; displayName?: string }) {
+    return request<{ ok: true; request: { id: string } }>("/api/auth/admin-request/telegram", {
+      method: "POST",
+      body: JSON.stringify(body),
+    });
   },
   logout() {
     return request<void>("/api/auth/logout", { method: "POST" });
@@ -65,7 +72,7 @@ export const api = {
       method: "POST",
       body: JSON.stringify({
         secret,
-        returnTo: window.location.origin,
+        returnTo: window.location.href,
       }),
     });
   },

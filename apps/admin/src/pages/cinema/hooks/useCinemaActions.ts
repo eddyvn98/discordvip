@@ -1,10 +1,12 @@
 import { useState } from "react";
 import { api } from "../../../api";
+import type { CinemaAccessCapabilities } from "../cinema.types";
 
 interface UseCinemaActionsProps {
   reload: () => Promise<void>;
   reloadSelectedChannelDetail: (channelId: string | null) => Promise<void>;
   selectedChannelId: string | null;
+  accessCapabilities?: CinemaAccessCapabilities | null;
   setMessage: (msg: string) => void;
   setError: (err: string) => void;
 }
@@ -13,6 +15,7 @@ export function useCinemaActions({
   reload,
   reloadSelectedChannelDetail,
   selectedChannelId,
+  accessCapabilities,
   setMessage,
   setError,
 }: UseCinemaActionsProps) {
@@ -23,6 +26,8 @@ export function useCinemaActions({
   const [deletingChannels, setDeletingChannels] = useState<Record<string, boolean>>({});
   const [renamingMovies, setRenamingMovies] = useState<Record<string, boolean>>({});
   const [deletingMovies, setDeletingMovies] = useState<Record<string, boolean>>({});
+
+  const canUploadGlobally = Boolean(accessCapabilities?.globalUpload);
 
   const ensureStorageAndScan = async (channelId: string) => {
     setRunningByChannel((current) => ({ ...current, [channelId]: true }));
@@ -45,6 +50,10 @@ export function useCinemaActions({
   };
 
   const startLocalUpload = async (localPath: string) => {
+    if (!canUploadGlobally) {
+      setError("Bạn không có quyền chạy sync local.");
+      return;
+    }
     if (!localPath.trim()) {
       setError("Vui long nhap duong dan thu muc.");
       return;

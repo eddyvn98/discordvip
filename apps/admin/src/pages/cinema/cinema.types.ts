@@ -69,3 +69,34 @@ export type CinemaScanJob = {
   lastHeartbeatAt?: string | null;
   failureReason?: string | null;
 };
+
+export type CinemaAccessCapabilities = {
+  globalView: boolean;
+  globalUpload: boolean;
+  globalForward: boolean;
+  globalManage: boolean;
+  globalDelete: boolean;
+};
+
+export type CinemaAccessMeResponse = {
+  actor: {
+    platform: "discord" | "telegram";
+    platformUserId: string;
+    displayName?: string | null;
+  };
+  isSuperAdmin: boolean;
+  mode: "super_admin" | "mapped" | "legacy_admin";
+  capabilities: CinemaAccessCapabilities;
+  principal?: {
+    id: string;
+    permissions: Array<{
+      id: string;
+      channelId: string | null;
+      canView: boolean;
+      canUpload: boolean;
+      canForward: boolean;
+      canManage: boolean;
+      canDelete: boolean;
+    }>;
+  } | null;
+};

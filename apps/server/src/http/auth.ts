@@ -18,6 +18,13 @@ export function registerAuthRoutes(app: Express, authService: AuthService) {
     res.redirect(loginUrl);
   });
 
+  app.get("/api/auth/discord/request", (req: Request, res: Response) => {
+    const returnTo =
+      typeof req.query.returnTo === "string" ? req.query.returnTo : undefined;
+    const loginUrl = authService.createRequestLoginUrl(req.session, returnTo);
+    res.redirect(loginUrl);
+  });
+
   app.get("/api/auth/discord/callback", async (req: Request, res: Response) => {
     try {
       const code = String(req.query.code ?? "");
@@ -41,6 +48,30 @@ export function registerAuthRoutes(app: Express, authService: AuthService) {
     } catch (error) {
       res.status(403).json({
         error: error instanceof Error ? error.message : "Debug login failed",
+      });
+    }
+  });
+
+  app.post("/api/auth/admin-request/telegram", async (req: Request, res: Response) => {
+    try {
+      const body = req.body as { telegramUserId?: string; displayName?: string };
+      const request = await authService.createTelegramAdminRequest({
+        telegramUserId: String(body.telegramUserId ?? ""),
+        displayName: typeof body.displayName === "string" ? body.displayName : undefined,
+      });
+      res.json({
+        ok: true,
+        request: {
+          id: request.id,
+          platform: request.platform,
+          platformUserId: request.platformUserId,
+          displayName: request.displayName,
+          isActive: request.isActive,
+        },
+      });
+    } catch (error) {
+      res.status(400).json({
+        error: error instanceof Error ? error.message : "Cannot create telegram admin request",
       });
     }
   });

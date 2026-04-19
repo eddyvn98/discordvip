@@ -71,15 +71,24 @@ def send_error_response(event, message, error):
     return event.respond(full_text)
 
 
-def get_channels():
+def _actor_headers(actor_user_id: int):
+    return {
+        "x-internal-secret": INTERNAL_SECRET,
+        "x-telegram-user-id": str(actor_user_id),
+    }
+
+
+def get_channels(actor_user_id: int):
     try:
         resp = requests.get(
             f"{BACKEND_URL}/api/admin/cinema/channels",
-            headers={"x-internal-secret": INTERNAL_SECRET},
+            headers=_actor_headers(actor_user_id),
             timeout=10,
         )
         if resp.ok:
             return [c for c in resp.json() if c["role"] == "FULL_SOURCE"]
+        if resp.status_code == 403:
+            return []
     except Exception as e:
         print(f"Error fetching channels: {e}")
     return []
@@ -92,35 +101,44 @@ def cleanup_expired_tokens():
         pending_upload_tokens.pop(key, None)
 
 
-def create_upload_token(chat_id: int, message_ids: list[int]) -> str:
+def create_upload_token(chat_id: int, actor_user_id: int, message_ids: list[int]) -> str:
     cleanup_expired_tokens()
     token = uuid.uuid4().hex[:10]
     pending_upload_tokens[token] = {
         "chat_id": int(chat_id),
+        "actor_user_id": int(actor_user_id),
         "message_ids": [int(x) for x in message_ids if int(x) > 0],
         "created_at": time.time(),
     }
     return token
 
 
-def build_channel_buttons(token: str):
-    channels = get_channels()
+def build_channel_buttons(token: str, actor_user_id: int):
+    channels = get_channels(actor_user_id)
     buttons = [[Button.inline(c["displayName"], data=f"upload_batch:{c['id']}:{token}")] for c in channels]
     buttons.append([Button.inline("🆕 Tao kenh moi va dua phim vao", data=f"create_auto_batch:{token}")])
     return buttons
 
 
-async def send_batch_selector(chat_id: int, message_ids: list[int]):
-    token = create_upload_token(chat_id, message_ids)
+async def send_batch_selector(chat_id: int, actor_user_id: int, message_ids: list[int]):
+    channels = get_channels(actor_user_id)
+    if not channels:
+        await client.send_message(chat_id, "Ban khong co quyen upload/forward phim tren he thong.")
+        return
+
+    token = create_upload_token(chat_id, actor_user_id, message_ids)
     count = len(message_ids)
     text = f"Ban muon them {count} phim nay vao kenh nao?"
-    await client.send_message(chat_id, text, buttons=build_channel_buttons(token))
+    await client.send_message(chat_id, text, buttons=build_channel_buttons(token, actor_user_id))
 
 
-async def create_channel_and_upload_batch(event, token: str, title: str):
+async def create_channel_and_upload_batch(event, actor_user_id: int, token: str, title: str):
     payload = pending_upload_tokens.get(token)
     if not payload:
         await event.respond("Yeu cau da het han, vui long gui lai phim (forward hoac upload truc tiep).")
+        return
+    if int(payload.get("actor_user_id", 0)) != int(actor_user_id):
+        await event.respond("Yeu cau nay thuoc ve admin khac, ban khong the thao tac.")
         return
     message_ids = list(payload["message_ids"])
     title_clean = title.strip()
@@ -132,7 +150,7 @@ async def create_channel_and_upload_batch(event, token: str, title: str):
         create_resp = requests.post(
             f"{BACKEND_URL}/api/admin/cinema/channels/create-auto",
             json={"title": title_clean},
-            headers={"x-internal-secret": INTERNAL_SECRET},
+            headers=_actor_headers(actor_user_id),
             timeout=60,
         )
 
@@ -142,7 +160,7 @@ async def create_channel_and_upload_batch(event, token: str, title: str):
 
         new_channel = create_resp.json()
         await event.respond(f"Da tao kenh: {title_clean}. Dang dua phim vao kenh...")
-        await perform_upload_batch(event, new_channel["id"], message_ids)
+        await perform_upload_batch(event, actor_user_id, new_channel["id"], message_ids)
         pending_upload_tokens.pop(token, None)
     except Exception as e:
         await send_error_response(event, "Loi khi tao kenh tu dong", e)
@@ -156,13 +174,16 @@ async def start(event):
 @client.on(events.NewMessage)
 async def handle_message(event):
     chat_id = int(event.chat_id)
+    sender_id = int(getattr(event, "sender_id", 0) or 0)
+    if sender_id <= 0:
+        return
     text = (event.raw_text or "").strip()
 
     pending = awaiting_channel_name.get(chat_id)
     if pending and text and not text.startswith("/"):
         token = str(pending["token"])
         awaiting_channel_name.pop(chat_id, None)
-        await create_channel_and_upload_batch(event, token, text)
+        await create_channel_and_upload_batch(event, sender_id, token, text)
         return
 
     if not (event.message.video or event.message.document):
@@ -186,17 +207,17 @@ async def handle_message(event):
                 await asyncio.sleep(1.2)
                 ids = sorted(list(batch["ids"]))
                 if ids:
-                    await send_batch_selector(chat_id, ids)
+                    await send_batch_selector(chat_id, sender_id, ids)
             finally:
                 album_batches.pop(key, None)
 
         batch["task"] = asyncio.create_task(flush_album_batch())
         return
 
-    await send_batch_selector(chat_id, [int(event.message.id)])
+    await send_batch_selector(chat_id, sender_id, [int(event.message.id)])
 
 
-async def perform_upload_single_message(event, channel_db_id: str, original_msg_id: int):
+async def perform_upload_single_message(event, actor_user_id: int, channel_db_id: str, original_msg_id: int):
     try:
         source_chat_id: int | None = None
         source_message_id: int | None = None
@@ -219,7 +240,7 @@ async def perform_upload_single_message(event, channel_db_id: str, original_msg_
                 "messageId": str(source_message_id),
                 "targetChannelId": channel_db_id,
             },
-            headers={"x-internal-secret": INTERNAL_SECRET},
+            headers=_actor_headers(actor_user_id),
             timeout=60,
         )
 
@@ -230,7 +251,7 @@ async def perform_upload_single_message(event, channel_db_id: str, original_msg_
         return str(e)
 
 
-async def perform_upload_batch(event, channel_db_id: str, message_ids: list[int]):
+async def perform_upload_batch(event, actor_user_id: int, channel_db_id: str, message_ids: list[int]):
     total = len(message_ids)
     if total == 0:
         await event.respond("Khong tim thay phim hop le trong batch.")
@@ -241,7 +262,7 @@ async def perform_upload_batch(event, channel_db_id: str, message_ids: list[int]
     first_error = ""
     for idx, msg_id in enumerate(message_ids, start=1):
         await progress_msg.edit(f"Dang sao chep phim {idx}/{total} vao kho luu tru...")
-        err = await perform_upload_single_message(event, channel_db_id, int(msg_id))
+        err = await perform_upload_single_message(event, actor_user_id, channel_db_id, int(msg_id))
         if err:
             failed += 1
             if not first_error:
@@ -258,6 +279,10 @@ async def perform_upload_batch(event, channel_db_id: str, message_ids: list[int]
 
 @client.on(events.CallbackQuery(data=re.compile(b"upload_batch:.*")))
 async def callback_upload_batch(event):
+    actor_user_id = int(getattr(event, "sender_id", 0) or 0)
+    if actor_user_id <= 0:
+        await event.edit("Khong xac dinh duoc admin thuc hien thao tac.")
+        return
     data = event.data.decode().split(":")
     channel_db_id = data[1]
     token = data[2]
@@ -265,19 +290,29 @@ async def callback_upload_batch(event):
     if not payload:
         await event.edit("Yeu cau da het han, vui long gui lai phim (forward hoac upload truc tiep).")
         return
+    if int(payload.get("actor_user_id", 0)) != actor_user_id:
+        await event.edit("Yeu cau nay thuoc ve admin khac, ban khong the thao tac.")
+        return
 
     message_ids = list(payload["message_ids"])
-    await perform_upload_batch(event, channel_db_id, message_ids)
+    await perform_upload_batch(event, actor_user_id, channel_db_id, message_ids)
     pending_upload_tokens.pop(token, None)
 
 
 @client.on(events.CallbackQuery(data=re.compile(b"create_auto_batch:.*")))
 async def callback_create_auto_batch(event):
+    actor_user_id = int(getattr(event, "sender_id", 0) or 0)
+    if actor_user_id <= 0:
+        await event.edit("Khong xac dinh duoc admin thuc hien thao tac.")
+        return
     data = event.data.decode().split(":")
     token = data[1]
     payload = pending_upload_tokens.get(token)
     if not payload:
         await event.edit("Yeu cau da het han, vui long gui lai phim (forward hoac upload truc tiep).")
+        return
+    if int(payload.get("actor_user_id", 0)) != actor_user_id:
+        await event.edit("Yeu cau nay thuoc ve admin khac, ban khong the thao tac.")
         return
 
     chat_id = int(payload["chat_id"])

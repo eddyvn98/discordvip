@@ -32,6 +32,7 @@ export function CinemaChannelsPage() {
     loading,
     selectedChannelDetail,
     loadingChannelDetail,
+    accessMe,
     reload,
     reloadSelectedChannelDetail,
   } = useCinemaPageData({ setError, forceSelectedChannelId: selectedChannelId });
@@ -48,7 +49,32 @@ export function CinemaChannelsPage() {
     deleteChannel,
     renameMovie,
     deleteMovie,
-  } = useCinemaActions({ reload, reloadSelectedChannelDetail, selectedChannelId, setMessage, setError });
+  } = useCinemaActions({
+    reload,
+    reloadSelectedChannelDetail,
+    selectedChannelId,
+    accessCapabilities: accessMe?.capabilities,
+    setMessage,
+    setError,
+  });
+
+  const canDoChannelAction = (
+    action: "view" | "upload" | "forward" | "manage" | "delete",
+    channelId: string,
+  ) => {
+    if (!accessMe) return true;
+    if (accessMe.isSuperAdmin || accessMe.mode === "legacy_admin") return true;
+    const permissions = accessMe.principal?.permissions ?? [];
+    return permissions.some((permission) => {
+      const matched = permission.channelId === null || permission.channelId === channelId;
+      if (!matched) return false;
+      if (action === "view") return permission.canView;
+      if (action === "upload") return permission.canUpload;
+      if (action === "forward") return permission.canForward;
+      if (action === "manage") return permission.canManage;
+      return permission.canDelete;
+    });
+  };
 
   const fullSourceChannels = useMemo(
     () => channels.filter((channel) => channel.isEnabled && channel.role === "FULL_SOURCE"),
@@ -104,6 +130,9 @@ export function CinemaChannelsPage() {
             renamingMovies={renamingMovies}
             deletingMovies={deletingMovies}
             isScanning={!!runningByChannel[selectedChannel.id]}
+            canScan={canDoChannelAction("upload", selectedChannel.id)}
+            canManage={canDoChannelAction("manage", selectedChannel.id)}
+            canDelete={canDoChannelAction("delete", selectedChannel.id)}
           />
         </div>
       ) : (
