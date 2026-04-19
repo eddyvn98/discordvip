@@ -12,7 +12,8 @@ export const jsChunk1 = `
     };
     function getSideNavButtons(){ return [...document.querySelectorAll('[data-side-view]')]; }
     function syncSideNavActive(){
-      const current=state.currentChannel?'channel':state.currentView;
+      let current=state.currentChannel?'channel':state.currentView;
+      if(current==='channels') current='home';
       getSideNavButtons().forEach((btn)=>{
         const active=(btn.getAttribute('data-side-view')||'')===current;
         btn.classList.toggle('active',active);

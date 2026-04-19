@@ -318,8 +318,13 @@ export const jsChunk6 = `
 
             if (menuBtn) {
                 menuBtn.addEventListener('click', () => {
-                    if (isSidebarOpen()) closeSidebar();
-                    else openSidebar();
+                    const isDesktop = window.innerWidth >= 1180;
+                    if (isDesktop) {
+                        document.body.classList.toggle('sidebar-collapsed');
+                    } else {
+                        if (isSidebarOpen()) closeSidebar();
+                        else openSidebar();
+                    }
                 });
             }
             if (sideCloseBtn) sideCloseBtn.addEventListener('click', closeSidebar);

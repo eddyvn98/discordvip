@@ -112,12 +112,12 @@ export const getCinemaHtmlBody = () => `
           <h3 id="playerTitle"></h3>
           <p id="playerDesc" class="status"></p>
         </div>
-      </div>
-      <div class="player-nav">
-        <button id="playerFavoriteBtn" class="btn player-favorite-btn" type="button">♡ Yêu thích</button>
-        <button id="prevItemBtn" class="btn">Trước</button>
-        <button id="nextItemBtn" class="btn">Sau</button>
-        <span id="fullscreenFabBtn" class="fullscreen-fab hide" aria-label="Toàn màn hình">FS</span>
+        <div class="player-nav">
+          <button id="playerFavoriteBtn" class="btn player-favorite-btn" type="button">♡ Yêu thích</button>
+          <button id="prevItemBtn" class="btn">Trước</button>
+          <button id="nextItemBtn" class="btn">Sau</button>
+          <span id="fullscreenFabBtn" class="fullscreen-fab hide" aria-label="Toàn màn hình">FS</span>
+        </div>
       </div>
       <div class="related">
         <section class="player-side-limit">

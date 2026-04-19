@@ -309,7 +309,7 @@ export const cssChunk1 = `
     }
     .player{border:1px solid var(--line);background:var(--panel);border-radius:var(--radius);padding:10px}
     .player-media{position:relative;overflow:hidden;border-radius:12px;user-select:none;-webkit-user-select:none;background:#000;aspect-ratio:9/16;transition:transform .2s ease,opacity .2s ease}
-    .player-media.sticky-player{position:sticky;top:58px;z-index:30}
+    .player-media.sticky-player, .sticky-player{position:sticky;top:66px;z-index:50}
     .player-media.pip-active{
       position:fixed!important;
       z-index:10010!important;
@@ -468,7 +468,7 @@ export const cssChunk1 = `
       .top-link{font-size:14px}
       .top-actions{display:flex}
       .header-search-btn{display:none}
-      .sidebar-toggle-btn{display:none}
+      .sidebar-toggle-btn{display:inline-flex!important}
       .status{
         max-width:230px;
         font-size:13px;
@@ -488,15 +488,13 @@ export const cssChunk1 = `
         bottom:0;
         width:192px;
         border-right:1px solid rgba(63,70,84,.35);
-        background:rgba(7,10,16,.82);
+        background:#0f0f11;
         padding:82px 10px 14px;
         flex-direction:column;
         gap:12px;
       }
       .side-head{
-        display:flex;
-        align-items:center;
-        gap:10px;
+        display:none!important;
       }
       .side-collapse-btn{
         width:32px;
@@ -510,13 +508,6 @@ export const cssChunk1 = `
         display:none;
         align-items:center;
         justify-content:center;
-      }
-      .side-head-label{
-        font-size:12px;
-        color:#93a0b7;
-        letter-spacing:.1em;
-        text-transform:uppercase;
-        font-weight:700;
       }
       .sidebar-backdrop{display:none!important}
       .side-tier-box{
@@ -644,7 +635,10 @@ export const cssChunk1 = `
         border-left:none;
       }
       body.sidebar-collapsed .wrap{
-        padding-left:88px;
+        padding-left:28px;
+      }
+      body.sidebar-collapsed .desktop-side-card{
+        transform:translateX(-104%);
       }
       .crumb{
         margin-top:0;
@@ -722,26 +716,35 @@ export const cssChunk1 = `
       body.player-mode .wrap{
         padding:84px 28px 120px 208px;
       }
+      body.player-mode.sidebar-collapsed .wrap{
+        padding-left:28px;
+      }
+      body.player-mode .desktop-side-card{
+        transform:translateX(0);
+        transition:transform .2s ease;
+      }
+      body.player-mode.sidebar-collapsed .desktop-side-card {
+        transform:translateX(-104%);
+      }
       body.player-mode #playerWrap{
         display:grid!important;
         grid-template-columns:minmax(0,1fr) 360px;
-        column-gap:24px;
-        row-gap:10px;
+        column-gap:32px;
+        row-gap:0;
         align-items:start;
       }
-      body.player-mode #playerMedia,
-      body.player-mode #playerTitle,
-      body.player-mode #playerDesc,
-      body.player-mode .player-nav{
+      body.player-mode #playerStickyHeader,
+      body.player-mode .player-nav {
         grid-column:1;
       }
       body.player-mode #playerMedia{
         aspect-ratio:16/9;
-        border-radius:28px;
-        border:1px solid rgba(147,158,182,.2);
-        box-shadow:0 26px 56px rgba(0,0,0,.36);
-        top:86px;
-        max-height:calc(100dvh - 128px);
+        border-radius:22px;
+        border:1px solid rgba(147,158,182,.18);
+        box-shadow:0 22px 48px rgba(0,0,0,0.4);
+        position:relative;
+        top:0;
+        max-height:calc(100dvh - 160px);
       }
       body.player-mode #playerMedia video,
       body.player-mode #playerMedia .viewer-image{
@@ -749,22 +752,30 @@ export const cssChunk1 = `
         object-fit:contain;
       }
       body.player-mode #playerTitle{
-        margin:8px 0 0;
-        font-size:36px;
-        line-height:.97;
-        letter-spacing:-.02em;
-        text-transform:uppercase;
+        margin:22px 0 6px;
+        font-size:24px;
+        line-height:1.2;
+        letter-spacing:-.015em;
+        text-transform:none;
+        font-weight:700;
+        color:var(--text);
       }
       body.player-mode #playerDesc{
-        margin-top:6px;
+        margin-top:2px;
+        margin-bottom:12px;
         padding:0;
         border:none;
         border-radius:0;
         background:none;
-        color:#8f98ab;
+        color:#a4acba;
         text-transform:none;
         letter-spacing:.01em;
-        font-size:13px;
+        font-size:14px;
+      }
+      body.player-mode .player-nav {
+        margin-top:0;
+        padding-top:16px;
+        border-top:1px solid rgba(255,255,255,0.08);
       }
       body.player-mode .related{
         grid-column:2;

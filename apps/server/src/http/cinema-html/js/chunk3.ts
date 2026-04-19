@@ -274,10 +274,39 @@ export const jsChunk3 = `
       const sectionA=rows.slice(0,5);
       const sectionB=(rows.length>5?rows.slice(5):rows.slice(0,5)).slice(0,5);
       const ordered=sectionA.concat(sectionB);
-      const chips=['M\u1edbi nh\u1ea5t','Th\u1ecbnh h\u00e0nh','\u0110\u00e3 xem','Y\u00eau th\u00edch','VIP'];
-      dom.grid.innerHTML='<section class="home-block"><div class="home-head"><div><div class="home-kicker">K\u00eanh phim</div><h3 class="home-title">Kh\u00e1m ph\u00e1 th\u01b0 vi\u1ec7n</h3></div><button class="home-link" type="button" data-side-view-trigger="latest">M\u1edf phim m\u1edbi</button></div><div class="home-cards">'+sectionA.map((x)=>cardHtml(x.displayName,x.itemCount+' phim',x.posterUrl,'VIP Full',null,null)).join('')+'</div></section><section class="home-block home-trending"><div class="home-head"><div><h3 class="home-title solo">L\u1ed1i t\u1eaft th\u01b0 vi\u1ec7n</h3></div></div><div class="home-chips">'+chips.map((x)=>'<span class="home-chip">'+x+'</span>').join('')+'</div><div class="home-cards">'+sectionB.map((x)=>cardHtml(x.displayName,x.itemCount+' phim',x.posterUrl,'VIP Full',null,null)).join('')+'</div></section>';
+      const chips=[{t:'M\u1edbi nh\u1ea5t',v:'latest'},{t:'Th\u1ecbnh h\u00e0nh',v:'trending'},{t:'\u0110\u00e3 xem',v:'watched'},{t:'Y\u00eau th\u00edch',v:'favorites'}];
+      dom.grid.innerHTML='<section class="home-block"><div class="home-head"><div><div class="home-kicker">K\u00eanh phim</div><h3 class="home-title">Kh\u00e1m ph\u00e1 k\u00eanh</h3></div><button class="home-link" type="button" data-side-view-trigger="channels">m\u1edf ra c\u00e1c k\u00eanh</button></div><div class="home-cards">'+sectionA.map((x)=>cardHtml(x.displayName,x.itemCount+' phim',x.posterUrl,'VIP Full',null,null)).join('')+'</div></section><section class="home-block home-trending"><div class="home-head"><div><h3 class="home-title solo">L\u1ed1i t\u1eaft k\u00eanh</h3></div><button class="home-link" type="button" data-side-view-trigger="channels">m\u1edf r\u1ed9ng</button></div><div class="home-chips">'+chips.map((x)=>'<button class="home-chip" data-view="'+x.v+'">'+x.t+'</button>').join('')+'</div><div class="home-cards">'+sectionB.map((x)=>cardHtml(x.displayName,x.itemCount+' phim',x.posterUrl,'VIP Full',null,null)).join('')+'</div></section>';
       bindCardClicks(dom.grid,(idx)=>openChannel(ordered[idx]));
-      [...dom.grid.querySelectorAll('[data-side-view-trigger]')].forEach((btn)=>btn.addEventListener('click',()=>openLibraryView(btn.getAttribute('data-side-view-trigger')||'latest')));
+      [...dom.grid.querySelectorAll('[data-side-view-trigger]')].forEach((btn)=>btn.addEventListener('click',()=>{
+        const view=btn.getAttribute('data-side-view-trigger')||'latest';
+        if(view==='channels') renderAllChannels(); else openLibraryView(view);
+      }));
+      [...dom.grid.querySelectorAll('.home-chip')].forEach((btn)=>btn.addEventListener('click',()=>{
+        const view=btn.getAttribute('data-view');
+        if(view) openLibraryView(view);
+      }));
+    }
+    function renderAllChannels(){
+      state.currentView='channels'; state.currentChannel=null; state.feedMode=false;
+      document.body.classList.remove('feed-mode','feed-controls-visible');
+      dom.navFeedBtn.classList.remove('active');
+      closeFeedDrawer();
+      setPlayerMode(false);
+      dom.itemControls.classList.add('hide');
+      dom.crumb.textContent='Home > T\u1ea5t c\u1ea3 k\u00eanh';
+      dom.hero.innerHTML='<h3 style="margin:0">T\u1ea5t c\u1ea3 k\u00eanh</h3><p class="status" style="margin:8px 0 0">Kh\u00e1m ph\u00e1 to\u00e0n b\u1ed9 k\u00eanh phim c\u1ee7a ch\u00fang t\u00f4i.</p>';
+      dom.hero.classList.remove('hide');
+      resetPlayer();
+      dom.back.classList.remove('hide');
+      dom.backFab.classList.remove('hide');
+      dom.grid.classList.remove('hide','home-layout');
+      dom.loadMoreWrap.classList.add('hide');
+      syncSideNavActive();
+      const rows=filtered(state.channels,(x)=>x.displayName);
+      if(!rows.length){dom.grid.innerHTML=''; showState('Ch\u01b0a c\u00f3 k\u00eanh phim n\u00e0o.',false); return;}
+      hideState();
+      dom.grid.innerHTML=rows.map((x)=>cardHtml(x.displayName,x.itemCount+' phim',x.posterUrl,'VIP Full',null,null)).join('');
+      bindCardClicks(dom.grid,(idx)=>openChannel(rows[idx]));
     }
     function renderChannelItems(){
       renderRowsGrid(state.channelRows,'K\u00eanh n\u00e0y ch\u01b0a c\u00f3 phim.');

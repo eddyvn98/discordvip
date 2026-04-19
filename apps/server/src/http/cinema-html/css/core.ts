@@ -69,7 +69,7 @@ export const coreCss = `
     .player{border:1px solid var(--line);background:var(--panel);border-radius:var(--radius);padding:12px}
     .player-media{position:relative;overflow:hidden;border-radius:10px;user-select:none;-webkit-user-select:none;background:#000;aspect-ratio:16/9;transition:transform .2s ease,opacity .2s ease}
     .sticky-player{position:sticky;top:0;z-index:30;background:var(--bg);transition:padding .2s ease}
-    .player-info-sticky{padding:12px 0 8px}
+    .player-info-sticky{padding:0 0 12px}
     #playerTitle{margin:0;font-size:18px;font-weight:700;line-height:1.4}
     #playerDesc{margin:4px 0 0;font-size:13px;color:var(--muted)}
     
