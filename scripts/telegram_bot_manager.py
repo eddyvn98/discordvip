@@ -78,19 +78,26 @@ def _actor_headers(actor_user_id: int):
     }
 
 
-def get_channels(actor_user_id: int):
+def get_admin_profile(actor_user_id: int):
     try:
         resp = requests.get(
-            f"{BACKEND_URL}/api/admin/cinema/channels",
+            f"{BACKEND_URL}/api/admin/cinema/access/telegram/me",
             headers=_actor_headers(actor_user_id),
             timeout=10,
         )
         if resp.ok:
-            return [c for c in resp.json() if c["role"] == "FULL_SOURCE"]
-        if resp.status_code == 403:
-            return []
+            return resp.json()
+        if resp.status_code != 403:
+            print(f"Error fetching admin profile ({resp.status_code}): {resp.text}")
     except Exception as e:
-        print(f"Error fetching channels: {e}")
+        print(f"Error fetching admin profile: {e}")
+    return None
+
+
+def get_channels(actor_user_id: int):
+    profile = get_admin_profile(actor_user_id)
+    if profile:
+        return profile.get("uploadChannels") or []
     return []
 
 
@@ -121,15 +128,25 @@ def build_channel_buttons(token: str, actor_user_id: int):
 
 
 async def send_batch_selector(chat_id: int, actor_user_id: int, message_ids: list[int]):
-    channels = get_channels(actor_user_id)
-    if not channels:
-        await client.send_message(chat_id, "Ban khong co quyen upload/forward phim tren he thong.")
+    profile = get_admin_profile(actor_user_id)
+    is_super = profile and profile.get("isSuperAdmin")
+    channels = profile.get("uploadChannels") if profile else []
+
+    if not channels and not is_super:
+        await client.send_message(chat_id, "Ban khong co quyen upload/forward phim tren he thong. Hay dung lenh /request_access de dang ky.")
         return
 
     token = create_upload_token(chat_id, actor_user_id, message_ids)
     count = len(message_ids)
     text = f"Ban muon them {count} phim nay vao kenh nao?"
-    await client.send_message(chat_id, text, buttons=build_channel_buttons(token, actor_user_id))
+    
+
+    buttons = [[Button.inline(c["displayName"], data=f"upload_batch:{c['id']}:{token}")] for c in channels]
+    # super admin or manage capability should allow creating new channel
+    # for simplicity, always show create button for anyone who reached here
+    buttons.append([Button.inline("🆕 Tao kenh moi va dua phim vao", data=f"create_auto_batch:{token}")])
+    
+    await client.send_message(chat_id, text, buttons=buttons)
 
 
 async def create_channel_and_upload_batch(event, actor_user_id: int, token: str, title: str):
@@ -166,9 +183,112 @@ async def create_channel_and_upload_batch(event, actor_user_id: int, token: str,
         await send_error_response(event, "Loi khi tao kenh tu dong", e)
 
 
-@client.on(events.NewMessage(pattern="/start"))
+@client.on(events.NewMessage(pattern=r"(?i)^/start(@\w+)?$"))
 async def start(event):
     await event.respond("Chao mung Admin! Hay gui phim vao day (forward hoac upload truc tiep) de toi xu ly.")
+
+
+@client.on(events.NewMessage(pattern=r"(?i)^/request_access(@\w+)?"))
+async def handle_request_access(event):
+    sender_id = int(getattr(event, "sender_id", 0) or 0)
+    if sender_id <= 0:
+        return
+    
+    sender = await event.get_sender()
+    display_name = getattr(sender, "first_name", "") or ""
+    last_name = getattr(sender, "last_name", "") or ""
+    if last_name:
+        display_name = f"{display_name} {last_name}".strip()
+    
+    # Check if they already have access
+    profile = get_admin_profile(sender_id)
+    if profile and (profile.get("isSuperAdmin") or profile.get("uploadChannels")):
+        await event.respond("Ban da co quyen truy cap he thong roi.")
+        return
+
+    try:
+        resp = requests.post(
+            f"{BACKEND_URL}/api/auth/admin-request/telegram",
+            json={"telegramUserId": str(sender_id), "displayName": display_name},
+            timeout=10
+        )
+        if resp.ok:
+            await event.respond(f"Da gui yeu cau truy cap cho {display_name} (ID: {sender_id}). Vui long cho Super Admin phe duyet.")
+        else:
+            await event.respond(f"Loi khi gui yeu cau: {resp.text}")
+    except Exception as e:
+        await event.respond(f"Loi ket noi server: {e}")
+
+
+@client.on(events.NewMessage(pattern=r"(?i)^/authorize(@\w+)?$"))
+async def handle_authorize(event):
+    # Check if current user is super admin
+    actor_user_id = int(getattr(event, "sender_id", 0) or 0)
+    profile = get_admin_profile(actor_user_id)
+    if not profile or not profile.get("isSuperAdmin"):
+        await event.respond("Chi Super Admin moi co quyen su dung lenh nay.")
+        return
+
+    # Check if it's a reply
+    if not event.is_reply:
+        await event.respond("Vui long reply (tra loi) vao tin nhan cua nguoi ban muon cap quyen bang lenh /authorize.")
+        return
+
+    reply_msg = await event.get_reply_message()
+    target_user_id = int(getattr(reply_msg, "sender_id", 0) or 0)
+    if target_user_id <= 0:
+        await event.respond("Khong tim thay ID nguoi dung tu tin nhan nay.")
+        return
+
+    target_sender = await reply_msg.get_sender()
+    target_name = getattr(target_sender, "first_name", "") or ""
+    target_last = getattr(target_sender, "last_name", "") or ""
+    if target_last:
+        target_name = f"{target_name} {target_last}".strip()
+    if not target_name:
+        target_name = f"User {target_user_id}"
+
+    try:
+        # 1. Upsert admin (activate)
+        upsert_resp = requests.post(
+            f"{BACKEND_URL}/api/admin/cinema/access/admins/upsert",
+            headers=_actor_headers(actor_user_id),
+            json={
+                "platform": "telegram",
+                "platformUserId": str(target_user_id),
+                "displayName": target_name,
+                "isActive": True
+            },
+            timeout=10
+        )
+        if not upsert_resp.ok:
+            await event.respond(f"Loi khi kich hoat admin: {upsert_resp.text}")
+            return
+        
+        admin_data = upsert_resp.json()
+        admin_id = admin_data["id"]
+
+        # 2. Grant global permissions (view, upload, forward)
+        perm_resp = requests.post(
+            f"{BACKEND_URL}/api/admin/cinema/access/permissions/upsert",
+            headers=_actor_headers(actor_user_id),
+            json={
+                "adminId": admin_id,
+                "channelId": None, # Global
+                "canView": True,
+                "canUpload": True,
+                "canForward": True,
+                "canManage": False
+            },
+            timeout=10
+        )
+        if not perm_resp.ok:
+            await event.respond(f"Da kich hoat admin nhung loi khi cap quyen: {perm_resp.text}")
+            return
+
+        await event.respond(f"Thanh cong! Da cap quyen Admin (View, Upload, Forward) cho {target_name} (ID: {target_user_id}).")
+    except Exception as e:
+        await event.respond(f"Loi he thong khi cap quyen: {e}")
 
 
 @client.on(events.NewMessage)
@@ -178,6 +298,8 @@ async def handle_message(event):
     if sender_id <= 0:
         return
     text = (event.raw_text or "").strip()
+    if text.startswith("/"):
+        return
 
     pending = awaiting_channel_name.get(chat_id)
     if pending and text and not text.startswith("/"):

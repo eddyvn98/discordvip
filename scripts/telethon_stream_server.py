@@ -242,9 +242,27 @@ async def stream_by_message(
         start, end, status_code = parse_range(range_header, size)
     length = end - start + 1
 
+    # Telegram requires offset to be multiple of 4096 bytes (4KB)
+    # and limit (chunk_size) to be multiple of 4KB, max 512KB.
+    # 128KB is the safest standard limit for GetFileRequest.
+    ALIGNMENT = 4096
+    CHUNK_SIZE = 128 * 1024  # 128 KB
+    
+    aligned_start = (start // ALIGNMENT) * ALIGNMENT
+    skip_bytes = start - aligned_start
+
     async def iterator() -> AsyncGenerator[bytes, None]:
         remain = length
-        async for chunk in tg.iter_download(message.media, offset=start, chunk_size=512 * 1024):
+        first_chunk = True
+        async for chunk in tg.iter_download(message.media, offset=aligned_start, chunk_size=CHUNK_SIZE):
+            if first_chunk:
+                first_chunk = False
+                if skip_bytes > 0:
+                    chunk = chunk[skip_bytes:]
+            
+            if not chunk:
+                continue
+                
             if remain <= 0:
                 break
             if len(chunk) > remain:
