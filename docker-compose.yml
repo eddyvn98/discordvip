@@ -44,6 +44,9 @@ services:
     environment:
       CINEMA_PUBLIC_BASE_URL_FILE: /runtime/cinema_public_base_url.txt
       CINEMA_PUBLIC_BASE_URL_LOG_FILE: /runtime/cloudflared.log
+      TELETHON_BACKEND_URL: http://telethon-stream:8090
+      TELEFILM_BACKEND_URL: http://telethon-stream:9999
+      CINEMA_MEDIA_ROOT: /app/storage/cinema-media
     depends_on:
       - postgres
     volumes:
@@ -70,6 +73,8 @@ services:
     volumes:
       - ./:/app
       - ./user_session.session:/data/user_session.session
+    ports:
+      - "127.0.0.1:8090:8090"
     expose:
       - "8090"
     cpus: 0.75

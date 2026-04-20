@@ -6,6 +6,7 @@ import path from "node:path";
 import { env } from "../config.js";
 import { CinemaService } from "../services/cinema-service.js";
 import { OrderService } from "../services/order-service.js";
+import { logger } from "../lib/logger.js";
 import { requireCinemaSession } from "./cinema-auth.js";
 import { renderEntryBootstrapHtml } from "./cinema-bootstrap-html.js";
 import { renderCinemaHtml } from "./cinema-html.js";
@@ -35,11 +36,19 @@ export function registerCinemaRoutes(app: Express, cinemaService: CinemaService,
       return;
     }
     const range = String(req.headers.range ?? "");
-    const upstream = await fetch(`http://telethon-stream:8090/stream/${source.channelId}/${source.messageId}`, {
+    const upstream = await fetch(`${env.TELETHON_BACKEND_URL}/stream/${encodeURIComponent(source.channelId)}/${encodeURIComponent(source.messageId)}`, {
       headers: range ? { range } : undefined,
     });
+
     if (!upstream.ok || !upstream.body) {
-      res.status(upstream.status || 502).end();
+      const errorText = await upstream.text().catch(() => "Unknown error");
+      logger.error("Telethon proxy upstream error", {
+        itemId,
+        status: upstream.status,
+        statusText: upstream.statusText,
+        error: errorText,
+      });
+      res.status(upstream.status).end();
       return;
     }
     res.status(upstream.status);
@@ -404,7 +413,8 @@ export function registerCinemaRoutes(app: Express, cinemaService: CinemaService,
       }
       res.setHeader("Cache-Control", media.cacheControl);
       pipeWebReadableToResponse(media.stream as ReadableStream<Uint8Array>, res);
-    } catch {
+    } catch (err) {
+      console.error("[Telegram Media Error]", err);
       res.status(404).end();
     }
   });

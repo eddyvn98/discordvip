@@ -114,7 +114,7 @@ export const cssChunk2 = `
       body.player-mode .player{
         padding:0;
       }
-      body.player-mode #playerMedia.sticky-player{
+      body.player-mode #playerStickyHeader.sticky-player{
         margin:0;
         border-radius:14px;
         border:1px solid rgba(126,138,158,.28);
@@ -122,36 +122,58 @@ export const cssChunk2 = `
         max-width:430px;
         margin-left:auto;
         margin-right:auto;
-        aspect-ratio:9/16;
-        max-height:62vh;
-        position:relative;
-        top:auto;
+        position:sticky;
+        top:66px;
+        z-index:50;
+        background:var(--bg);
+        display:flex;
+        flex-direction:column;
+        overflow:hidden;
       }
-      body.player-mode #playerMedia.sticky-player video,
-      body.player-mode #playerMedia.sticky-player .viewer-image{
-        border-radius:14px;
-        object-fit:contain;
+      body.player-mode #playerMedia{
+        width:100%;
+        aspect-ratio:16/9;
+        max-height:33.3vh;
         background:#000;
+      }
+      body.player-mode #playerMedia video,
+      body.player-mode #playerMedia .viewer-image{
+        border-radius:0;
+        object-fit:contain!important;
+        background:#000;
+        width:100%;
+        height:100%;
+        max-height:33.3vh;
       }
       body.player-mode #playerTitle,
       body.player-mode #playerDesc{
-        padding-left:2px;
-        padding-right:2px;
+        padding-left:12px;
+        padding-right:12px;
       }
       body.player-mode #playerTitle{
-        margin-top:12px;
-        font-size:34px;
-        line-height:.95;
-        letter-spacing:-.03em;
+        margin-top:8px;
+        font-size:20px;
+        line-height:1.2;
+        letter-spacing:-.01em;
+        font-weight:700;
+        color:#fff;
       }
       body.player-mode #playerDesc{
-        margin-top:4px;
+        margin-top:2px;
         font-size:11px;
+        color:rgba(126,138,158,.8);
+        line-height:1.3;
+      }
+      body.player-mode .player-nav{
+        margin-top:10px;
+        padding:0 12px 12px;
+        display:flex!important;
+        gap:8px;
+        flex-wrap:wrap;
       }
       body.player-mode .related{
         margin-top:14px;
-        padding-left:0;
-        padding-right:0;
+        padding:0 10px;
       }
       body.player-mode .bottom-nav{display:none!important}
       body.player-mode .related .player-side-limit{

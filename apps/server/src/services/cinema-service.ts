@@ -1,4 +1,5 @@
 import type { Request } from "express";
+import { env } from "../config.js";
 import { prisma } from "../prisma.js";
 import { MembershipService } from "./membership-service.js";
 import { CinemaAuthService } from "./cinema/cinema-auth-service.js";
@@ -79,7 +80,7 @@ export class CinemaService {
     targetChannelId: string;
   }) {
     // 1. Get Admin info
-    const meRes = await fetch("http://telethon-stream:8090/me");
+    const meRes = await fetch(`${env.TELETHON_BACKEND_URL}/me`);
     if (!meRes.ok) throw new Error("Failed to get Admin user info");
     const me = (await meRes.json()) as { id: number };
 
@@ -88,7 +89,7 @@ export class CinemaService {
     if (!channel || channel.platform !== "TELEGRAM") throw new Error("Target channel not found");
 
     // 3. Command Telethon Admin to COPY the message
-    const copyRes = await fetch("http://telethon-stream:8090/copy_message", {
+    const copyRes = await fetch(`${env.TELETHON_BACKEND_URL}/copy_message`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({

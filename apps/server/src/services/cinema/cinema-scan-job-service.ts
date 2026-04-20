@@ -2,6 +2,7 @@ import { spawn } from "node:child_process";
 import { promises as fs } from "node:fs";
 import path from "node:path";
 import { CinemaAssetKind, CinemaChannelRole, CinemaScanJobStatus, CinemaSourcePlatform } from "@prisma/client";
+import { env } from "../../config.js";
 import { prisma } from "../../prisma.js";
 import { callTelegramApi, resolveContainerPath } from "./cinema-utils.js";
 
@@ -68,7 +69,7 @@ export class CinemaScanJobService {
 
       // 1. Check if we already have a channel for this path
       const existingChannel = await this.channelService.findByLocalPath(absolutePath);
-      
+
       const pythonArgs = [
         path.join(process.cwd(), "../../scripts", "telegram_large_uploader.py"),
         "--folder", absolutePath,
@@ -115,8 +116,8 @@ export class CinemaScanJobService {
       // 1. Create/Update CinemaChannel with localPath mapping
       const channel = await prisma.cinemaChannel.upsert({
         where: { platform_sourceChannelId: { platform: CinemaSourcePlatform.TELEGRAM, sourceChannelId: result.channelId } },
-        update: { 
-          displayName: result.channelTitle, 
+        update: {
+          displayName: result.channelTitle,
           isEnabled: true,
           localPath: absolutePath, // Ensure mapping is saved
           remoteStatus: "ACTIVE"
@@ -269,7 +270,7 @@ export class CinemaScanJobService {
               /^-100\d+$/u.test(sourceChannelId) &&
               /^\d+$/u.test(sourceMessageId)
             ) {
-              sourceUrl = `http://telethon-stream:8090/stream/${encodeURIComponent(sourceChannelId)}/${encodeURIComponent(sourceMessageId)}`;
+              sourceUrl = `${env.TELETHON_BACKEND_URL}/stream/${encodeURIComponent(sourceChannelId)}/${encodeURIComponent(sourceMessageId)}`;
             }
           }
         }

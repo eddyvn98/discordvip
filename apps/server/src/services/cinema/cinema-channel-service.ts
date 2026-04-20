@@ -252,8 +252,10 @@ export class CinemaChannelService {
     try {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 8000);
-      const res = await fetch(`http://telethon-stream:8090/check_channel/${channel.sourceChannelId}`, {
-        method: "GET",
+      const res = await fetch(`${env.TELETHON_BACKEND_URL}/check_channel/${channel.sourceChannelId}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ platform: channel.platform }),
         signal: controller.signal,
       });
       clearTimeout(timeoutId);
@@ -291,7 +293,7 @@ export class CinemaChannelService {
       const botId = process.env.TELEGRAM_BOT_TOKEN?.split(":")[0];
       if (!botId) throw new Error("TELEGRAM_BOT_TOKEN is missing in server env");
 
-      const res = await fetch(`http://telethon-stream:8090/setup_bot_admin`, {
+      const res = await fetch(`${env.TELETHON_BACKEND_URL}/setup_bot_admin`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -314,7 +316,7 @@ export class CinemaChannelService {
   }
 
   async createNewTelegramChannel(title: string) {
-    const res = await fetch(`http://telethon-stream:8090/create_channel`, {
+    const res = await fetch(`${env.TELETHON_BACKEND_URL}/create_channel`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ title }),

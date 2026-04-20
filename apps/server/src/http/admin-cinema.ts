@@ -1,6 +1,7 @@
 import type { Express, NextFunction, Request, Response } from "express";
 import { z } from "zod";
 
+import { env } from "../config.js";
 import { prisma } from "../prisma.js";
 import { CinemaAdminAccessService, type CinemaAccessProfile, type CinemaPermissionAction } from "../services/cinema/cinema-admin-access-service.js";
 import { CinemaService } from "../services/cinema-service.js";
@@ -439,7 +440,7 @@ export function registerAdminCinemaRoutes(app: Express, cinemaService: CinemaSer
         return;
       }
 
-      const response = await fetch(`http://telethon-stream:8090/channel_stats/${channel.sourceChannelId}`);
+      const response = await fetch(`${env.TELETHON_BACKEND_URL}/channel_stats/${channel.sourceChannelId}`);
       if (!response.ok) throw new Error("Failed to fetch remote stats");
       const data = await response.json();
       res.json(data);

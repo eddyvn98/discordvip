@@ -75,6 +75,7 @@ const envSchema = z.object({
   CINEMA_PUBLIC_BASE_URL_LOG_FILE: z.string().optional().default(""),
   CINEMA_MEDIA_ROOT: z.string().optional().default("/app/storage/cinema-media"),
   TELEFILM_BACKEND_URL: z.string().url().optional().default("http://127.0.0.1:9999"),
+  TELETHON_BACKEND_URL: z.string().url().optional().default("http://telethon-stream:8090"),
   CINEMA_ENTRY_TICKET_TTL_SECONDS: z.coerce.number().int().positive().default(90),
   CINEMA_STREAM_TOKEN_TTL_SECONDS: z.coerce.number().int().positive().default(300),
   CINEMA_ENTRY_SECRET: z.string().min(16).optional().default("change-this-cinema-entry-secret"),
@@ -102,8 +103,7 @@ const parseTelegramPlanChatIds = () => {
     );
   } catch (error) {
     throw new Error(
-      `TELEGRAM_PLAN_CHAT_IDS must be valid JSON object. Error: ${
-        error instanceof Error ? error.message : "Unknown parse error"
+      `TELEGRAM_PLAN_CHAT_IDS must be valid JSON object. Error: ${error instanceof Error ? error.message : "Unknown parse error"
       }`,
     );
   }

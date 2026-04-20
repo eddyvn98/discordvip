@@ -1,5 +1,6 @@
 import { CinemaAssetKind, CinemaChannelRole, CinemaSourcePlatform } from "@prisma/client";
 import crypto from "node:crypto";
+import { env } from "../../config.js";
 import { prisma } from "../../prisma.js";
 import type { CinemaViewService } from "./cinema-view-service.js";
 import { extractActorsAndGenres, inferMediaTypeFromMime, toPrettyMovieTitle, toWebAssetRef, callTelegramApi } from "./cinema-utils.js";
@@ -435,7 +436,7 @@ export class CinemaItemService {
     }
 
     const sourceChannelId = channel.sourceChannelId;
-    const res = await fetch(`http://telethon-stream:8090/message_info/${sourceChannelId}/${sourceMessageId}`);
+    const res = await fetch(`${env.TELETHON_BACKEND_URL}/message_info/${sourceChannelId}/${sourceMessageId}`);
     if (!res.ok) {
       throw new Error(`Failed to fetch message info from Telegram: ${await res.text()}`);
     }

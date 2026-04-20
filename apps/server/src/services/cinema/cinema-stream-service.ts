@@ -35,6 +35,17 @@ export class CinemaStreamService {
     const mediaType = inferMediaTypeFromMime(fullAsset?.mimeType);
     if (fullRef.startsWith("tgfile://")) {
       const fileId = fullRef.slice("tgfile://".length).trim();
+
+      // If fileId contains a colon, it's a channelId:messageId pointer, not a real file_id.
+      // These should always go through the Telethon proxy since the Bot API can't handle them.
+      if (fileId.includes(":")) {
+        return {
+          fullUrl: `/api/cinema/media/telegram-big/${encodeURIComponent(input.itemId)}`,
+          mediaType,
+          external: false,
+        };
+      }
+
       try {
         await callTelegramApi("getFile", { file_id: fileId });
       } catch (error) {
