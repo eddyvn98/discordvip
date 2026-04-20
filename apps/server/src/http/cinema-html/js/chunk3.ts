@@ -229,6 +229,7 @@ export const jsChunk3 = `
         setPlayerMode(false);
         syncPlayerFavoriteButton();
         renderCurrentCollection();
+        updateAppUrl();
         return;
       }
       if(state.currentChannel){
@@ -248,10 +249,47 @@ export const jsChunk3 = `
         renderChannels();
       }
     }
+    function updateAppUrl(replace){
+      try{
+        const p=new URLSearchParams();
+        if(state.feedMode){ p.set('view','feed'); }
+        else if(state.currentItem){ p.set('item',state.currentItem.id); }
+        else if(state.currentChannel){ p.set('ch',state.currentChannel.id); }
+        else if(state.currentView!=='home' && state.currentView){ p.set('view',state.currentView); }
+        const qs=p.toString(); const target=window.location.pathname+(qs?('?'+qs):'');
+        if(window.location.search!==(qs?('?'+qs):'')){
+          if(replace) history.replaceState(null,'',target);
+          else history.pushState(null,'',target);
+        }
+      }catch(_e){}
+    }
+    async function parseCurrentUrl(){
+      try{
+        const p=new URLSearchParams(window.location.search);
+        const item=p.get('item'); const ch=p.get('ch'); const view=p.get('view');
+        if(view==='feed'){ await enterFeedMode(); return; }
+        if(item){
+          const row=await api('/api/cinema/items/'+item).catch(()=>null);
+          if(row) await openItem(row,{skipScroll:false}); else renderChannels();
+          return;
+        }
+        if(ch){
+          if(!state.channels.length) state.channels=await api('/api/cinema/channels');
+          const found=state.channels.find(x=>x.id==ch);
+          if(found) await openChannel(found); else renderChannels();
+          return;
+        }
+        if(view && LIBRARY_VIEW_META[view]){ await openLibraryView(view); return; }
+        renderChannels();
+      }catch(_e){ renderChannels(); }
+    }
+    window.addEventListener('popstate',()=>parseCurrentUrl());
+
     function renderChannels(){
       state.currentView='home';
       state.currentChannel=null;
       state.feedMode=false;
+      updateAppUrl();
       document.body.classList.remove('feed-mode','feed-controls-visible');
       dom.navFeedBtn.classList.remove('active');
       closeFeedDrawer();
@@ -288,6 +326,7 @@ export const jsChunk3 = `
     }
     function renderAllChannels(){
       state.currentView='channels'; state.currentChannel=null; state.feedMode=false;
+      updateAppUrl();
       document.body.classList.remove('feed-mode','feed-controls-visible');
       dom.navFeedBtn.classList.remove('active');
       closeFeedDrawer();
@@ -314,6 +353,7 @@ export const jsChunk3 = `
     async function openChannel(channel){
       state.currentView='channel';
       state.currentChannel=channel;
+      updateAppUrl();
       resetPlayer();
       dom.grid.classList.remove('hide');
       setPlayerMode(false);
@@ -342,6 +382,7 @@ export const jsChunk3 = `
       state.currentChannel=null;
       state.currentItem=null;
       state.currentDetailChannel=null;
+      updateAppUrl();
       resetPlayer();
       setPlayerMode(false);
       dom.itemControls.classList.add('hide');
@@ -386,6 +427,7 @@ export const jsChunk3 = `
         opts=opts||{};
         const feedTransition=!!opts.feedTransition;
         state.currentItem=item;
+        updateAppUrl();
         setPlayerMode(true);
         const detail=await api('/api/cinema/items/'+item.id);
         state.currentItem={...item,favoritedByCurrentUser:!!detail.favoritedByCurrentUser,viewedByCurrentUser:true,viewCount:Number(detail.viewCount||item.viewCount||0)};
@@ -486,9 +528,9 @@ export const jsChunk3 = `
     async function boot(){
       try{
         await api('/api/cinema/session/me');
-        dom.status.textContent='Phiên VIP hợp lệ';
+        dom.status.textContent='Phi\u00ean VIP h\u1ee3p l\u1ec7';
         state.channels=await api('/api/cinema/channels');
-        renderChannels();
+        await parseCurrentUrl();
       }catch(e){
         try{
           const tg=window.Telegram&&window.Telegram.WebApp?window.Telegram.WebApp:null;
@@ -502,7 +544,7 @@ export const jsChunk3 = `
             await api('/api/cinema/session/me');
             dom.status.textContent='Phi\u00ean VIP h\u1ee3p l\u1ec7';
             state.channels=await api('/api/cinema/channels');
-            renderChannels();
+            await parseCurrentUrl();
             return;
           }
         }catch(_e){}
