@@ -24,6 +24,8 @@ client = TelegramClient(SESSION_NAME, API_ID, API_HASH)
 album_batches: dict[tuple[int, int], dict] = {}
 pending_upload_tokens: dict[str, dict] = {}
 awaiting_channel_name: dict[int, dict] = {}
+awaiting_search_query: dict[int, dict] = {} # chat_id -> {"token": "...", "actor_user_id": ...}
+recent_channels_map: dict[int, list[str]] = {} # sender_id -> list of channel_db_ids (max 5)
 
 
 def _to_telegram_chat_id_from_peer(peer) -> int | None:
@@ -127,26 +129,52 @@ def build_channel_buttons(token: str, actor_user_id: int):
     return buttons
 
 
-async def send_batch_selector(chat_id: int, actor_user_id: int, message_ids: list[int]):
+async def send_batch_selector(chat_id: int, actor_user_id: int, message_ids: list[int], edit_message_id: int = None, search_results: list = None, search_query: str = None):
     profile = get_admin_profile(actor_user_id)
     is_super = profile and profile.get("isSuperAdmin")
-    channels = profile.get("uploadChannels") if profile else []
+    all_channels = profile.get("uploadChannels") if profile else []
 
-    if not channels and not is_super:
-        await client.send_message(chat_id, "Ban khong co quyen upload/forward phim tren he thong. Hay dung lenh /request_access de dang ky.")
+    if not all_channels and not is_super:
+        await client.send_message(chat_id, "Ban khong co quyen upload/forward phim tren he thong.")
         return
 
     token = create_upload_token(chat_id, actor_user_id, message_ids)
     count = len(message_ids)
-    text = f"Ban muon them {count} phim nay vao kenh nao?"
     
+    buttons = []
+    if search_results is not None:
+        text = f"Ket qua tim kiem cho '{search_query}':" if search_query else "Ket qua tim kiem:"
+        for c in search_results[:15]: # Limit to 15 search results
+            buttons.append([Button.inline(c["displayName"], data=f"upload_batch:{c['id']}:{token}")])
+        if not search_results:
+            text = f"Khong tim thay kenh nao trung khop voi '{search_query}'."
+        buttons.append([Button.inline("⬅️ Quay lai", data=f"back_to_recents:{token}")])
+    else:
+        # Show top 5 recents
+        recents_ids = recent_channels_map.get(actor_user_id, [])
+        recents = []
+        for rid in recents_ids:
+            match = next((c for c in all_channels if c["id"] == rid), None)
+            if match:
+                recents.append(match)
+        
+        # If no recents, just show first 5
+        if not recents and all_channels:
+            recents = all_channels[:5]
+            
+        text = f"Ban muon them {count} phim nay vao kenh nao?"
+        for c in recents:
+            buttons.append([Button.inline(c["displayName"], data=f"upload_batch:{c['id']}:{token}")])
 
-    buttons = [[Button.inline(c["displayName"], data=f"upload_batch:{c['id']}:{token}")] for c in channels]
-    # super admin or manage capability should allow creating new channel
-    # for simplicity, always show create button for anyone who reached here
-    buttons.append([Button.inline("🆕 Tao kenh moi va dua phim vao", data=f"create_auto_batch:{token}")])
+        buttons.append([
+            Button.inline("🔍 Kenh khac", data=f"search_channels_prompt:{token}"),
+            Button.inline("🆕 Tao kenh moi", data=f"create_auto_batch:{token}")
+        ])
     
-    await client.send_message(chat_id, text, buttons=buttons)
+    if edit_message_id:
+        await client.edit_message(chat_id, edit_message_id, text, buttons=buttons)
+    else:
+        await client.send_message(chat_id, text, buttons=buttons)
 
 
 async def create_channel_and_upload_batch(event, actor_user_id: int, token: str, title: str):
@@ -308,6 +336,22 @@ async def handle_message(event):
         await create_channel_and_upload_batch(event, sender_id, token, text)
         return
 
+    search_pending = awaiting_search_query.get(chat_id)
+    if search_pending and text and not text.startswith("/"):
+        token = str(search_pending["token"])
+        awaiting_search_query.pop(chat_id, None)
+        
+        # Perform search
+        profile = get_admin_profile(sender_id)
+        all_channels = profile.get("uploadChannels") or []
+        query = text.lower()
+        results = [c for c in all_channels if query in c["displayName"].lower()]
+        
+        payload = pending_upload_tokens.get(token)
+        if payload:
+            await send_batch_selector(chat_id, sender_id, payload["message_ids"], search_results=results, search_query=text)
+        return
+
     if not (event.message.video or event.message.document):
         return
 
@@ -391,6 +435,13 @@ async def perform_upload_batch(event, actor_user_id: int, channel_db_id: str, me
                 first_error = err
 
     if failed == 0:
+        # Update recents
+        recents = recent_channels_map.get(actor_user_id, [])
+        if channel_db_id in recents:
+            recents.remove(channel_db_id)
+        recents.insert(0, channel_db_id)
+        recent_channels_map[actor_user_id] = recents[:5]
+        
         await progress_msg.edit(f"Hoan tat: {total}/{total} phim da dua vao kho.")
         await event.respond(f"Thanh cong! Da dua {total}/{total} phim vao kho va cap nhat he thong.")
     else:
@@ -440,6 +491,23 @@ async def callback_create_auto_batch(event):
     chat_id = int(payload["chat_id"])
     awaiting_channel_name[chat_id] = {"token": token, "created_at": time.time()}
     await event.edit("Vui long nhap ten kenh moi (gui 1 tin nhan text de xac nhan).")
+
+
+@client.on(events.CallbackQuery(data=re.compile(b"back_to_recents:.*")))
+async def callback_back_to_recents(event):
+    actor_user_id = int(getattr(event, "sender_id", 0) or 0)
+    token = event.data.decode().split(":")[1]
+    payload = pending_upload_tokens.get(token)
+    if payload:
+        await send_batch_selector(int(event.chat_id), actor_user_id, payload["message_ids"], edit_message_id=event.message_id)
+
+
+@client.on(events.CallbackQuery(data=re.compile(b"search_channels_prompt:.*")))
+async def callback_search_prompt(event):
+    token = event.data.decode().split(":")[1]
+    chat_id = int(event.chat_id)
+    awaiting_search_query[chat_id] = {"token": token, "created_at": time.time()}
+    await event.edit("Vui long nhap ten kenh ban muon tim (hoac mot phan ten kenh).")
 
 
 if __name__ == "__main__":
