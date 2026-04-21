@@ -10,6 +10,9 @@
     "dev:server": "npm run dev -w @discordvip/server",
     "dev:admin": "npm run dev -w @discordvip/admin",
     "dev:cinema-web": "npm run dev -w @discordvip/cinema-web",
+    "tunnel": "npx localtunnel --port 1990",
+    "tunnel:cf": "npx cloudflared tunnel --url http://localhost:1990",
+    "dev:auto": "node scripts/dev-tunnel.cjs",
     "test": "npm run test -w @discordvip/server"
   }
 }

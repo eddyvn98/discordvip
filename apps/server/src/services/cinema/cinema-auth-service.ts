@@ -63,6 +63,7 @@ export class CinemaAuthService {
         platformUserId: input.platformUserId,
         platformChatId: input.platformChatId,
         expiresAt: new Date(payload.exp * 1000),
+        isAdminBypass: input.bypassVipCheck === true,
       },
     });
     const url = new URL(`/api/cinema/e/${token}`, getCinemaPublicBaseUrl());
@@ -84,9 +85,19 @@ export class CinemaAuthService {
       /* Idempotent reopen support for Telegram WebView reloads on the same device. */
       if (dbTicket.usedFingerprint === fingerprint && dbTicket.expiresAt.getTime() > Date.now()) {
         const expiresAt = Date.now() + env.CINEMA_WEB_SESSION_TTL_HOURS * 60 * 60 * 1000;
-        const isVip = dbTicket.platform === "TELEGRAM" ? true : false; // Will be properly checked below if not reused
+        const platform = dbTicket.platform === "TELEGRAM" ? "telegram" : "discord";
+        // Re-check VIP status on reuse to ensure accuracy.
+        // Admin-bypass tickets are always treated as VIP.
+        let isVip = dbTicket.isAdminBypass;
+        if (!isVip) {
+          const vip = await this.membershipService.getLatestActiveMembershipForPlatformUser({
+            platform,
+            platformUserId: dbTicket.platformUserId,
+          });
+          isVip = !!vip && vip.expireAt.getTime() > Date.now();
+        }
         session.cinemaUser = {
-          platform: dbTicket.platform === "TELEGRAM" ? "telegram" : "discord",
+          platform,
           platformUserId: dbTicket.platformUserId,
           platformChatId: dbTicket.platformChatId,
           isVip,
@@ -97,10 +108,7 @@ export class CinemaAuthService {
           ok: true,
           reused: true,
           expiresAt,
-          user: {
-            platform: dbTicket.platform === "TELEGRAM" ? "telegram" : "discord",
-            platformUserId: dbTicket.platformUserId,
-          },
+          user: { platform, platformUserId: dbTicket.platformUserId },
         };
       }
       throw new Error("Entry ticket is invalid or already used.");
@@ -111,11 +119,15 @@ export class CinemaAuthService {
       throw new Error("Entry ticket has expired.");
     }
     const platform = dbTicket.platform === "TELEGRAM" ? "telegram" : "discord";
-    const vip = await this.membershipService.getLatestActiveMembershipForPlatformUser({
-      platform,
-      platformUserId: dbTicket.platformUserId,
-    });
-    const isVip = !!vip && vip.expireAt.getTime() > Date.now();
+    // Admin-bypass tickets skip the membership check — the admin always gets VIP access.
+    let isVip = dbTicket.isAdminBypass;
+    if (!isVip) {
+      const vip = await this.membershipService.getLatestActiveMembershipForPlatformUser({
+        platform,
+        platformUserId: dbTicket.platformUserId,
+      });
+      isVip = !!vip && vip.expireAt.getTime() > Date.now();
+    }
 
     await prisma.cinemaAccessTicket.update({
       where: { id: dbTicket.id },

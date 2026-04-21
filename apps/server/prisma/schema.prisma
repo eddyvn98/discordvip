@@ -321,6 +321,7 @@ model CinemaAccessTicket {
   expiresAt       DateTime
   usedAt          DateTime?
   usedFingerprint String?
+  isAdminBypass   Boolean                  @default(false)
   createdAt       DateTime                 @default(now())
   updatedAt       DateTime                 @updatedAt
 }

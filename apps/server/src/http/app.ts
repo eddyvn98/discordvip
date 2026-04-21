@@ -40,7 +40,7 @@ function isAllowedOrigin(origin: string | undefined) {
       if (["localhost", "127.0.0.1"].includes(url.hostname)) {
         return true;
       }
-    } catch {}
+    } catch { }
   }
 
   return false;
@@ -118,9 +118,11 @@ export function createApp({
       cookie: {
         httpOnly: true,
         // Telegram WebView runs in a cross-site context (inside web.telegram.org),
-        // so production needs SameSite=None to allow session cookie round-trips.
-        sameSite: env.APP_ENV === "production" && !useDevSessionCookie ? "none" : "lax",
-        secure: env.APP_ENV === "production" && !useDevSessionCookie,
+        // so production needs SameSite=None;Secure to allow session cookie round-trips.
+        // DEV_BYPASS_ADMIN_AUTH only bypasses admin authentication — it must NOT affect
+        // cookie SameSite/Secure policy, otherwise the Telegram WebApp cinema session breaks.
+        sameSite: env.APP_ENV === "production" ? "none" : "lax",
+        secure: env.APP_ENV === "production",
         maxAge: 7 * 24 * 60 * 60 * 1000,
       },
     }),
