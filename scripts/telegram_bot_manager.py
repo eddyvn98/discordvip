@@ -135,7 +135,13 @@ async def send_batch_selector(chat_id: int, actor_user_id: int, message_ids: lis
     all_channels = profile.get("uploadChannels") if profile else []
 
     if not all_channels and not is_super:
-        await client.send_message(chat_id, "Ban khong co quyen upload/forward phim tren he thong.")
+        await client.send_message(
+            chat_id, 
+            "⚠️ **Ban khong co quyen upload/forward phim.**\n\n"
+            "He thong dung co che phan quyen rieng. De tiep tuc:\n"
+            "1️⃣ Dung lenh `/request_access` de gui yeu cau.\n"
+            "2️⃣ Hoac **Super Admin** (chu nhom) co the **reply** tin nhan nay cua ban bang lenh `/authorize` de cap quyen ngay."
+        )
         return
 
     token = create_upload_token(chat_id, actor_user_id, message_ids)
@@ -297,17 +303,17 @@ async def handle_authorize(event):
         admin_id = admin_data["id"]
 
         # 2. Grant global permissions (view, upload, forward)
+        perm_payload = {
+            "adminId": admin_id,
+            "canView": True,
+            "canUpload": True,
+            "canForward": True,
+            "canManage": False
+        }
         perm_resp = requests.post(
             f"{BACKEND_URL}/api/admin/cinema/access/permissions/upsert",
             headers=_actor_headers(actor_user_id),
-            json={
-                "adminId": admin_id,
-                "channelId": None, # Global
-                "canView": True,
-                "canUpload": True,
-                "canForward": True,
-                "canManage": False
-            },
+            json=perm_payload,
             timeout=10
         )
         if not perm_resp.ok:

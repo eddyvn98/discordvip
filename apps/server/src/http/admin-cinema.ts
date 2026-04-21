@@ -36,7 +36,7 @@ const upsertAdminSchema = z.object({
 
 const upsertPermissionSchema = z.object({
   adminId: z.string().trim().min(1),
-  channelId: z.string().trim().optional(),
+  channelId: z.string().trim().nullable().optional(),
   canView: z.coerce.boolean().optional(),
   canUpload: z.coerce.boolean().optional(),
   canForward: z.coerce.boolean().optional(),

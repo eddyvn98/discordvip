@@ -392,3 +392,15 @@ enum CinemaAccessTicketStatus {
   USED
   EXPIRED
 }
+
+model CinemaDailyWatchLog {
+  id             String   @id @default(cuid())
+  platform       Platform
+  platformUserId String
+  dateString     String   // YYYY-MM-DD format
+  watchCount     Int      @default(0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@unique([platform, platformUserId, dateString])
+}

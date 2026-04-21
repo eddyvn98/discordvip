@@ -10,7 +10,7 @@ import { buildFingerprint, hashStr, nowSec, platformToPrisma } from "./cinema-ut
 import type { CinemaSession, EntryTicketPayload, TelegramInitDataUser } from "./types.js";
 
 export class CinemaAuthService {
-  constructor(private readonly membershipService: MembershipService) {}
+  constructor(private readonly membershipService: MembershipService) { }
 
   verifyTelegramInitData(initData: string) {
     if (!initData?.trim()) throw new Error("Missing Telegram initData.");
@@ -44,13 +44,8 @@ export class CinemaAuthService {
     bypassVipCheck?: boolean;
   }) {
     if (!env.CINEMA_WEB_ENABLED) throw new Error("Cinema web feature is currently disabled.");
-    if (!input.bypassVipCheck && !env.DEV_BYPASS_ADMIN_AUTH) {
-      const vip = await this.membershipService.getLatestActiveMembershipForPlatformUser({
-        platform: input.platform,
-        platformUserId: input.platformUserId,
-      });
-      if (!vip || vip.expireAt.getTime() <= Date.now()) throw new Error("VIP is required to access the cinema web.");
-    }
+    // Allow entry URL generation for all users.
+    // VIP check will be deferred to session handling and stream endpoints.
 
     const payload: EntryTicketPayload = {
       tid: nanoid(24),
@@ -89,11 +84,12 @@ export class CinemaAuthService {
       /* Idempotent reopen support for Telegram WebView reloads on the same device. */
       if (dbTicket.usedFingerprint === fingerprint && dbTicket.expiresAt.getTime() > Date.now()) {
         const expiresAt = Date.now() + env.CINEMA_WEB_SESSION_TTL_HOURS * 60 * 60 * 1000;
+        const isVip = dbTicket.platform === "TELEGRAM" ? true : false; // Will be properly checked below if not reused
         session.cinemaUser = {
           platform: dbTicket.platform === "TELEGRAM" ? "telegram" : "discord",
           platformUserId: dbTicket.platformUserId,
           platformChatId: dbTicket.platformChatId,
-          isVip: true,
+          isVip,
           fingerprint,
           expiresAt,
         };
@@ -119,7 +115,7 @@ export class CinemaAuthService {
       platform,
       platformUserId: dbTicket.platformUserId,
     });
-    if (!vip || vip.expireAt.getTime() <= Date.now()) throw new Error("VIP is required to access the cinema web.");
+    const isVip = !!vip && vip.expireAt.getTime() > Date.now();
 
     await prisma.cinemaAccessTicket.update({
       where: { id: dbTicket.id },
@@ -130,7 +126,7 @@ export class CinemaAuthService {
       platform,
       platformUserId: dbTicket.platformUserId,
       platformChatId: dbTicket.platformChatId,
-      isVip: true,
+      isVip,
       fingerprint,
       expiresAt,
     };
@@ -145,15 +141,15 @@ export class CinemaAuthService {
       platform,
       platformUserId,
     });
-    if (!vip || vip.expireAt.getTime() <= Date.now()) throw new Error("VIP is required to access the cinema web.");
+    const isVip = !!vip && vip.expireAt.getTime() > Date.now();
 
     const fingerprint = buildFingerprint(req);
     const expiresAt = Date.now() + env.CINEMA_WEB_SESSION_TTL_HOURS * 60 * 60 * 1000;
     session.cinemaUser = {
       platform,
       platformUserId,
-      platformChatId: vip.platformChatId ?? "",
-      isVip: true,
+      platformChatId: vip?.platformChatId ?? "",
+      isVip,
       fingerprint,
       expiresAt,
     };
