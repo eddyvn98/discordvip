@@ -26,6 +26,11 @@ const envSchema = z.object({
     .optional()
     .default("true")
     .transform((value) => value === "true"),
+  DISCORD_ACTIVITY_WEBVIP_ENABLED: z
+    .enum(["true", "false"])
+    .optional()
+    .default("false")
+    .transform((value) => value === "true"),
   DEV_BYPASS_ADMIN_AUTH: z
     .enum(["true", "false"])
     .optional()

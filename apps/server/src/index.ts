@@ -203,6 +203,19 @@ async function handleRedeemVip(interaction: ChatInputCommandInteraction) {
 
 async function handleWebVip(interaction: ChatInputCommandInteraction) {
   try {
+    if (env.DISCORD_ACTIVITY_WEBVIP_ENABLED) {
+      try {
+        await interaction.launchActivity();
+        return;
+      } catch (error) {
+        logger.warn("Discord activity launch failed, fallback to web link button", {
+          error,
+          guildId: interaction.guildId ?? null,
+          userId: interaction.user.id,
+        });
+      }
+    }
+
     const isDiscordAdmin = await discordAdapter.isAdmin(interaction.user.id);
     const url = await cinemaService.createEntryUrl({
       platform: "discord",
