@@ -47,15 +47,34 @@ export class CinemaAuthService {
     // Allow entry URL generation for all users.
     // VIP check will be deferred to session handling and stream endpoints.
 
+    const ticketTtlSeconds =
+      input.platform === "discord"
+        ? env.CINEMA_DISCORD_ENTRY_TICKET_TTL_SECONDS
+        : env.CINEMA_ENTRY_TICKET_TTL_SECONDS;
+
     const payload: EntryTicketPayload = {
       tid: nanoid(24),
       platform: input.platform,
       userId: input.platformUserId,
       chatId: input.platformChatId,
-      exp: nowSec() + env.CINEMA_ENTRY_TICKET_TTL_SECONDS,
+      exp: nowSec() + ticketTtlSeconds,
     };
     /* Short opaque token for Telegram WebApp URL reliability. */
     const token = nanoid(32);
+    if (input.platform === "discord") {
+      // Keep only one active Discord ticket per user to reduce share/copy reuse.
+      await prisma.cinemaAccessTicket.updateMany({
+        where: {
+          platform: Platform.DISCORD,
+          platformUserId: input.platformUserId,
+          status: "ACTIVE",
+        },
+        data: {
+          status: "EXPIRED",
+        },
+      });
+    }
+
     await prisma.cinemaAccessTicket.create({
       data: {
         tokenHash: hashStr(token),
@@ -82,6 +101,9 @@ export class CinemaAuthService {
       }
     }
     if (dbTicket.status === "USED") {
+      if (dbTicket.platform !== Platform.TELEGRAM) {
+        throw new Error("Entry ticket is invalid or already used.");
+      }
       /* Idempotent reopen support for Telegram WebView reloads on the same device. */
       if (dbTicket.usedFingerprint === fingerprint && dbTicket.expiresAt.getTime() > Date.now()) {
         const expiresAt = Date.now() + env.CINEMA_WEB_SESSION_TTL_HOURS * 60 * 60 * 1000;
@@ -103,6 +125,7 @@ export class CinemaAuthService {
           isVip,
           fingerprint,
           expiresAt,
+          lastSeenAt: Date.now(),
         };
         return {
           ok: true,
@@ -141,6 +164,7 @@ export class CinemaAuthService {
       isVip,
       fingerprint,
       expiresAt,
+      lastSeenAt: Date.now(),
     };
     return { ok: true, expiresAt, user: { platform, platformUserId: dbTicket.platformUserId } };
   }
@@ -164,6 +188,7 @@ export class CinemaAuthService {
       isVip,
       fingerprint,
       expiresAt,
+      lastSeenAt: Date.now(),
     };
     return { ok: true, expiresAt, user: { platform, platformUserId } };
   }
@@ -177,6 +202,15 @@ export class CinemaAuthService {
       throw new Error("Cinema session has expired.");
     }
     if (buildFingerprint(req) !== cinemaUser.fingerprint) throw new Error("Cinema session is invalid on this device.");
+    if (cinemaUser.platform === "discord") {
+      const idleMs = env.CINEMA_DISCORD_SESSION_IDLE_SECONDS * 1000;
+      const lastSeenAt = cinemaUser.lastSeenAt ?? 0;
+      if (Date.now() - lastSeenAt > idleMs) {
+        delete session.cinemaUser;
+        throw new Error("Cinema session has expired.");
+      }
+      cinemaUser.lastSeenAt = Date.now();
+    }
     return cinemaUser;
   }
 }

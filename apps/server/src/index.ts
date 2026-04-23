@@ -203,14 +203,21 @@ async function handleRedeemVip(interaction: ChatInputCommandInteraction) {
 
 async function handleWebVip(interaction: ChatInputCommandInteraction) {
   try {
+    const isDiscordAdmin = await discordAdapter.isAdmin(interaction.user.id);
     const url = await cinemaService.createEntryUrl({
       platform: "discord",
       platformUserId: interaction.user.id,
       platformChatId: interaction.guildId ?? env.DISCORD_GUILD_ID,
+      bypassVipCheck: isDiscordAdmin,
     });
     await interaction.reply({
       flags: MessageFlags.Ephemeral,
-      content: `Link web VIP (ngắn hạn, không share): ${url}`,
+      content: "Bấm nút bên dưới để mở web VIP (link ngắn hạn, không chia sẻ).",
+      components: [
+        new ActionRowBuilder<ButtonBuilder>().addComponents(
+          new ButtonBuilder().setLabel("Mở web VIP").setStyle(ButtonStyle.Link).setURL(url),
+        ),
+      ],
     });
   } catch (error) {
     await interaction.reply({

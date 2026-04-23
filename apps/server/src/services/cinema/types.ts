@@ -9,6 +9,7 @@ export type CinemaSession = Session &
       isVip: boolean;
       fingerprint: string;
       expiresAt: number;
+      lastSeenAt: number;
     };
   };
 

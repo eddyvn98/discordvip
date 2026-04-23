@@ -77,9 +77,11 @@ const envSchema = z.object({
   TELEFILM_BACKEND_URL: z.string().url().optional().default("http://127.0.0.1:9999"),
   TELETHON_BACKEND_URL: z.string().url().optional().default("http://telethon-stream:8090"),
   CINEMA_ENTRY_TICKET_TTL_SECONDS: z.coerce.number().int().positive().default(90),
+  CINEMA_DISCORD_ENTRY_TICKET_TTL_SECONDS: z.coerce.number().int().positive().default(45),
   CINEMA_STREAM_TOKEN_TTL_SECONDS: z.coerce.number().int().positive().default(300),
   CINEMA_ENTRY_SECRET: z.string().min(16).optional().default("change-this-cinema-entry-secret"),
   CINEMA_WEB_SESSION_TTL_HOURS: z.coerce.number().int().positive().default(8),
+  CINEMA_DISCORD_SESSION_IDLE_SECONDS: z.coerce.number().int().positive().default(300),
   CINEMA_PREVIEW_SECONDS: z.coerce.number().int().min(3).max(5).default(5),
   TIMEZONE: z.string().default("Asia/Ho_Chi_Minh"),
 });

@@ -16,6 +16,7 @@ declare module "express-session" {
       isVip: boolean;
       fingerprint: string;
       expiresAt: number;
+      lastSeenAt: number;
     };
   }
 }
