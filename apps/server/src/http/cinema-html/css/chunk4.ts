@@ -24,7 +24,7 @@ export const cssChunk4 = `
       border-top:1px solid var(--line);
       background:rgba(9,11,16,.96);
       backdrop-filter:blur(6px);
-      display:grid;
+      display:none!important;
       grid-template-columns:repeat(5,1fr);
       gap:6px;
     }
@@ -49,7 +49,7 @@ export const cssChunk4 = `
       position:fixed;
       left:10px;
       right:10px;
-      bottom:72px;
+      bottom:max(12px, env(safe-area-inset-bottom));
       z-index:65;
       border:1px solid var(--line);
       border-radius:12px;

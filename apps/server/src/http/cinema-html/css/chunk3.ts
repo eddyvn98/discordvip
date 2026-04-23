@@ -24,7 +24,7 @@ export const cssChunk3 = `
     .volume-panel{
       position:fixed;
       right:12px;
-      bottom:calc(132px + env(safe-area-inset-bottom));
+      bottom:calc(82px + env(safe-area-inset-bottom));
       z-index:64;
       display:none;
       width:44px;

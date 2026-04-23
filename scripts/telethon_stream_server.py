@@ -1,16 +1,40 @@
 import os
+import logging
 from typing import AsyncGenerator, Optional
 
+from dotenv import load_dotenv
 from fastapi import FastAPI, Header, HTTPException
+
+# Configure logging to stdout so PM2 captures it
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger("telethon-stream")
+
+# Load environment variables from parent directory if started from scripts/
+script_dir = os.path.dirname(os.path.abspath(__file__))
+env_path = os.path.abspath(os.path.join(script_dir, "..", ".env"))
+logger.info(f"Loading .env from: {env_path}")
+
+loaded = load_dotenv(env_path)
+logger.info(f".env load status: {loaded}")
+
+API_ID_STR = os.getenv("TELEGRAM_API_ID", "0")
+API_HASH = os.getenv("TELEGRAM_API_HASH", "").strip()
+SESSION_PATH = os.getenv("TELETHON_SESSION_PATH", "user_session")
+PORT = int(os.getenv("TELETHON_STREAM_PORT", "8090") or 8090)
+BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "").strip()
+
+try:
+    API_ID = int(API_ID_STR)
+except ValueError:
+    logger.error(f"Invalid TELEGRAM_API_ID: {API_ID_STR}")
+    API_ID = 0
+
 from fastapi.responses import StreamingResponse
 from telethon import TelegramClient, functions, types
 from pydantic import BaseModel
-
-API_ID = int(os.getenv("TELEGRAM_API_ID", "0") or 0)
-API_HASH = os.getenv("TELEGRAM_API_HASH", "").strip()
-SESSION_PATH = os.getenv("TELETHON_SESSION_PATH", "/data/user_session")
-PORT = int(os.getenv("TELETHON_STREAM_PORT", "8090") or 8090)
-BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "").strip()
 
 app = FastAPI(title="telethon-stream")
 client: Optional[TelegramClient] = None

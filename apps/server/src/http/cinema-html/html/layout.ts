@@ -112,7 +112,7 @@ export const getCinemaHtmlBody = () => `
           <h3 id="playerTitle"></h3>
           <p id="playerDesc" class="status"></p>
         </div>
-        <div class="player-nav">
+        <div class="player-nav hide">
           <button id="playerFavoriteBtn" class="btn player-favorite-btn" type="button">♡ Yêu thích</button>
           <button id="prevItemBtn" class="btn">Trước</button>
           <button id="nextItemBtn" class="btn">Sau</button>

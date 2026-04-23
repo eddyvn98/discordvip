@@ -20,3 +20,4 @@
 - [15-telegram-mtproto-streaming-alignment.md](./15-telegram-mtproto-streaming-alignment.md) - Alignment (4KB) for stable Telegram streaming
 - [16-telegram-bot-dynamic-permissions.md](./16-telegram-bot-dynamic-permissions.md) - Dynamic authorization flow for bot admins
 - [17-mru-search-selection-ux.md](./17-mru-search-selection-ux.md) - Optimized UX for large resource selection
+- [18-telegram-webapp-fullscreen-playbook.md](./18-telegram-webapp-fullscreen-playbook.md) - Fullscreen architecture and fast-fix playbook for Telegram WebView

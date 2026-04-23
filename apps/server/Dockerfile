@@ -5,7 +5,10 @@ COPY package.json package-lock.json ./
 COPY tsconfig.base.json ./
 COPY apps/server/package.json apps/server/package.json
 COPY apps/server/prisma apps/server/prisma
-RUN npm install --workspace @discordvip/server --include-workspace-root=false
+RUN npm install -g npm@latest && \
+    npm config set fetch-timeout 600000 && \
+    npm config set fetch-retries 5 && \
+    npm install --workspace @discordvip/server --include-workspace-root=false --prefer-offline
 
 COPY apps/server apps/server
 RUN npm run prisma:generate -w @discordvip/server
@@ -24,7 +27,7 @@ COPY tsconfig.base.json ./
 COPY apps/server/package.json apps/server/package.json
 COPY apps/server/tsconfig.json apps/server/tsconfig.json
 COPY apps/server/prisma apps/server/prisma
-RUN npm install --workspace @discordvip/server --include-workspace-root=false --no-audit --no-fund \
+RUN npm config set fetch-timeout 600000 && npm config set fetch-retries 5 && npm install --workspace @discordvip/server --include-workspace-root=false --no-audit --no-fund --prefer-offline \
   && npm cache clean --force
 
 COPY --from=build /app/apps/server/dist /app/apps/server/dist

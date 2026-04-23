@@ -2,7 +2,7 @@ export const stateJs = `
 
     const state={channels:[],itemsByChannel:new Map(),currentChannel:null,currentItem:null,currentMediaType:'video',query:'',channelRows:[],visibleCount:20,pageSize:20,tg:null,pseudoFullscreen:false,mainBtnBound:false,autoCinemaByLandscape:false,orientTimer:null,fullscreenControlsTimer:null,itemFilters:{sort:'newest'},randomMode:false,viewCounts:{},brightness:1,playbackRate:1,feedMode:false,feedRows:[],feedControlsTimer:null,feedSkipCount:0,feedSkipAt:0,feedWheelAt:0,feedAnimTimer:null,currentDetailChannel:null,lastTapAt:0,lastTapSide:'none',suppressTapUntil:0,isPip:false,pipRect:null,pipDrag:null,pipResize:null,touch:{active:false,startX:0,startY:0,lastX:0,lastY:0,startVolume:0,startBrightness:1,startCurrentTime:0,seekTime:0,isSeeking:false,isBoosting:false,mode:'pending',longPressTimer:null,rightBoostTimer:null,seekArmed:false,feedDirection:0,feedTargetIndex:-1}};
     const $=(id)=>document.getElementById(id);
-    const dom={status:$('sessionStatus'),search:$('search'),bottomSearchInput:$('bottomSearchInput'),searchPanel:$('searchPanel'),sortPanel:$('sortPanel'),navHomeBtn:$('navHomeBtn'),navFeedBtn:$('navFeedBtn'),navSearchBtn:$('navSearchBtn'),navSortBtn:$('navSortBtn'),navBackBtn:$('navBackBtn'),playbackDock:$('playbackDock'),dockPlayBtn:$('dockPlayBtn'),dockPrevBtn:$('dockPrevBtn'),dockNextBtn:$('dockNextBtn'),dockMuteBtn:$('dockMuteBtn'),dockTime:$('dockTime'),dockTimeline:$('dockTimeline'),dockSpeedBtn:$('dockSpeedBtn'),dockRotateBtn:$('dockRotateBtn'),dockMinBtn:$('dockMinBtn'),volumePanel:$('volumePanel'),volumeVertical:$('volumeVertical'),feedHomeBtn:$('feedHomeBtn'),feedChannelBtn:$('feedChannelBtn'),feedChannelDrawer:$('feedChannelDrawer'),feedDrawerBackBtn:$('feedDrawerBackBtn'),feedDrawerTitle:$('feedDrawerTitle'),feedChannelList:$('feedChannelList'),feedPreloadVideo:$('feedPreloadVideo'),back:$('backHomeBtn'),retry:$('retryBtn'),crumb:$('crumb'),hero:$('hero'),state:$('state'),grid:$('grid'),loadMoreWrap:$('loadMoreWrap'),loadMoreBtn:$('loadMoreBtn'),backFab:$('backFabBtn'),fullscreenFab:$('fullscreenFabBtn'),playerWrap:$('playerWrap'),playerStickyHeader:$('playerStickyHeader'),playerMedia:$('playerMedia'),playerTitle:$('playerTitle'),playerDesc:$('playerDesc'),player:$('player'),image:$('imageViewer'),related:$('relatedGrid'),itemControls:$('itemControls'),sortSelect:$('sortSelect'),randomPickBtn:$('randomPickBtn'),prevItemBtn:$('prevItemBtn'),nextItemBtn:$('nextItemBtn'),pipToggleBtn:$('pipToggleBtn'),pipMiniPlayBtn:$('pipMiniPlayBtn'),swipeHintLeft:$('swipeHintLeft'),swipeHintRight:$('swipeHintRight'),swipeHintCenter:$('swipeHintCenter'),feedNextStage:$('feedNextStage'),feedNextThumb:$('feedNextThumb'),feedNextTitle:$('feedNextTitle')};
+    const dom={status:$('sessionStatus'),search:$('search'),bottomSearchInput:$('bottomSearchInput'),searchPanel:$('searchPanel'),sortPanel:$('sortPanel'),navHomeBtn:$('navHomeBtn'),navFeedBtn:$('navFeedBtn'),navSearchBtn:$('navSearchBtn'),navSortBtn:$('navSortBtn'),navBackBtn:$('navBackBtn'),playbackDock:$('playbackDock'),dockPlayBtn:$('dockPlayBtn'),dockPrevBtn:$('dockPrevBtn'),dockNextBtn:$('dockNextBtn'),dockMuteBtn:$('dockMuteBtn'),dockTime:$('dockTime'),dockTimeline:$('dockTimeline'),dockSpeedBtn:$('dockSpeedBtn'),dockRotateBtn:$('dockRotateBtn'),dockMinBtn:$('dockMinBtn'),volumePanel:$('volumePanel'),volumeVertical:$('volumeVertical'),feedHomeBtn:$('feedHomeBtn'),feedChannelBtn:$('feedChannelBtn'),feedChannelDrawer:$('feedChannelDrawer'),feedDrawerBackBtn:$('feedDrawerBackBtn'),feedDrawerTitle:$('feedDrawerTitle'),feedChannelList:$('feedChannelList'),feedPreloadVideo:$('feedPreloadVideo'),back:$('backHomeBtn'),retry:$('retryBtn'),crumb:$('crumb'),hero:$('hero'),state:$('state'),grid:$('grid'),loadMoreWrap:$('loadMoreWrap'),loadMoreBtn:$('loadMoreBtn'),backFab:$('backFabBtn'),fullscreenFab:$('fullscreenFabBtn'),fsCloseBtn:$('fsCloseBtn'),playerWrap:$('playerWrap'),playerStickyHeader:$('playerStickyHeader'),playerMedia:$('playerMedia'),playerTitle:$('playerTitle'),playerDesc:$('playerDesc'),player:$('player'),image:$('imageViewer'),related:$('relatedGrid'),itemControls:$('itemControls'),sortSelect:$('sortSelect'),randomPickBtn:$('randomPickBtn'),prevItemBtn:$('prevItemBtn'),nextItemBtn:$('nextItemBtn'),pipToggleBtn:$('pipToggleBtn'),pipMiniPlayBtn:$('pipMiniPlayBtn'),swipeHintLeft:$('swipeHintLeft'),swipeHintRight:$('swipeHintRight'),swipeHintCenter:$('swipeHintCenter'),feedNextStage:$('feedNextStage'),feedNextThumb:$('feedNextThumb'),feedNextTitle:$('feedNextTitle')};
 
     function showState(msg,isError=false){
       dom.state.textContent=msg; dom.state.className=isError?'error':'empty';
@@ -14,11 +14,11 @@ export const stateJs = `
       if(!tg) return;
       try{ tg.ready&&tg.ready(); }catch(_e){}
       try{ tg.expand&&tg.expand(); }catch(_e){}
-      try{ tg.unlockOrientation&&tg.unlockOrientation(); }catch(_e){}
       try{ tg.setHeaderColor&&tg.setHeaderColor('#000000'); }catch(_e){}
       try{ tg.setBackgroundColor&&tg.setBackgroundColor('#000000'); }catch(_e){}
       try{ tg.setBottomBarColor&&tg.setBottomBarColor('#000000'); }catch(_e){}
       try{ tg.disableVerticalSwipes&&tg.disableVerticalSwipes(); }catch(_e){}
+      
       const applyViewport=()=>{
         try{
           const stable=tg.viewportStableHeight||tg.viewportHeight||0;
@@ -30,7 +30,12 @@ export const stateJs = `
           if(vv>0) document.documentElement.style.setProperty('--app-vh', vv+'px');
         }catch(_e){}
       };
+      
       applyViewport();
+      // Thử gọi lại sau một khoảng thời gian ngắn để đảm bảo viewport đã ổn định
+      setTimeout(applyViewport, 200);
+      setTimeout(applyViewport, 500);
+
       try{ tg.onEvent&&tg.onEvent('viewportChanged',applyViewport); }catch(_e){}
       try{ tg.onEvent&&tg.onEvent('fullscreenFailed',()=>{}); }catch(_e){}
       try{ tg.onEvent&&tg.onEvent('fullscreenChanged',()=>{}); }catch(_e){}
@@ -39,6 +44,7 @@ export const stateJs = `
       const tg=state.tg;
       if(!tg||!tg.MainButton) return;
       try{
+        // Luôn ẩn MainButton khi ở chế độ xem phim để tối ưu diện tích
         tg.MainButton.hide();
       }catch(_e){}
     }
@@ -48,16 +54,8 @@ export const stateJs = `
       }
       return window.matchMedia?window.matchMedia('(orientation:landscape)').matches:(window.innerWidth>window.innerHeight);
     }
-    function canAutoLandscapeFullscreen(){
-      return !!(window.matchMedia && window.matchMedia('(pointer:coarse)').matches);
-    }
     function onOrientationLikeChange(){
       if(!state.currentItem) return;
-      if(!canAutoLandscapeFullscreen()){
-        if(state.autoCinemaByLandscape && state.pseudoFullscreen){ togglePseudoFullscreen(false); }
-        state.autoCinemaByLandscape=false;
-        return;
-      }
       if(!isLandscape()){
         if(state.autoCinemaByLandscape && state.pseudoFullscreen){ togglePseudoFullscreen(false); }
         state.autoCinemaByLandscape=false;
@@ -74,18 +72,35 @@ export const stateJs = `
         document.body.classList.add('fullscreen-mode');
         document.body.classList.add('controls-visible');
         dom.player.removeAttribute('controls');
-        dom.playerWrap.classList.add('pseudo-fullscreen'); document.body.classList.add('no-scroll'); dom.grid.classList.add('hide'); dom.loadMoreWrap.classList.add('hide');        syncFullscreenMainButton(true);
-        try{ const tg=state.tg; if(tg&&tg.requestFullscreen){ tg.requestFullscreen(); } }catch(_e){}
-        /* Luôn unlock để user xoay thiết bị tự do - KHÔNG lock landscape */
+        dom.playerWrap.classList.add('pseudo-fullscreen'); 
+        document.body.classList.add('no-scroll'); 
+        dom.grid.classList.add('hide'); 
+        dom.loadMoreWrap.classList.add('hide');
+        dom.fsCloseBtn.classList.remove('hide');
+        syncFullscreenMainButton(true);
+        
+        try{ 
+          const tg=state.tg; 
+          if(tg&&tg.requestFullscreen){ tg.requestFullscreen(); } 
+        }catch(_e){}
+        
+        /* Luôn unlock để user xoay thiết bị tự do */
         try{ const tg=state.tg; if(tg&&tg.unlockOrientation) tg.unlockOrientation(); }catch(_e){}
         try{ if(screen&&screen.orientation&&screen.orientation.unlock) screen.orientation.unlock(); }catch(_e){}
+        
         showFullscreenControls();
-      }else{ dom.playerWrap.classList.remove('pseudo-fullscreen'); document.body.classList.remove('no-scroll'); if(state.currentItem){ dom.grid.classList.add('hide'); }
+      }else{ 
+        dom.playerWrap.classList.remove('pseudo-fullscreen'); 
+        document.body.classList.remove('no-scroll'); 
+        if(state.currentItem){ dom.grid.classList.add('hide'); }
         document.body.classList.remove('fullscreen-mode');
         document.body.classList.remove('controls-visible');
+        dom.fsCloseBtn.classList.add('hide');
         if(state.fullscreenControlsTimer){ clearTimeout(state.fullscreenControlsTimer); state.fullscreenControlsTimer=null; }
         dom.player.setAttribute('controls','');
-        state.autoCinemaByLandscape=false;        syncFullscreenMainButton(false);
+        state.autoCinemaByLandscape=false;
+        syncFullscreenMainButton(false);
+        
         try{ const tg=state.tg; if(tg&&tg.isFullscreen&&tg.exitFullscreen){ tg.exitFullscreen(); } }catch(_e){}
         try{ const tg=state.tg; if(tg&&tg.unlockOrientation) tg.unlockOrientation(); }catch(_e){}
         try{ if(screen&&screen.orientation&&screen.orientation.unlock) screen.orientation.unlock(); }catch(_e){}
@@ -687,6 +702,7 @@ export const stateJs = `
       updatePlaybackDock();
     });
     dom.dockRotateBtn.addEventListener('click',()=>{ togglePseudoFullscreen(true); });
+    dom.fsCloseBtn.addEventListener('click',()=>{ togglePseudoFullscreen(false); });
     dom.dockMinBtn.addEventListener('click',()=>{ enterPip(); });
     dom.navHomeBtn.addEventListener('click',()=>{ closePanels(); state.currentItem=null; state.currentChannel=null; state.query=''; dom.sortSelect.value='newest'; state.itemFilters.sort='newest'; renderChannels(); });
     dom.navFeedBtn.addEventListener('click',()=>{ if(state.feedMode){ exitFeedMode(); }else{ enterFeedMode(); } });

@@ -350,6 +350,16 @@ export const jsChunk3 = `
     function renderChannelItems(){
       renderRowsGrid(state.channelRows,'K\u00eanh n\u00e0y ch\u01b0a c\u00f3 phim.');
     }
+    function playChannelOpenTransition(){
+      dom.grid.classList.remove('channel-enter','channel-enter-active');
+      requestAnimationFrame(()=>{
+        dom.grid.classList.add('channel-enter');
+        requestAnimationFrame(()=>{
+          dom.grid.classList.add('channel-enter-active');
+          setTimeout(()=>{ dom.grid.classList.remove('channel-enter','channel-enter-active'); },360);
+        });
+      });
+    }
     async function openChannel(channel){
       state.currentView='channel';
       state.currentChannel=channel;
@@ -357,7 +367,6 @@ export const jsChunk3 = `
       resetPlayer();
       dom.grid.classList.remove('hide');
       setPlayerMode(false);
-      dom.grid.classList.remove('home-layout');
       dom.itemControls.classList.remove('hide');
       dom.crumb.textContent='Home > '+channel.displayName;
       dom.back.classList.remove('hide');
@@ -365,6 +374,7 @@ export const jsChunk3 = `
       dom.hero.innerHTML='<h3 style="margin:0">'+channel.displayName+'</h3><p class="status" style="margin:8px 0 0">Tổng '+channel.itemCount+' phim</p>';
       dom.hero.classList.remove('hide');
       syncSideNavActive();
+      showState('Dang tai danh sach phim...',false);
       const q=new URLSearchParams();
       const serverSort=(state.itemFilters.sort==='newest'||state.itemFilters.sort==='oldest'||state.itemFilters.sort==='random'||state.itemFilters.sort==='most_viewed'||state.itemFilters.sort==='least_viewed'||state.itemFilters.sort==='unseen')?state.itemFilters.sort:'newest';
       if(serverSort) q.set('sort',serverSort);
@@ -374,6 +384,7 @@ export const jsChunk3 = `
       state.channelRows=filtered(items,(x)=>x.title);
       state.visibleCount=state.pageSize;
       renderChannelItems();
+      playChannelOpenTransition();
     }
     async function openLibraryView(view,opts){
       opts=opts||{};
@@ -443,10 +454,13 @@ export const jsChunk3 = `
         dom.crumb.textContent=currentCollectionLabel()+' > '+resolvedTitle;
         state.currentDetailChannel=detail.channel||null;
         dom.playerTitle.textContent=resolvedTitle;
+        const resolvedChannelName=(detail&&detail.channel&&detail.channel.displayName)
+          ||(state.currentChannel&&state.currentChannel.displayName)
+          ||'Không rõ kênh';
         const mediaType=(links&&links.mediaType)||detail.mediaType||item.mediaType||'video';
         state.currentMediaType=mediaType;
         if(mediaType!=='video' && state.isPip) exitPip();
-        dom.playerDesc.textContent='';
+        dom.playerDesc.textContent='Kênh: '+resolvedChannelName;
         await api('/api/cinema/items/'+item.id+'/view',{method:'POST'}).catch(()=>{});
         state.currentItem.viewedByCurrentUser=true;
         invalidateLibraryCache('watched');

@@ -22,7 +22,7 @@ export const cssChunk2 = `
     .pseudo-fullscreen #playerTitle,
     .pseudo-fullscreen #playerDesc,
     .pseudo-fullscreen .related{display:none!important}
-    .pseudo-fullscreen .player-nav{position:fixed!important;left:max(12px,env(safe-area-inset-left));top:max(12px,env(safe-area-inset-top));bottom:auto;z-index:10001;display:flex!important}
+    .pseudo-fullscreen .player-nav{display:none!important}
     /* Video/nh chim ton b khng gian */
     .pseudo-fullscreen video,.pseudo-fullscreen .viewer-image{
       width:100%!important;
@@ -58,10 +58,10 @@ export const cssChunk2 = `
     body.player-mode #loadMoreWrap{display:none!important}
     body.player-mode .wrap{padding-top:0}
     body.player-mode .player{border:none;background:transparent;border-radius:0;padding:0}
-    body.player-mode .player-nav{display:flex!important}
+    body.player-mode .player-nav{display:none!important}
     body.player-mode #playerTitle,
     body.player-mode #playerDesc{padding-left:12px;padding-right:12px}
-    body.player-mode .pseudo-fullscreen .player-nav{display:flex!important}
+    body.player-mode .pseudo-fullscreen .player-nav{display:none!important}
     body.player-mode .pseudo-fullscreen #playerMedia{
       margin-left:0!important;
       margin-right:0!important;
@@ -80,19 +80,13 @@ export const cssChunk2 = `
     }
     body.fullscreen-mode .bottom-nav,
     body.fullscreen-mode .bottom-panel{display:none!important}
-    body.fullscreen-mode .playback-dock{
-      display:none!important;
-      z-index:10020!important;
-      bottom:max(8px,env(safe-area-inset-bottom))!important;
-      border-top:none!important;
-      background:linear-gradient(180deg,rgba(9,11,16,.2),rgba(9,11,16,.88))!important;
-    }
-    body.fullscreen-mode.controls-visible .playback-dock{display:flex!important}
+    body.fullscreen-mode .playback-dock{display:none!important}
+    body.fullscreen-mode.controls-visible .playback-dock{display:none!important}
     #relatedGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
     @media (min-width:1180px){
       body.player-mode .top{display:flex!important}
       body.player-mode .desktop-side-card{display:flex!important}
-      body.player-mode .player-nav{display:flex!important}
+      body.player-mode .player-nav{display:none!important}
     }
     @media (max-width:1179px){
       body.player-mode .top{display:flex!important}
@@ -167,7 +161,7 @@ export const cssChunk2 = `
       body.player-mode .player-nav{
         margin-top:10px;
         padding:0 12px 12px;
-        display:flex!important;
+        display:none!important;
         gap:8px;
         flex-wrap:wrap;
       }
@@ -200,7 +194,7 @@ export const cssChunk2 = `
       position:fixed;
       left:0;
       right:0;
-      bottom:calc(62px + env(safe-area-inset-bottom));
+      bottom:max(12px, env(safe-area-inset-bottom));
       z-index:62;
       border-top:1px solid var(--line);
       background:rgba(9,11,16,.96);

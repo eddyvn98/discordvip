@@ -27,7 +27,7 @@ export const cssChunk1 = `
       min-height:100vh;
       overscroll-behavior-y:none;
     }
-    .wrap{max-width:1120px;margin:0 auto;padding:78px 14px 98px;min-height:var(--app-vh,100dvh)}
+    .wrap{max-width:1120px;margin:0 auto;padding:78px 14px 20px;min-height:var(--app-vh,100dvh)}
     .top{
       position:fixed;
       top:0;
@@ -235,6 +235,14 @@ export const cssChunk1 = `
     .hero{border:1px solid rgba(130,147,179,.26);background:linear-gradient(120deg,#1a1f2a,#16181e);border-radius:var(--radius);padding:14px;margin-bottom:14px}
     .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
     .grid.home-layout{display:block}
+    .grid.channel-enter .card{opacity:0;transform:translateY(16px) scale(.98)}
+    .grid.channel-enter.channel-enter-active .card{animation:channelCardIn .32s cubic-bezier(.2,.72,.2,1) forwards}
+    .grid.channel-enter.channel-enter-active .card:nth-child(2n){animation-delay:.03s}
+    .grid.channel-enter.channel-enter-active .card:nth-child(3n){animation-delay:.06s}
+    @keyframes channelCardIn{
+      from{opacity:0;transform:translateY(16px) scale(.98)}
+      to{opacity:1;transform:translateY(0) scale(1)}
+    }
     .home-block{margin-bottom:32px}
     .home-head{display:flex;align-items:flex-end;justify-content:space-between;gap:10px;margin-bottom:14px}
     .home-kicker{font-size:10px;letter-spacing:.28em;text-transform:uppercase;color:#f4cb67;font-weight:800}
@@ -339,7 +347,7 @@ export const cssChunk1 = `
     .swipe-hint.left{left:10px}
     .swipe-hint.right{right:10px}
     .swipe-hint.center{left:50%;transform:translate(-50%,-50%)}
-    .player-nav{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+    .player-nav{display:none!important;gap:8px;margin-top:10px;flex-wrap:wrap}
     .player-favorite-btn.active{
       border-color:rgba(255,112,146,.56);
       background:rgba(255,84,122,.16);

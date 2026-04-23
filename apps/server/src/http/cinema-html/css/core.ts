@@ -7,7 +7,7 @@ export const coreCss = `
     *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
     html,body{margin:0;width:100%;height:100%;min-height:var(--app-vh,100dvh)}
     body{background:radial-gradient(1200px 600px at 20% -20%,#15203a 0%,#090b10 55%);color:var(--text);font-family:Segoe UI,Arial,sans-serif;-webkit-text-size-adjust:100%;text-size-adjust:100%}
-    .wrap{max-width:1100px;margin:0 auto;padding:16px 16px 92px;min-height:var(--app-vh,100dvh)}
+    .wrap{max-width:1100px;margin:0 auto;padding:16px 16px 20px;min-height:var(--app-vh,100dvh)}
     .top{display:flex;gap:10px;align-items:center;justify-content:space-between}
     .title{font-size:28px;font-weight:800;letter-spacing:.4px}
     .status{color:var(--muted);font-size:13px}
@@ -160,7 +160,7 @@ export const coreCss = `
     .pseudo-fullscreen #playerStickyHeader #playerDesc,
     .pseudo-fullscreen .player-info-sticky,
     .pseudo-fullscreen .related{display:none!important}
-    .pseudo-fullscreen .player-nav{position:fixed!important;left:max(12px,env(safe-area-inset-left));top:max(12px,env(safe-area-inset-top));bottom:auto;z-index:10001;display:flex!important}
+    .pseudo-fullscreen .player-nav{display:none!important}
     /* Video/Ảnh chiếm toàn bộ không gian */
     .pseudo-fullscreen video,.pseudo-fullscreen .viewer-image{
       width:100%!important;
@@ -213,7 +213,7 @@ export const coreCss = `
     body.player-mode #playerMedia .viewer-image{border-radius:0}
     body.player-mode .player-info-sticky,
     body.player-mode .related{padding-left:0;padding-right:0}
-    body.player-mode .pseudo-fullscreen .player-nav{display:flex!important}
+    body.player-mode .pseudo-fullscreen .player-nav{display:none!important}
     body.player-mode .pseudo-fullscreen #playerMedia{
       margin-left:0;
       margin-right:0;
@@ -223,17 +223,17 @@ export const coreCss = `
       position:fixed;
       left:0;
       right:0;
-      bottom:calc(62px + env(safe-area-inset-bottom));
+      bottom:max(12px, env(safe-area-inset-bottom));
       z-index:62;
       border-top:1px solid var(--line);
       background:rgba(9,11,16,.96);
       backdrop-filter:blur(6px);
       padding:8px 10px 10px;
-      display:none;
+      display:none!important;
       flex-direction:column;
       gap:8px;
     }
-    .playback-dock.show{display:flex}
+    .playback-dock.show{display:none!important}
     .dock-timeline-row{display:flex;align-items:center;gap:8px;width:100%}
     .dock-controls-row{display:flex;align-items:center;gap:8px;width:100%;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch}
     .dock-btn,.dock-speed{border:1px solid var(--line);background:#0f1420;color:var(--text);border-radius:8px;padding:8px 10px;font-size:12px;min-width:44px}
@@ -245,7 +245,7 @@ export const coreCss = `
     .volume-panel{
       position:fixed;
       right:12px;
-      bottom:calc(132px + env(safe-area-inset-bottom));
+      bottom:calc(82px + env(safe-area-inset-bottom));
       z-index:64;
       display:none;
       width:44px;

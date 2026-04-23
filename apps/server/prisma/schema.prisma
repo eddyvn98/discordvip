@@ -216,20 +216,20 @@ model CinemaAdminPermission {
 }
 
 model CinemaChannel {
-  id              String               @id @default(cuid())
+  id              String                  @id @default(cuid())
   platform        CinemaSourcePlatform
   sourceChannelId String
-  role            CinemaChannelRole    @default(FULL_SOURCE)
+  role            CinemaChannelRole       @default(FULL_SOURCE)
   displayName     String
-  slug            String               @unique
-  localPath       String?              @unique
-  isEnabled       Boolean              @default(true)
-  remoteStatus    String               @default("ACTIVE")
-  createdAt       DateTime             @default(now())
-  updatedAt       DateTime             @updatedAt
+  slug            String                  @unique
+  isEnabled       Boolean                 @default(true)
+  createdAt       DateTime                @default(now())
+  updatedAt       DateTime                @updatedAt
+  localPath       String?                 @unique
+  remoteStatus    String                  @default("ACTIVE")
+  permissions     CinemaAdminPermission[]
   items           CinemaItem[]
   scanJobs        CinemaScanJob[]
-  permissions     CinemaAdminPermission[]
 
   @@unique([platform, sourceChannelId])
 }
@@ -242,9 +242,9 @@ model CinemaItem {
   description     String?
   durationSeconds Int?
   status          String        @default("READY")
-  remoteStatus    String        @default("SYNCED")
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
+  remoteStatus    String        @default("SYNCED")
   assets          CinemaAsset[]
   channel         CinemaChannel @relation(fields: [channelId], references: [id], onDelete: Cascade)
 
@@ -253,9 +253,9 @@ model CinemaItem {
 }
 
 model CinemaItemViewStat {
-  itemId     String   @id @map("item_id")
-  viewCount  BigInt   @default(0) @map("view_count")
-  updatedAt  DateTime @default(now()) @updatedAt @map("updated_at")
+  itemId    String   @id @map("item_id")
+  viewCount BigInt   @default(0) @map("view_count")
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
 
   @@map("cinema_item_view_stats")
 }
@@ -270,14 +270,13 @@ model CinemaUserItemView {
 }
 
 model CinemaUserItemFavorite {
-  itemId       String   @map("item_id")
-  userKey      String   @map("user_key")
-  favoritedAt  DateTime @default(now()) @map("favorited_at")
+  itemId      String   @map("item_id")
+  userKey     String   @map("user_key")
+  favoritedAt DateTime @default(now()) @map("favorited_at")
 
   @@id([itemId, userKey])
   @@map("cinema_user_item_favorites")
 }
-
 
 model CinemaAsset {
   id        String          @id @default(cuid())
@@ -321,9 +320,21 @@ model CinemaAccessTicket {
   expiresAt       DateTime
   usedAt          DateTime?
   usedFingerprint String?
-  isAdminBypass   Boolean                  @default(false)
   createdAt       DateTime                 @default(now())
   updatedAt       DateTime                 @updatedAt
+  isAdminBypass   Boolean                  @default(false)
+}
+
+model CinemaDailyWatchLog {
+  id             String   @id @default(cuid())
+  platform       Platform
+  platformUserId String
+  dateString     String
+  watchCount     Int      @default(0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@unique([platform, platformUserId, dateString])
 }
 
 enum OrderStatus {
@@ -392,16 +403,4 @@ enum CinemaAccessTicketStatus {
   ACTIVE
   USED
   EXPIRED
-}
-
-model CinemaDailyWatchLog {
-  id             String   @id @default(cuid())
-  platform       Platform
-  platformUserId String
-  dateString     String   // YYYY-MM-DD format
-  watchCount     Int      @default(0)
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
-
-  @@unique([platform, platformUserId, dateString])
 }

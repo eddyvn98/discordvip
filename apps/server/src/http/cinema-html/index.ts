@@ -22,6 +22,8 @@ export function renderCinemaHtml(_req: Request, res: Response) {
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <meta name="cache-control" content="no-cache" />
+  <meta name="v" content="202604221600" />
   <title>VIP Cinema</title>
   <style>${getCinemaCss()}</style>
 </head>

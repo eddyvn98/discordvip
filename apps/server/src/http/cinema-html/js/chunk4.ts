@@ -56,6 +56,9 @@ export const jsChunk4 = `
     });
     dom.dockRotateBtn.addEventListener('click',()=>{ togglePseudoFullscreen(true); });
     dom.dockMinBtn.addEventListener('click',()=>{ enterPip(); });
+    if(dom.fsCloseBtn){
+      dom.fsCloseBtn.addEventListener('click',()=>{ togglePseudoFullscreen(false); });
+    }
     dom.navHomeBtn.addEventListener('click',()=>{ closePanels(); state.currentItem=null; state.currentChannel=null; state.query=''; dom.search.value=''; dom.bottomSearchInput.value=''; dom.sortSelect.value='newest'; state.itemFilters.sort='newest'; renderChannels(); });
     dom.navFeedBtn.addEventListener('click',()=>{ if(state.feedMode){ exitFeedMode(); }else{ enterFeedMode(); } });
     dom.navBackBtn.addEventListener('click',()=>{ closePanels(); navBack(); });

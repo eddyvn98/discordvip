@@ -2,7 +2,7 @@ export const jsChunk1 = `
 
     const state={channels:[],itemsByChannel:new Map(),libraryItemsByView:new Map(),currentView:'home',currentChannel:null,currentItem:null,currentMediaType:'video',query:'',channelRows:[],visibleCount:20,pageSize:20,tg:null,pseudoFullscreen:false,mainBtnBound:false,autoCinemaByLandscape:false,orientTimer:null,fullscreenControlsTimer:null,itemFilters:{sort:'newest'},randomMode:false,viewCounts:{},brightness:1,playbackRate:1,feedMode:false,feedRows:[],feedControlsTimer:null,feedSkipCount:0,feedSkipAt:0,feedWheelAt:0,feedAnimTimer:null,feedNavLocked:false,feedPreparedItemId:'',feedPreparedUrl:'',feedPreparedMediaType:'',currentDetailChannel:null,lastTapAt:0,lastTapSide:'none',suppressTapUntil:0,isPip:false,pipRect:null,pipDrag:null,pipResize:null,touch:{active:false,startX:0,startY:0,lastX:0,lastY:0,startVolume:0,startBrightness:1,startCurrentTime:0,seekTime:0,isSeeking:false,isBoosting:false,mode:'pending',longPressTimer:null,rightBoostTimer:null,seekArmed:false,feedDirection:0,feedTargetIndex:-1}};
     const $=(id)=>document.getElementById(id);
-    const dom={status:$('sessionStatus'),search:$('search'),bottomSearchInput:$('bottomSearchInput'),searchPanel:$('searchPanel'),sortPanel:$('sortPanel'),navHomeBtn:$('navHomeBtn'),navFeedBtn:$('navFeedBtn'),navSearchBtn:$('navSearchBtn'),navSortBtn:$('navSortBtn'),navBackBtn:$('navBackBtn'),playbackDock:$('playbackDock'),dockPlayBtn:$('dockPlayBtn'),dockPrevBtn:$('dockPrevBtn'),dockNextBtn:$('dockNextBtn'),dockMuteBtn:$('dockMuteBtn'),dockTime:$('dockTime'),dockTimeline:$('dockTimeline'),dockSpeedBtn:$('dockSpeedBtn'),dockRotateBtn:$('dockRotateBtn'),dockMinBtn:$('dockMinBtn'),volumePanel:$('volumePanel'),volumeVertical:$('volumeVertical'),feedHomeBtn:$('feedHomeBtn'),feedChannelBtn:$('feedChannelBtn'),feedChannelDrawer:$('feedChannelDrawer'),feedDrawerBackBtn:$('feedDrawerBackBtn'),feedDrawerTitle:$('feedDrawerTitle'),feedChannelList:$('feedChannelList'),feedPreloadVideo:$('feedPreloadVideo'),back:$('backHomeBtn'),retry:$('retryBtn'),crumb:$('crumb'),hero:$('hero'),state:$('state'),grid:$('grid'),loadMoreWrap:$('loadMoreWrap'),loadMoreBtn:$('loadMoreBtn'),backFab:$('backFabBtn'),fullscreenFab:$('fullscreenFabBtn'),playerWrap:$('playerWrap'),playerStickyHeader:$('playerStickyHeader'),playerMedia:$('playerMedia'),playerTitle:$('playerTitle'),playerDesc:$('playerDesc'),playerFavoriteBtn:$('playerFavoriteBtn'),player:$('player'),image:$('imageViewer'),related:$('relatedGrid'),relatedGrid:$('relatedGrid'),itemControls:$('itemControls'),sortSelect:$('sortSelect'),randomPickBtn:$('randomPickBtn'),prevItemBtn:$('prevItemBtn'),nextItemBtn:$('nextItemBtn'),pipToggleBtn:$('pipToggleBtn'),pipMiniPlayBtn:$('pipMiniPlayBtn'),swipeHintLeft:$('swipeHintLeft'),swipeHintRight:$('swipeHintRight'),swipeHintCenter:$('swipeHintCenter'),feedNextStage:$('feedNextStage'),feedNextVideo:$('feedNextVideo'),feedNextThumb:$('feedNextThumb'),feedNextTitle:$('feedNextTitle')};
+    const dom={status:$('sessionStatus'),search:$('search'),bottomSearchInput:$('bottomSearchInput'),searchPanel:$('searchPanel'),sortPanel:$('sortPanel'),navHomeBtn:$('navHomeBtn'),navFeedBtn:$('navFeedBtn'),navSearchBtn:$('navSearchBtn'),navSortBtn:$('navSortBtn'),navBackBtn:$('navBackBtn'),playbackDock:$('playbackDock'),dockPlayBtn:$('dockPlayBtn'),dockPrevBtn:$('dockPrevBtn'),dockNextBtn:$('dockNextBtn'),dockMuteBtn:$('dockMuteBtn'),dockTime:$('dockTime'),dockTimeline:$('dockTimeline'),dockSpeedBtn:$('dockSpeedBtn'),dockRotateBtn:$('dockRotateBtn'),dockMinBtn:$('dockMinBtn'),volumePanel:$('volumePanel'),volumeVertical:$('volumeVertical'),feedHomeBtn:$('feedHomeBtn'),feedChannelBtn:$('feedChannelBtn'),feedChannelDrawer:$('feedChannelDrawer'),feedDrawerBackBtn:$('feedDrawerBackBtn'),feedDrawerTitle:$('feedDrawerTitle'),feedChannelList:$('feedChannelList'),feedPreloadVideo:$('feedPreloadVideo'),back:$('backHomeBtn'),retry:$('retryBtn'),crumb:$('crumb'),hero:$('hero'),state:$('state'),grid:$('grid'),loadMoreWrap:$('loadMoreWrap'),loadMoreBtn:$('loadMoreBtn'),backFab:$('backFabBtn'),fullscreenFab:$('fullscreenFabBtn'),fsCloseBtn:$('fsCloseBtn'),playerWrap:$('playerWrap'),playerStickyHeader:$('playerStickyHeader'),playerMedia:$('playerMedia'),playerTitle:$('playerTitle'),playerDesc:$('playerDesc'),playerFavoriteBtn:$('playerFavoriteBtn'),player:$('player'),image:$('imageViewer'),related:$('relatedGrid'),relatedGrid:$('relatedGrid'),itemControls:$('itemControls'),sortSelect:$('sortSelect'),randomPickBtn:$('randomPickBtn'),prevItemBtn:$('prevItemBtn'),nextItemBtn:$('nextItemBtn'),pipToggleBtn:$('pipToggleBtn'),pipMiniPlayBtn:$('pipMiniPlayBtn'),swipeHintLeft:$('swipeHintLeft'),swipeHintRight:$('swipeHintRight'),swipeHintCenter:$('swipeHintCenter'),feedNextStage:$('feedNextStage'),feedNextVideo:$('feedNextVideo'),feedNextThumb:$('feedNextThumb'),feedNextTitle:$('feedNextTitle')};
 
     const LIBRARY_VIEW_META={
       latest:{crumb:'M\u1edbi nh\u1ea5t',title:'M\u1edbi nh\u1ea5t',description:'C\u00e1c phim m\u1edbi c\u1eadp nh\u1eadt g\u1ea7n \u0111\u00e2y nh\u1ea5t.',empty:'Ch\u01b0a c\u00f3 phim m\u1edbi n\u00e0o.'},
@@ -23,7 +23,7 @@ export const jsChunk1 = `
       if(!dom.playerFavoriteBtn) return;
       const active=!!(state.currentItem&&state.currentItem.favoritedByCurrentUser);
       dom.playerFavoriteBtn.classList.toggle('active',active);
-      dom.playerFavoriteBtn.textContent=active?'\u0110\u00e3 l\u01b0u':'Y\u00eau th\u00edch';
+      dom.playerFavoriteBtn.textContent=active?'\u2665 \u0110\u00e3 l\u01b0u':'\u2661 Y\u00eau th\u00edch';
     }
     function mergeFavoriteState(list,itemId,favorited){
       if(!Array.isArray(list)) return list;
@@ -71,6 +71,7 @@ export const jsChunk1 = `
       try{ tg.setBackgroundColor&&tg.setBackgroundColor('#000000'); }catch(_e){}
       try{ tg.setBottomBarColor&&tg.setBottomBarColor('#000000'); }catch(_e){}
       try{ tg.disableVerticalSwipes&&tg.disableVerticalSwipes(); }catch(_e){}
+      
       const applyViewport=()=>{
         try{
           const stable=tg.viewportStableHeight||tg.viewportHeight||0;
@@ -82,7 +83,11 @@ export const jsChunk1 = `
           if(vv>0) document.documentElement.style.setProperty('--app-vh', vv+'px');
         }catch(_e){}
       };
+      
       applyViewport();
+      setTimeout(applyViewport, 200);
+      setTimeout(applyViewport, 500);
+
       try{ tg.onEvent&&tg.onEvent('viewportChanged',applyViewport); }catch(_e){}
       try{ tg.onEvent&&tg.onEvent('fullscreenFailed',()=>{}); }catch(_e){}
       try{ tg.onEvent&&tg.onEvent('fullscreenChanged',()=>{}); }catch(_e){}
@@ -118,18 +123,34 @@ export const jsChunk1 = `
         document.body.classList.add('fullscreen-mode');
         document.body.classList.add('controls-visible');
         dom.player.setAttribute('controls','');
-        dom.playerWrap.classList.add('pseudo-fullscreen'); document.body.classList.add('no-scroll'); dom.grid.classList.add('hide'); dom.loadMoreWrap.classList.add('hide');        syncFullscreenMainButton(true);
-        try{ const tg=state.tg; if(tg&&tg.requestFullscreen){ tg.requestFullscreen(); } }catch(_e){}
-        /* Lu\u00f4n unlock \u0111\u1ec3 ng\u01b0\u1eddi d\u00f9ng xoay thi\u1ebft b\u1ecb t\u1ef1 do, kh\u00f4ng kh\u00f3a landscape */
+        dom.playerWrap.classList.add('pseudo-fullscreen'); 
+        document.body.classList.add('no-scroll'); 
+        dom.grid.classList.add('hide'); 
+        dom.loadMoreWrap.classList.add('hide');
+        syncFullscreenMainButton(true);
+        
+        try{ 
+          const tg=state.tg; 
+          if(tg&&tg.requestFullscreen){ 
+            tg.requestFullscreen(); 
+          } 
+        }catch(_e){}
+        
         try{ const tg=state.tg; if(tg&&tg.unlockOrientation) tg.unlockOrientation(); }catch(_e){}
         try{ if(screen&&screen.orientation&&screen.orientation.unlock) screen.orientation.unlock(); }catch(_e){}
+        
         showFullscreenControls();
-      }else{ dom.playerWrap.classList.remove('pseudo-fullscreen'); document.body.classList.remove('no-scroll'); if(state.currentItem){ dom.grid.classList.add('hide'); }
+      }else{ 
+        dom.playerWrap.classList.remove('pseudo-fullscreen'); 
+        document.body.classList.remove('no-scroll'); 
+        if(state.currentItem){ dom.grid.classList.add('hide'); }
         document.body.classList.remove('fullscreen-mode');
         document.body.classList.remove('controls-visible');
         if(state.fullscreenControlsTimer){ clearTimeout(state.fullscreenControlsTimer); state.fullscreenControlsTimer=null; }
         dom.player.setAttribute('controls','');
-        state.autoCinemaByLandscape=false;        syncFullscreenMainButton(false);
+        state.autoCinemaByLandscape=false;
+        syncFullscreenMainButton(false);
+        
         try{ const tg=state.tg; if(tg&&tg.isFullscreen&&tg.exitFullscreen){ tg.exitFullscreen(); } }catch(_e){}
         try{ const tg=state.tg; if(tg&&tg.unlockOrientation) tg.unlockOrientation(); }catch(_e){}
         try{ if(screen&&screen.orientation&&screen.orientation.unlock) screen.orientation.unlock(); }catch(_e){}
@@ -254,4 +275,3 @@ export const jsChunk1 = `
       dom.feedNextStage.classList.add('show');
     }
 `;
-

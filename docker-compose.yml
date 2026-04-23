@@ -42,18 +42,19 @@ services:
     env_file:
       - ${APP_ENV_FILE:-.env}
     environment:
-      CINEMA_PUBLIC_BASE_URL_FILE: /runtime/cinema_public_base_url.txt
-      CINEMA_PUBLIC_BASE_URL_LOG_FILE: /runtime/cloudflared.log
+      CINEMA_PUBLIC_BASE_URL_FILE: /app/runtime/cinema_public_base_url.txt
+      CINEMA_PUBLIC_BASE_URL_LOG_FILE: /app/runtime/cloudflared.log
       TELETHON_BACKEND_URL: http://telethon-stream:8090
       TELEFILM_BACKEND_URL: http://telethon-stream:9999
       CINEMA_MEDIA_ROOT: /app/storage/cinema-media
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-discordvip}?schema=public
     depends_on:
       - postgres
     volumes:
       - ./storage:/app/storage
       - /var/run/docker.sock:/var/run/docker.sock
       - E:\:/mnt/e:ro
-      - ./runtime:/runtime
+      - ./runtime:/app/runtime
     expose:
       - "3000"
     cpus: 1.0
@@ -173,10 +174,12 @@ services:
       dockerfile: cloudflared/Dockerfile.quick
     restart: unless-stopped
     profiles: ["tunnel"]
+    environment:
+      CINEMA_PUBLIC_BASE_URL_FILE: /app/runtime/cinema_public_base_url.txt
     command: ["/bin/sh", "/scripts/cloudflared-auto-tunnel.sh"]
     volumes:
       - ./scripts/cloudflared-auto-tunnel.sh:/scripts/cloudflared-auto-tunnel.sh:ro
-      - ./runtime:/runtime
+      - ./runtime:/app/runtime
     depends_on:
       - web-gateway
     cpus: 0.25

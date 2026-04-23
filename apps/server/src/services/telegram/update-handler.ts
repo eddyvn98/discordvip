@@ -16,11 +16,11 @@ export class TelegramUpdateHandler {
   handlers: TelegramHandlers | null = null;
   channelVerificationHandler:
     | ((input: {
-        token: string;
-        telegramUserId: string;
-        chatId: string;
-        chatTitle: string;
-      }) => Promise<{ ok: boolean; reason?: string }>)
+      token: string;
+      telegramUserId: string;
+      chatId: string;
+      chatTitle: string;
+    }) => Promise<{ ok: boolean; reason?: string }>)
     | null = null;
   channelPostHandler:
     | ((input: { chatId: string; chatTitle: string; message: TelegramMessage }) => Promise<void>)
@@ -29,7 +29,7 @@ export class TelegramUpdateHandler {
   constructor(
     private apiClient: TelegramApiClient,
     private commandSync: TelegramCommandSync,
-  ) {}
+  ) { }
 
   async handleUpdate(update: TelegramUpdate) {
     const callbackQuery = update.callback_query;
@@ -122,12 +122,12 @@ export class TelegramUpdateHandler {
       return;
     }
 
-        if (command === "/vipstatus") {
+    if (command === "/vipstatus") {
       await this.handlers.onVipStatus({ userId, chatId, chatType });
       return;
     }
 
-    if (command === "/webvip") {
+    if (command === "/webvip" || command === "/webphim") {
       await this.handlers.onWebVip({ userId, chatId, chatType });
       return;
     }
@@ -240,7 +240,7 @@ export class TelegramUpdateHandler {
     const chatId = String(message.chat.id);
     const chatTitle =
       message.chat.title?.trim() || (message.chat.type === "channel" ? `Channel ${chatId}` : `Chat ${chatId}`);
-    
+
     if (this.channelVerificationHandler) {
       const text = message.text?.trim().toUpperCase();
       if (text && text.startsWith("VIP-VERIFY-")) {
