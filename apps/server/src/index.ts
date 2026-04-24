@@ -79,7 +79,19 @@ async function bootstrap() {
     referralService,
   });
 
-  await Promise.all(platformRegistry.list().map((adapter) => adapter.start()));
+  const startupResults = await Promise.allSettled(
+    platformRegistry.list().map(async (adapter) => {
+      await adapter.start();
+      return adapter.platform;
+    }),
+  );
+  for (const result of startupResults) {
+    if (result.status === "rejected") {
+      logger.error("Platform startup failed", { error: result.reason });
+    } else {
+      logger.info("Platform startup initialized", { platform: result.value });
+    }
+  }
 
   registerDiscordInteractions({
     discordService,

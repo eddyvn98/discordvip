@@ -29,6 +29,10 @@ import {
 export class DiscordService {
   readonly client: Client;
   private readonly referralRuntime: DiscordReferralRuntime;
+  private memberJoinTrackingEnabled = true;
+  private eventHandlersRegistered = false;
+  private reconnectLoopRunning = false;
+  private loginInFlight = false;
   private guildPromise: Promise<Guild> | null = null;
   private adminChannelPromise: Promise<TextChannel | null> | null = null;
 
@@ -37,6 +41,7 @@ export class DiscordService {
       intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMembers, GatewayIntentBits.GuildMessages],
     });
     this.referralRuntime = new DiscordReferralRuntime(this.client);
+    this.memberJoinTrackingEnabled = true;
   }
 
   setReferralHandlers(input: {
@@ -60,15 +65,27 @@ export class DiscordService {
       );
     }
 
+    this.ensureEventHandlers();
+    this.ensureReconnectLoop();
+  }
+
+  private ensureEventHandlers() {
+    if (this.eventHandlersRegistered) return;
+    this.eventHandlersRegistered = true;
+
     this.client.once(Events.ClientReady, async () => {
       logger.info("Discord bot connected", {
         user: this.client.user?.tag,
       });
 
-      const guild = await this.getGuild();
-      await guild.commands.set(getDiscordGuildCommands());
-      await this.referralRuntime.onReady(guild);
-      await this.ensureHomePanelMessage();
+      try {
+        const guild = await this.getGuild();
+        await guild.commands.set(getDiscordGuildCommands());
+        await this.referralRuntime.onReady(guild);
+        await this.ensureHomePanelMessage();
+      } catch (error) {
+        logger.error("Discord ready hook failed", { error });
+      }
     });
 
     this.client.on(Events.MessageCreate, async (message) => {
@@ -94,12 +111,52 @@ export class DiscordService {
       }
     });
 
-    this.referralRuntime.registerMemberAddListener();
+    if (this.memberJoinTrackingEnabled) {
+      this.referralRuntime.registerMemberAddListener();
+    } else {
+      logger.warn("Discord member join tracking is disabled", {
+        reason:
+          "Gateway intent GuildMembers chưa được bật trong Discord Developer Portal. Bot vẫn hoạt động bình thường cho lệnh và nút bấm.",
+      });
+    }
+  }
 
-    await this.client.login(env.DISCORD_BOT_TOKEN);
+  private ensureReconnectLoop() {
+    if (this.reconnectLoopRunning) return;
+    this.reconnectLoopRunning = true;
+
+    void (async () => {
+      while (true) {
+        if (this.client.isReady() || Boolean(this.client.token)) {
+          await new Promise((resolve) => setTimeout(resolve, 10_000));
+          continue;
+        }
+        if (this.loginInFlight) {
+          await new Promise((resolve) => setTimeout(resolve, 1_000));
+          continue;
+        }
+
+        this.loginInFlight = true;
+        try {
+          this.guildPromise = null;
+          this.adminChannelPromise = null;
+          await this.client.login(env.DISCORD_BOT_TOKEN);
+          logger.info("Discord login initiated");
+          await new Promise((resolve) => setTimeout(resolve, 10_000));
+        } catch (error) {
+          logger.warn("Discord login failed, sẽ tự thử lại", { error });
+          await new Promise((resolve) => setTimeout(resolve, 15_000));
+        } finally {
+          this.loginInFlight = false;
+        }
+      }
+    })();
   }
 
   private async getGuild() {
+    if (!this.client.isReady() || !this.client.user || !this.client.token) {
+      throw new Error("Discord client chưa sẵn sàng.");
+    }
     if (!this.guildPromise) {
       this.guildPromise = this.client.guilds.fetch(env.DISCORD_GUILD_ID);
     }
@@ -337,7 +394,7 @@ export class DiscordService {
         (item) => item.isTextBased() && item.type === ChannelType.GuildText,
       );
     if (!channel || !("createInvite" in channel)) {
-      throw new Error("KhÃ´ng tÃ¬m tháº¥y kÃªnh text Ä‘á»ƒ táº¡o link má»i Discord.");
+      throw new Error("Không tìm thấy kênh text để tạo link mời Discord.");
     }
     const invite = await (channel as TextChannel).createInvite({
       maxAge: 60 * 60 * 24 * 7,
@@ -360,5 +417,6 @@ export class DiscordService {
     }
   }
 }
+
 
 

@@ -7,10 +7,10 @@
     "build": "npm run prisma:generate && tsc -p tsconfig.json",
     "start": "node dist/src/index.js",
     "start:container": "node dist/src/start.js",
-    "prisma:generate": "prisma generate",
-    "prisma:push": "prisma db push --accept-data-loss",
+    "prisma:generate": "node ../../node_modules/prisma/build/index.js generate",
+    "prisma:push": "node ../../node_modules/prisma/build/index.js db push --accept-data-loss",
     "seed": "tsx prisma/seed.ts",
-    "postinstall": "prisma generate",
+    "postinstall": "node ../../node_modules/prisma/build/index.js generate",
     "test": "vitest run"
   },
   "dependencies": {

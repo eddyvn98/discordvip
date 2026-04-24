@@ -10,6 +10,11 @@ services:
       - "127.0.0.1:5432:5432"
     volumes:
       - postgres-data:/var/lib/postgresql/data
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
     cpus: 1
     mem_limit: 256m
 
@@ -31,6 +36,11 @@ services:
       - ./scripts/db-backup:/scripts:ro
       - ./backups:/backups
     command: ["/bin/sh", "/scripts/entrypoint.sh"]
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
     cpus: 0.25
     mem_limit: 128m
 
@@ -45,6 +55,11 @@ services:
       - postgres
     expose:
       - "3000"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
     cpus: 1.25
     mem_limit: 384m
 
@@ -62,6 +77,11 @@ services:
       - "127.0.0.1:${ADMIN_WEB_PORT:-13001}:4173"
     expose:
       - "4173"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
     cpus: 0.25
     mem_limit: 128m
 
@@ -75,6 +95,11 @@ services:
       - "127.0.0.1:${WEB_GATEWAY_PORT:-8080}:8080"
     volumes:
       - ./nginx/demo.conf:/etc/nginx/conf.d/default.conf:ro
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
     cpus: 0.25
     mem_limit: 128m
 
