@@ -1,4 +1,4 @@
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, MessageFlags, type ChatInputCommandInteraction } from "discord.js";
+﻿import { ActionRowBuilder, ButtonBuilder, ButtonStyle, MessageFlags, type ChatInputCommandInteraction } from "discord.js";
 
 import { env } from "../config.js";
 import { formatCurrency } from "../lib/billing.js";
@@ -20,16 +20,16 @@ type BuildVipAccessTitleFn = (order: { amount: number; plan: { durationDays: num
 function adminReferralRows() {
   return [
     new ActionRowBuilder<ButtonBuilder>().addComponents(
-      new ButtonBuilder().setCustomId("admin_refpts:telegram:1").setLabel("? TG +1").setStyle(ButtonStyle.Success),
-      new ButtonBuilder().setCustomId("admin_refpts:telegram:5").setLabel("? TG +5").setStyle(ButtonStyle.Success),
-      new ButtonBuilder().setCustomId("admin_refpts:telegram:-1").setLabel("? TG -1").setStyle(ButtonStyle.Danger),
-      new ButtonBuilder().setCustomId("admin_refpts:telegram:-5").setLabel("? TG -5").setStyle(ButtonStyle.Danger),
+      new ButtonBuilder().setCustomId("admin_refpts:telegram:1").setLabel("📈 TG +1").setStyle(ButtonStyle.Success),
+      new ButtonBuilder().setCustomId("admin_refpts:telegram:5").setLabel("📈 TG +5").setStyle(ButtonStyle.Success),
+      new ButtonBuilder().setCustomId("admin_refpts:telegram:-1").setLabel("📉 TG -1").setStyle(ButtonStyle.Danger),
+      new ButtonBuilder().setCustomId("admin_refpts:telegram:-5").setLabel("📉 TG -5").setStyle(ButtonStyle.Danger),
     ),
     new ActionRowBuilder<ButtonBuilder>().addComponents(
-      new ButtonBuilder().setCustomId("admin_refpts:discord:1").setLabel("? DC +1").setStyle(ButtonStyle.Success),
-      new ButtonBuilder().setCustomId("admin_refpts:discord:5").setLabel("? DC +5").setStyle(ButtonStyle.Success),
-      new ButtonBuilder().setCustomId("admin_refpts:discord:-1").setLabel("? DC -1").setStyle(ButtonStyle.Danger),
-      new ButtonBuilder().setCustomId("admin_refpts:discord:-5").setLabel("? DC -5").setStyle(ButtonStyle.Danger),
+      new ButtonBuilder().setCustomId("admin_refpts:discord:1").setLabel("📈 DC +1").setStyle(ButtonStyle.Success),
+      new ButtonBuilder().setCustomId("admin_refpts:discord:5").setLabel("📈 DC +5").setStyle(ButtonStyle.Success),
+      new ButtonBuilder().setCustomId("admin_refpts:discord:-1").setLabel("📉 DC -1").setStyle(ButtonStyle.Danger),
+      new ButtonBuilder().setCustomId("admin_refpts:discord:-5").setLabel("📉 DC -5").setStyle(ButtonStyle.Danger),
     ),
   ];
 }
@@ -74,11 +74,11 @@ export async function handleDiscordChatCommand(
         {
           title: buildVipAccessTitle(order),
           description: [
-            `S? ti?n: **${formatCurrency(order.amount)}**`,
-            `N?i dung CK: \`DONATE ${order.orderCode}\``,
-            `Qu�t QR ho?c chuy?n kho?n tru?c: <t:${Math.floor(order.expiresAt.getTime() / 1000)}:R>`,
+            `Số tiền: **${formatCurrency(order.amount)}**`,
+            `Nội dung CK: \`DONATE ${order.orderCode}\``,
+            `Quét QR hoặc chuyển khoản trước: <t:${Math.floor(order.expiresAt.getTime() / 1000)}:R>`,
             paymentInstruction,
-            qrImageUrl ? `M? ?nh QR tr?c ti?p: ${qrImageUrl}` : "?? QR t?m th?i kh�ng t?o du?c, vui l�ng chuy?n kho?n th? c�ng theo th�ng tin b�n tr�n.",
+            qrImageUrl ? `Mở ảnh QR trực tiếp: ${qrImageUrl}` : "📌 QR tạm thời không tạo được, vui lòng chuyển khoản thủ công theo thông tin bên trên.",
           ].join("\n"),
           image: qrImageUrl ? { url: qrImageUrl } : undefined,
         },
@@ -107,9 +107,9 @@ export async function handleDiscordChatCommand(
         platformChatId: interaction.guildId!,
       });
       await discordAdapter.grantAccess({ platform: "discord", platformUserId: interaction.user.id, platformChatId: interaction.guildId! });
-      await interaction.reply({ flags: MessageFlags.Ephemeral, content: `�� k�ch ho?t trial VIP t?i <t:${Math.floor(membership.expireAt.getTime() / 1000)}:F>.` });
+      await interaction.reply({ flags: MessageFlags.Ephemeral, content: `Đã kích hoạt trial VIP tới <t:${Math.floor(membership.expireAt.getTime() / 1000)}:F>.` });
     } catch (error) {
-      await interaction.reply({ flags: MessageFlags.Ephemeral, content: error instanceof Error ? error.message : "Kh�ng th? k�ch ho?t trial." });
+      await interaction.reply({ flags: MessageFlags.Ephemeral, content: error instanceof Error ? error.message : "Không thể kích hoạt trial." });
     }
     return true;
   }
@@ -126,11 +126,33 @@ export async function handleDiscordChatCommand(
         ? await membershipService.getActiveMembership({ platform: "discord", platformUserId: interaction.user.id, platformChatId: env.DISCORD_GUILD_ID })
         : null);
     if (!membership || membership.expireAt.getTime() <= Date.now()) {
-      await interaction.reply({ flags: MessageFlags.Ephemeral, content: "B?n chua c� VIP dang ho?t d?ng." });
+      await interaction.reply({ flags: MessageFlags.Ephemeral, content: "Bạn chưa có VIP đang hoạt động." });
       return true;
     }
+    const target = membershipService.getMembershipTarget(membership);
+    let syncNote = "";
+    try {
+      const hasAccess = discordAdapter.hasAccess
+        ? await discordAdapter.hasAccess(target)
+        : false;
+      if (!hasAccess) {
+        await discordAdapter.grantAccess(target);
+        syncNote = "Đã đồng bộ lại quyền VIP cho bạn. Nếu chưa thấy ngay, vui lòng tải lại Discord.";
+      }
+    } catch {
+      // Keep vipstatus response available even if role sync fails temporarily.
+    }
     const source = membership.source === "TRIAL" ? "Trial" : membership.source === "MANUAL" ? "Manual" : "Paid";
-    await interaction.reply({ flags: MessageFlags.Ephemeral, content: [`Ngu?n VIP: **${source}**`, `H?t h?n: <t:${Math.floor(membership.expireAt.getTime() / 1000)}:F>`].join("\n") });
+    await interaction.reply({
+      flags: MessageFlags.Ephemeral,
+      content: [
+        `Nguồn VIP: **${source}**`,
+        `Hết hạn: <t:${Math.floor(membership.expireAt.getTime() / 1000)}:F>`,
+        syncNote,
+      ]
+        .filter(Boolean)
+        .join("\n"),
+    });
     return true;
   }
 
@@ -144,9 +166,9 @@ export async function handleDiscordChatCommand(
         platformUserId: interaction.user.id,
         platformChatId: interaction.guildId ?? env.DISCORD_GUILD_ID,
       });
-      await interaction.reply({ flags: MessageFlags.Ephemeral, content: [`�� s? d?ng m� ${result.promoCode.code} th�nh c�ng.`, `C?ng th�m ${result.pointsAdded} di?m referral.`, `�i?m hi?n c�: ${result.balanceAfter}.`].join("\n") });
+      await interaction.reply({ flags: MessageFlags.Ephemeral, content: [`Đã sử dụng mã ${result.promoCode.code} thành công.`, `Cộng thêm ${result.pointsAdded} điểm referral.`, `Điểm hiện có: ${result.balanceAfter}.`].join("\n") });
     } catch (error) {
-      await interaction.reply({ flags: MessageFlags.Ephemeral, content: error instanceof Error ? error.message : "Kh�ng th? s? d?ng m� khuy?n m�i, vui l�ng th? l?i." });
+      await interaction.reply({ flags: MessageFlags.Ephemeral, content: error instanceof Error ? error.message : "Không thể sử dụng mã khuyến mãi, vui lòng thử lại." });
     }
     return true;
   }
@@ -154,48 +176,48 @@ export async function handleDiscordChatCommand(
   if (interaction.commandName === "adminstats") {
     const canAccess = await discordAdapter.isAdmin(interaction.user.id);
     if (!canAccess) {
-      await interaction.reply({ flags: MessageFlags.Ephemeral, content: "B?n kh�ng c� quy?n s? d?ng l?nh n�y." });
+      await interaction.reply({ flags: MessageFlags.Ephemeral, content: "Bạn không có quyền sử dụng lệnh này." });
       return true;
     }
     const stats = await adminService.getVipStatsByPlatform("discord");
-    await interaction.reply({ flags: MessageFlags.Ephemeral, embeds: [{ title: `Th?ng k� VIP (${stats.label})`, fields: [{ name: "VIP dang active", value: String(stats.activeVipCount), inline: true }, { name: "VIP h?t h?n h�m nay", value: String(stats.expiringTodayCount), inline: true }, { name: "Doanh thu kh?p VIP paid", value: formatCurrency(stats.alignedRevenue), inline: true }] }] });
+    await interaction.reply({ flags: MessageFlags.Ephemeral, embeds: [{ title: `Thống kê VIP (${stats.label})`, fields: [{ name: "VIP đang active", value: String(stats.activeVipCount), inline: true }, { name: "VIP hết hạn hôm nay", value: String(stats.expiringTodayCount), inline: true }, { name: "Doanh thu khớp VIP paid", value: formatCurrency(stats.alignedRevenue), inline: true }] }] });
     return true;
   }
 
   if (interaction.commandName === "grantvip") {
     const canAccess = await discordAdapter.isAdmin(interaction.user.id);
     if (!canAccess) {
-      await interaction.reply({ flags: MessageFlags.Ephemeral, content: "B?n kh�ng c� quy?n s? d?ng l?nh n�y." });
+      await interaction.reply({ flags: MessageFlags.Ephemeral, content: "Bạn không có quyền sử dụng lệnh này." });
       return true;
     }
     const targetUser = interaction.options.getUser("user", true);
     const durationDays = interaction.options.getInteger("days", true);
     const result = await adminService.adjustDiscordMembershipDuration({ discordUserId: targetUser.id, durationDays, grantedBy: interaction.user.id, grantedFrom: "discord_command" });
-    await interaction.reply({ flags: MessageFlags.Ephemeral, content: [durationDays > 0 ? `�� c?ng th�m ${durationDays} ng�y VIP cho <@${targetUser.id}>.` : `�� tr? ${Math.abs(durationDays)} ng�y VIP c?a <@${targetUser.id}>.`, `H?n m?i: <t:${Math.floor(result.membership.expireAt.getTime() / 1000)}:F>.`].join("\n") });
+    await interaction.reply({ flags: MessageFlags.Ephemeral, content: [durationDays > 0 ? `Đã cộng thêm ${durationDays} ngày VIP cho <@${targetUser.id}>.` : `Đã trừ ${Math.abs(durationDays)} ngày VIP của <@${targetUser.id}>.`, `Hạn mới: <t:${Math.floor(result.membership.expireAt.getTime() / 1000)}:F>.`].join("\n") });
     return true;
   }
 
   if (interaction.commandName === "revokevip") {
     const canAccess = await discordAdapter.isAdmin(interaction.user.id);
     if (!canAccess) {
-      await interaction.reply({ flags: MessageFlags.Ephemeral, content: "B?n kh�ng c� quy?n s? d?ng l?nh n�y." });
+      await interaction.reply({ flags: MessageFlags.Ephemeral, content: "Bạn không có quyền sử dụng lệnh này." });
       return true;
     }
     const targetUser = interaction.options.getUser("user", true);
     await adminService.revokeDiscordMembershipByUserId(targetUser.id);
-    await interaction.reply({ flags: MessageFlags.Ephemeral, content: `�� thu h?i VIP c?a <@${targetUser.id}>.` });
+    await interaction.reply({ flags: MessageFlags.Ephemeral, content: `Đã thu hồi VIP của <@${targetUser.id}>.` });
     return true;
   }
 
   if (interaction.commandName === "adminpoints") {
     const canAccess = await discordAdapter.isAdmin(interaction.user.id);
     if (!canAccess) {
-      await interaction.reply({ flags: MessageFlags.Ephemeral, content: "B?n kh�ng c� quy?n s? d?ng l?nh n�y." });
+      await interaction.reply({ flags: MessageFlags.Ephemeral, content: "Bạn không có quyền sử dụng lệnh này." });
       return true;
     }
     await interaction.reply({
       flags: MessageFlags.Ephemeral,
-      content: "Ch?n preset c?ng/tr? di?m referral, sau d� nh?p `mention/userId/username | ghi ch�` trong modal.",
+      content: "Chọn preset cộng/trừ điểm referral, sau đó nhập `mention/userId/username | ghi chú` trong modal.",
       components: adminReferralRows(),
     });
     return true;
@@ -203,3 +225,4 @@ export async function handleDiscordChatCommand(
 
   return false;
 }
+

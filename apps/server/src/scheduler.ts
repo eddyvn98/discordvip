@@ -19,6 +19,8 @@ export function startSchedulers(
   let lastDiscordAccessReconcileAt = 0;
   const REFERRAL_RECONCILE_INTERVAL_MS = 60 * 60 * 1000;
   const DISCORD_ACCESS_RECONCILE_INTERVAL_MS = 10 * 60 * 1000;
+  const MEMBER_MISSING_RETRY_MS = 6 * 60 * 60 * 1000;
+  const accessReconcileCooldown = new Map<string, number>();
   const healthState = new Map<
     string,
     {
@@ -27,6 +29,19 @@ export function startSchedulers(
       lastError: string | null;
     }
   >();
+  const isUnknownMemberError = (error: unknown) => {
+    if (typeof error !== "object" || error === null) {
+      return false;
+    }
+    if ("code" in error && (error as { code?: unknown }).code === 10007) {
+      return true;
+    }
+    if ("message" in error && typeof (error as { message?: unknown }).message === "string") {
+      return (error as { message: string }).message.includes("Unknown Member");
+    }
+    return false;
+  };
+  const toCooldownKey = (membershipId: string, userId: string) => `${membershipId}:${userId}`;
 
   const sendOpsAlertToAvailableAdapters = async (message: string, exceptPlatform?: string) => {
     await Promise.all(
@@ -122,21 +137,47 @@ export function startSchedulers(
 
       for (const membership of activeDiscordMemberships) {
         const target = membershipService.getMembershipTarget(membership);
+        const cooldownKey = toCooldownKey(membership.id, target.platformUserId);
+        const cooldownUntil = accessReconcileCooldown.get(cooldownKey);
+        if (cooldownUntil && cooldownUntil > Date.now()) {
+          continue;
+        }
 
         try {
+          if (discordAdapter.checkUserInCommunity) {
+            const inCommunity = await discordAdapter.checkUserInCommunity({
+              userId: target.platformUserId,
+              chatId: target.platformChatId,
+            });
+            if (!inCommunity) {
+              accessReconcileCooldown.set(cooldownKey, Date.now() + MEMBER_MISSING_RETRY_MS);
+              logger.info("Skip Discord VIP reconcile because user is not in guild", {
+                membershipId: membership.id,
+                userId: target.platformUserId,
+                retryAfterMinutes: Math.round(MEMBER_MISSING_RETRY_MS / 60_000),
+              });
+              continue;
+            }
+          }
+
           const hasAccess = discordAdapter.hasAccess
             ? await discordAdapter.hasAccess(target)
             : false;
           if (hasAccess) {
+            accessReconcileCooldown.delete(cooldownKey);
             continue;
           }
 
           await discordAdapter.grantAccess(target);
+          accessReconcileCooldown.delete(cooldownKey);
           logger.info("Reconciled missing Discord VIP role", {
             membershipId: membership.id,
             userId: target.platformUserId,
           });
         } catch (error) {
+          if (isUnknownMemberError(error)) {
+            accessReconcileCooldown.set(cooldownKey, Date.now() + MEMBER_MISSING_RETRY_MS);
+          }
           logger.warn("Failed to reconcile Discord VIP role", {
             membershipId: membership.id,
             userId: target.platformUserId,

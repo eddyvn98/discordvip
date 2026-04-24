@@ -1,4 +1,4 @@
-import { Events, MessageFlags } from "discord.js";
+﻿import { Events, MessageFlags } from "discord.js";
 
 import { logger } from "../lib/logger.js";
 import { AdminService } from "../services/admin-service.js";
@@ -35,6 +35,17 @@ export function registerDiscordInteractions(input: {
   input.discordService.client.on(Events.InteractionCreate, async (interaction) => {
     try {
       if (interaction.isButton()) {
+        const customId = interaction.customId;
+        const opensModal =
+          customId.startsWith("admin_refpts:") ||
+          customId === "ref_redeem_custom" ||
+          customId === "acc_redeem_help";
+        const requiresMessageUpdate = customId.startsWith("manual_");
+
+        if (!opensModal && !requiresMessageUpdate && !interaction.deferred && !interaction.replied) {
+          await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+        }
+
         const handled = await handleDiscordButton({
           interaction,
           discordService: input.discordService,
@@ -46,6 +57,7 @@ export function registerDiscordInteractions(input: {
           buildOrderMessage: input.buildOrderMessage,
           buildVipAccessTitle: input.buildVipAccessTitle,
         });
+
         if (!handled) {
           logger.warn("Unhandled Discord button interaction", {
             customId: interaction.customId,
@@ -53,10 +65,16 @@ export function registerDiscordInteractions(input: {
             channelId: interaction.channelId,
             guildId: interaction.guildId,
           });
-          await interaction.reply({
-            flags: MessageFlags.Ephemeral,
-            content: "Nút này đã hết hiệu lực. Vui lòng mở lại menu và thử lại.",
-          });
+
+          const content = "Nút này đã hết hiệu lực. Vui lòng mở lại menu và thử lại.";
+          if (interaction.deferred || interaction.replied) {
+            await interaction.editReply({ content });
+          } else {
+            await interaction.reply({
+              flags: MessageFlags.Ephemeral,
+              content,
+            });
+          }
         }
         return;
       }
