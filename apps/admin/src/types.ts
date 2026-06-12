@@ -250,3 +250,25 @@ export type ReferralRedemptionItem = {
   membershipId: string | null;
   createdAt: string;
 };
+
+export type MonthlyRevenueResponse = {
+  selectedMonth: string;
+  availableMonths: string[];
+  totalRevenue: number;
+  byPlatform: {
+    discord: number;
+    telegram: number;
+  };
+  members: Array<{
+    id: string;
+    username: string;
+    platformUserId: string;
+    discordUserId: string;
+    platform: "discord" | "telegram";
+    planName: string;
+    amount: number;
+    createdAt: string;
+    orderCode: string;
+  }>;
+};
+

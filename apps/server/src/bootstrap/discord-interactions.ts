@@ -1,4 +1,4 @@
-﻿import { Events, MessageFlags } from "discord.js";
+﻿import { Events, MessageFlags, type Interaction } from "discord.js";
 
 import { logger } from "../lib/logger.js";
 import { AdminService } from "../services/admin-service.js";
@@ -19,6 +19,55 @@ type BuildOrderMessageFn = (order: {
   plan: { name: string; durationDays: number };
 }, platform: "telegram" | "discord") => Promise<{ qrImageUrl: string | null; paymentInstruction: string }>;
 type BuildVipAccessTitleFn = (order: { amount: number; plan: { durationDays: number } }) => string;
+
+function isExpiredDiscordInteractionError(error: unknown) {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "code" in error &&
+    (error as { code?: unknown }).code === 10062
+  );
+}
+
+async function sendInteractionResponse(
+  interaction: Interaction,
+  content: string,
+  options: { logMessage: string; metadata?: Record<string, unknown> },
+) {
+  if (!interaction.isRepliable()) {
+    return;
+  }
+
+  try {
+    if (interaction.deferred || interaction.replied) {
+      await interaction.followUp({
+        flags: MessageFlags.Ephemeral,
+        content,
+      });
+      return;
+    }
+
+    await interaction.reply({
+      flags: MessageFlags.Ephemeral,
+      content,
+    });
+  } catch (error) {
+    const metadata = {
+      ...options.metadata,
+      error,
+      userId: "user" in interaction ? interaction.user.id : undefined,
+      channelId: interaction.channelId,
+      guildId: interaction.guildId,
+    };
+
+    if (isExpiredDiscordInteractionError(error)) {
+      logger.warn(options.logMessage, metadata);
+      return;
+    }
+
+    logger.error(options.logMessage, metadata);
+  }
+}
 
 export function registerDiscordInteractions(input: {
   discordService: DiscordService;
@@ -41,9 +90,15 @@ export function registerDiscordInteractions(input: {
           customId === "ref_redeem_custom" ||
           customId === "acc_redeem_help";
         const requiresMessageUpdate = customId.startsWith("manual_");
+        const shouldUpdateExistingResponse =
+          interaction.message.flags.has(MessageFlags.Ephemeral) || !interaction.message.pinned;
 
         if (!opensModal && !requiresMessageUpdate && !interaction.deferred && !interaction.replied) {
-          await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+          if (shouldUpdateExistingResponse) {
+            await interaction.deferUpdate();
+          } else {
+            await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+          }
         }
 
         const handled = await handleDiscordButton({
@@ -136,17 +191,9 @@ export function registerDiscordInteractions(input: {
       }
     } catch (error) {
       logger.error("Interaction handling failed", { error });
-      if (interaction.isRepliable() && (interaction.deferred || interaction.replied)) {
-        await interaction.followUp({
-          flags: MessageFlags.Ephemeral,
-          content: "Đã có lỗi xảy ra, vui lòng thử lại.",
-        });
-      } else if (interaction.isRepliable()) {
-        await interaction.reply({
-          flags: MessageFlags.Ephemeral,
-          content: "Đã có lỗi xảy ra, vui lòng thử lại.",
-        });
-      }
+      await sendInteractionResponse(interaction, "Đã có lỗi xảy ra, vui lòng thử lại.", {
+        logMessage: "Failed to send Discord interaction error response",
+      });
     }
   });
 }

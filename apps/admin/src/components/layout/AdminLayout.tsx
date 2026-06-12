@@ -1,4 +1,4 @@
-﻿import { useState } from "react";
+import { useState } from "react";
 import { NavLink, Route, Routes } from "react-router-dom";
 
 import type { AdminUser } from "../../types";
@@ -11,6 +11,7 @@ import { ReferralsPage } from "../../pages/ReferralsPage";
 import { TelegramChannelsPage } from "../../pages/TelegramChannelsPage";
 import { TransactionsPage } from "../../pages/TransactionsPage";
 import { VipStatsPage } from "../../pages/VipStatsPage";
+import { RevenueStatsPage } from "../../pages/RevenueStatsPage";
 
 type AdminLayoutProps = {
   user: AdminUser;
@@ -49,6 +50,9 @@ export function AdminLayout({ user, onLogout }: AdminLayoutProps) {
           </NavLink>
           <NavLink to="/vip-stats" onClick={() => setMobileSidebarOpen(false)}>
             Thống kê VIP
+          </NavLink>
+          <NavLink to="/revenue-stats" onClick={() => setMobileSidebarOpen(false)}>
+            Doanh thu theo tháng
           </NavLink>
           <NavLink to="/transactions" onClick={() => setMobileSidebarOpen(false)}>
             Giao dịch
@@ -89,6 +93,7 @@ export function AdminLayout({ user, onLogout }: AdminLayoutProps) {
         <Routes>
           <Route path="/" element={<DashboardPage />} />
           <Route path="/vip-stats" element={<VipStatsPage />} />
+          <Route path="/revenue-stats" element={<RevenueStatsPage />} />
           <Route path="/transactions" element={<TransactionsPage />} />
           <Route path="/memberships" element={<MembershipsPage />} />
           <Route path="/promo-codes" element={<PromoCodesPage />} />

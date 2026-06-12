@@ -1412,6 +1412,139 @@ export class AdminService {
     };
   }
 
+  async getMonthlyRevenueStats(monthStr?: string) {
+    const paymentsForMonths = await prisma.payment.findMany({
+      where: {
+        status: PaymentStatus.MATCHED,
+      },
+      select: {
+        createdAt: true,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+
+    const monthsSet = new Set<string>();
+    const now = new Date();
+    const nowUtcMillis = now.getTime() + now.getTimezoneOffset() * 60_000;
+    const nowVn = new Date(nowUtcMillis + 7 * 60 * 60_000);
+    const currentMonthStr = `${nowVn.getFullYear()}-${String(nowVn.getMonth() + 1).padStart(2, "0")}`;
+
+    monthsSet.add(currentMonthStr);
+
+    for (const p of paymentsForMonths) {
+      const vnDate = new Date(p.createdAt.getTime() + 7 * 60 * 60_000);
+      const yyyy = vnDate.getFullYear();
+      const mm = String(vnDate.getMonth() + 1).padStart(2, "0");
+      monthsSet.add(`${yyyy}-${mm}`);
+    }
+
+    const availableMonths = Array.from(monthsSet).sort().reverse();
+
+    const targetMonth = monthStr && /^\d{4}-\d{2}$/.test(monthStr) ? monthStr : currentMonthStr;
+
+    const parts = targetMonth.split("-");
+    const year = parseInt(parts[0], 10);
+    const month = parseInt(parts[1], 10) - 1;
+
+    const startVietnam = new Date(year, month, 1, 0, 0, 0, 0);
+    const endVietnam = new Date(year, month + 1, 1, 0, 0, 0, 0);
+
+    const start = new Date(startVietnam.getTime() - 7 * 60 * 60_000);
+    const end = new Date(endVietnam.getTime() - 7 * 60 * 60_000);
+
+    const monthlyPayments = await prisma.payment.findMany({
+      where: {
+        status: PaymentStatus.MATCHED,
+        createdAt: {
+          gte: start,
+          lt: end,
+        },
+      },
+      include: {
+        order: {
+          include: {
+            plan: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+
+    let totalRevenue = 0;
+    let discordRevenue = 0;
+    let telegramRevenue = 0;
+
+    const discordUserIds: string[] = [];
+
+    for (const p of monthlyPayments) {
+      totalRevenue += p.amount;
+      if (p.order) {
+        const identity = this.decorateUserIdentity(p.order);
+        if (identity.platform === "discord") {
+          discordRevenue += p.amount;
+          if (identity.platformUserId) {
+            discordUserIds.push(identity.platformUserId);
+          }
+        } else if (identity.platform === "telegram") {
+          telegramRevenue += p.amount;
+        }
+      } else {
+        discordRevenue += p.amount;
+      }
+    }
+
+    const discordNames = await this.resolveDiscordDisplayNames(discordUserIds);
+
+    const members = monthlyPayments.map((p) => {
+      const order = p.order;
+      if (!order) {
+        return {
+          id: p.id,
+          username: p.payerName || "Ẩn danh",
+          platformUserId: "",
+          discordUserId: "",
+          platform: "discord" as const,
+          planName: "Giao dịch lẻ",
+          amount: p.amount,
+          createdAt: p.createdAt.toISOString(),
+          orderCode: "N/A",
+        };
+      }
+
+      const identity = this.decorateUserIdentity(order);
+      const username = identity.platform === "discord"
+        ? (discordNames[identity.platformUserId] || order.platformUserId || order.discordUserId)
+        : (order.platformUserId || order.discordUserId);
+
+      return {
+        id: p.id,
+        username,
+        platformUserId: identity.platformUserId,
+        discordUserId: order.discordUserId,
+        platform: identity.platform,
+        planName: order.plan.name,
+        amount: p.amount,
+        createdAt: p.createdAt.toISOString(),
+        orderCode: order.orderCode,
+      };
+    });
+
+    return {
+      selectedMonth: targetMonth,
+      availableMonths,
+      totalRevenue,
+      byPlatform: {
+        discord: discordRevenue,
+        telegram: telegramRevenue,
+      },
+      members,
+    };
+  }
+
   async listPlans() {
     const plans = await prisma.plan.findMany({
       orderBy: [{ amount: "asc" }, { createdAt: "asc" }],

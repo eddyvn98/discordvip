@@ -97,6 +97,10 @@ function isEphemeralContext(interaction: ButtonInteraction) {
   return interaction.message.flags.has(MessageFlags.Ephemeral);
 }
 
+function shouldUpdatePanelMessage(interaction: ButtonInteraction) {
+  return isEphemeralContext(interaction) || !interaction.message.pinned;
+}
+
 async function respondPanel(
   interaction: ButtonInteraction,
   payload: { content?: string; components?: ActionRowBuilder<ButtonBuilder>[]; embeds?: Array<Record<string, unknown>> },
@@ -106,8 +110,8 @@ async function respondPanel(
     return;
   }
 
-  // Ephemeral interactions should be updated in place.
-  if (isEphemeralContext(interaction)) {
+  // Keep the pinned public menu stable; update bot response panels in place.
+  if (shouldUpdatePanelMessage(interaction)) {
     await interaction.update(payload);
     return;
   }
@@ -385,22 +389,30 @@ export async function handleDiscordButton(input: {
   }
 
   if (interaction.customId === "acc_vipstatus") {
+    const now = Date.now();
     const current = await membershipService.getActiveMembership({
       platform: "discord",
       platformUserId: interaction.user.id,
       platformChatId: interaction.guildId ?? env.DISCORD_GUILD_ID,
     });
-    const membership =
-      current ??
-      (interaction.guildId && interaction.guildId !== env.DISCORD_GUILD_ID
-        ? await membershipService.getActiveMembership({
-            platform: "discord",
-            platformUserId: interaction.user.id,
-            platformChatId: env.DISCORD_GUILD_ID,
-          })
-        : null);
+    let membership = current && current.expireAt.getTime() > now ? current : null;
+    if (!membership && interaction.guildId && interaction.guildId !== env.DISCORD_GUILD_ID) {
+      const configuredGuildMembership = await membershipService.getActiveMembership({
+        platform: "discord",
+        platformUserId: interaction.user.id,
+        platformChatId: env.DISCORD_GUILD_ID,
+      });
+      membership =
+        configuredGuildMembership && configuredGuildMembership.expireAt.getTime() > now
+          ? configuredGuildMembership
+          : null;
+    }
+    membership ??= await membershipService.getLatestActiveMembershipForPlatformUser({
+      platform: "discord",
+      platformUserId: interaction.user.id,
+    });
 
-    if (!membership || membership.expireAt.getTime() <= Date.now()) {
+    if (!membership || membership.expireAt.getTime() <= now) {
       await respondPanel(interaction, { content: "Bạn chưa có VIP đang hoạt động.", components: homeRows() });
       return true;
     }
@@ -521,7 +533,11 @@ export async function handleDiscordButton(input: {
 
   if (interaction.customId === "referral_verify") {
     await discordService.consumeVerify(interaction.user.id);
-    await interaction.reply({ flags: MessageFlags.Ephemeral, content: "Verify thành công." });
+    if (interaction.deferred || interaction.replied) {
+      await interaction.editReply({ content: "Verify thành công.", components: [] });
+    } else {
+      await interaction.reply({ flags: MessageFlags.Ephemeral, content: "Verify thành công." });
+    }
     return true;
   }
   return false;

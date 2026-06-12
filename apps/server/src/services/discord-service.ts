@@ -28,6 +28,7 @@ import {
 
 export class DiscordService {
   readonly client: Client;
+  private static readonly READY_TIMEOUT_MS = 20_000;
   private readonly referralRuntime: DiscordReferralRuntime;
   private memberJoinTrackingEnabled = true;
   private eventHandlersRegistered = false;
@@ -82,9 +83,14 @@ export class DiscordService {
         const guild = await this.getGuild();
         await guild.commands.set(getDiscordGuildCommands());
         await this.referralRuntime.onReady(guild);
-        await this.ensureHomePanelMessage();
       } catch (error) {
         logger.error("Discord ready hook failed", { error });
+      }
+
+      try {
+        await this.ensureHomePanelMessage();
+      } catch (error) {
+        logger.error("Discord home panel setup failed", { error });
       }
     });
 
@@ -154,14 +160,31 @@ export class DiscordService {
   }
 
   private async getGuild() {
-    if (!this.client.isReady() || !this.client.user || !this.client.token) {
-      throw new Error("Discord client chưa sẵn sàng.");
-    }
+    await this.waitUntilReady();
     if (!this.guildPromise) {
       this.guildPromise = this.client.guilds.fetch(env.DISCORD_GUILD_ID);
     }
 
     return this.guildPromise;
+  }
+
+  private async waitUntilReady(timeoutMs = DiscordService.READY_TIMEOUT_MS) {
+    if (this.client.isReady() && this.client.user && this.client.token) {
+      return;
+    }
+
+    await Promise.race([
+      new Promise<void>((resolve) => {
+        this.client.once(Events.ClientReady, () => resolve());
+      }),
+      new Promise<void>((_, reject) => {
+        setTimeout(() => reject(new Error("Discord client chưa sẵn sàng.")), timeoutMs);
+      }),
+    ]);
+
+    if (!this.client.isReady() || !this.client.user || !this.client.token) {
+      throw new Error("Discord client chưa sẵn sàng.");
+    }
   }
 
   private async getAdminChannel() {

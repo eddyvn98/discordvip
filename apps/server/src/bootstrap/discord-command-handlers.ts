@@ -115,17 +115,29 @@ export async function handleDiscordChatCommand(
   }
 
   if (interaction.commandName === "vipstatus") {
+    const now = Date.now();
     const current = await membershipService.getActiveMembership({
       platform: "discord",
       platformUserId: interaction.user.id,
       platformChatId: interaction.guildId ?? env.DISCORD_GUILD_ID,
     });
-    const membership =
-      current ??
-      (interaction.guildId && interaction.guildId !== env.DISCORD_GUILD_ID
-        ? await membershipService.getActiveMembership({ platform: "discord", platformUserId: interaction.user.id, platformChatId: env.DISCORD_GUILD_ID })
-        : null);
-    if (!membership || membership.expireAt.getTime() <= Date.now()) {
+    let membership = current && current.expireAt.getTime() > now ? current : null;
+    if (!membership && interaction.guildId && interaction.guildId !== env.DISCORD_GUILD_ID) {
+      const configuredGuildMembership = await membershipService.getActiveMembership({
+        platform: "discord",
+        platformUserId: interaction.user.id,
+        platformChatId: env.DISCORD_GUILD_ID,
+      });
+      membership =
+        configuredGuildMembership && configuredGuildMembership.expireAt.getTime() > now
+          ? configuredGuildMembership
+          : null;
+    }
+    membership ??= await membershipService.getLatestActiveMembershipForPlatformUser({
+      platform: "discord",
+      platformUserId: interaction.user.id,
+    });
+    if (!membership || membership.expireAt.getTime() <= now) {
       await interaction.reply({ flags: MessageFlags.Ephemeral, content: "Bạn chưa có VIP đang hoạt động." });
       return true;
     }

@@ -35,6 +35,16 @@ export function registerAdminRoutes(
     res.json(await adminService.getVipStats());
   });
 
+  app.get("/api/admin/monthly-revenue", requireAdmin, async (req, res) => {
+    try {
+      const month = typeof req.query.month === "string" ? req.query.month.trim() : undefined;
+      const stats = await adminService.getMonthlyRevenueStats(month);
+      res.json(stats);
+    } catch (error) {
+      res.status(400).json({ error: error instanceof Error ? error.message : "Không thể lấy thống kê doanh thu theo tháng." });
+    }
+  });
+
   app.get("/api/admin/transactions", requireAdmin, async (req, res) => {
     const platform = typeof req.query.platform === "string" ? req.query.platform : undefined;
     res.json(await adminService.listTransactions(platform));
