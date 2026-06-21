@@ -65,7 +65,7 @@ export async function sendDiscordVipExpiryReminder(
     content: [
       `VIP của bạn sẽ hết hạn <t:${Math.floor(expireAt.getTime() / 1000)}:R>.`,
       `Mốc nhắc hiện tại: còn khoảng ${thresholdDays} ngày.`,
-      "👉 Sử dụng BOT VIP tại kênh <#1480627066272485487> để gia hạn VIP ngay nhé ✨",
+      `👉 Sử dụng BOT VIP tại kênh <#${env.DISCORD_MENU_CHANNEL_ID}> để gia hạn VIP ngay nhé ✨`,
     ].join("\n"),
   });
 }

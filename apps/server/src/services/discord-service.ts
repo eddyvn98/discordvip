@@ -1,4 +1,4 @@
-﻿import {
+import {
   ActionRowBuilder,
   ButtonBuilder,
   ButtonStyle,
@@ -239,7 +239,7 @@ export class DiscordService {
     await user.send({
       content: [
         "Bạn đã hết thời gian thử nghiệm VIP",
-        "Nếu thấy nội dung phù hợp với mình, bạn có thể dùng BOT VIP tại kênh <#1480627066272485487> để nâng cấp VIP tự động nhé ✨",
+        `Nếu thấy nội dung phù hợp với mình, bạn có thể dùng BOT VIP tại kênh <#${env.DISCORD_MENU_CHANNEL_ID}> để nâng cấp VIP tự động nhé ✨`,
       ].join("\n"),
     });
   }
