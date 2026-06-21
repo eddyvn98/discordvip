@@ -16,3 +16,5 @@ output/
 .playwright-cli/
 .gitnexus
 secrets.zip
+auto-pull-deploy.ps1
+deploy.log
