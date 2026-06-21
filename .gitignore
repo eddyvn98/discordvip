@@ -15,3 +15,4 @@ restore-backups/
 output/
 .playwright-cli/
 .gitnexus
+secrets.zip
